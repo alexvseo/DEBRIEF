@@ -8,10 +8,10 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 // Componentes UI
-import Button from '@/components/ui/button'
-import Input from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Alert, AlertDescription } from '@/components/ui/Alert'
 
 // Services
 import { demandaService } from '@/services/demandaService'
