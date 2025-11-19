@@ -18,6 +18,23 @@ echo "🔧 REBUILD COMPLETO - DeBrief"
 echo "=========================================="
 echo ""
 
+# Verificar se há mudanças locais no Git
+if [ -d ".git" ]; then
+    if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+        print_warning "Há mudanças locais no Git!"
+        print_info "Descartando mudanças locais antes de continuar..."
+        git checkout -- . 2>/dev/null || true
+        git reset --hard HEAD 2>/dev/null || true
+        print_success "Mudanças locais descartadas"
+        echo ""
+    fi
+    
+    # Fazer pull
+    print_info "Fazendo pull do repositório..."
+    git pull 2>/dev/null || print_warning "Erro ao fazer pull (continuando mesmo assim...)"
+    echo ""
+fi
+
 print_info() {
     echo -e "${BLUE}ℹ️  $1${NC}"
 }
