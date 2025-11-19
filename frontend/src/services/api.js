@@ -7,7 +7,10 @@ import { getToken, clearStoredAuth, isTokenExpired } from '@/utils/auth'
 import { toast } from 'sonner'
 
 // URL base da API (definida no .env)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+// Em produção, usa URL relativa (/api) que é proxyado pelo nginx
+// Em desenvolvimento, usa URL absoluta (http://localhost:8000/api)
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api')
 
 /**
  * Instância do axios configurada

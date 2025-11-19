@@ -14,6 +14,10 @@ RUN npm ci --silent
 # Copiar código fonte
 COPY . .
 
+# Build args para variáveis de ambiente
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
+
 # Build da aplicação para produção
 RUN npm run build
 
