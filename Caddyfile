@@ -1,0 +1,46 @@
+# Caddyfile - DeBrief
+# Proxy reverso para Frontend e Backend
+# Escuta na porta 80 (dentro do container), mapeada para 2022 no host
+
+:80 {
+    # Compressão automática
+    encode zstd gzip
+
+    # Proxy para API backend (/api/*)
+    @api {
+        path /api/*
+    }
+    handle @api {
+        reverse_proxy debrief-backend:8000 {
+            # Headers para proxy
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+            
+            # Timeouts
+            transport http {
+                dial_timeout 10s
+                response_header_timeout 60s
+            }
+        }
+    }
+
+    # Proxy para Frontend (tudo mais)
+    handle {
+        reverse_proxy debrief-frontend:80 {
+            # Headers para proxy
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
+    # Logs
+    log {
+        output stdout
+        format console
+    }
+}
+
