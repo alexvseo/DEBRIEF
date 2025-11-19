@@ -18,6 +18,19 @@ echo "🔧 REBUILD COMPLETO - DeBrief"
 echo "=========================================="
 echo ""
 
+# Funções de output (definir antes de usar)
+print_info() {
+    echo -e "${BLUE}ℹ️  $1${NC}"
+}
+
+print_success() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠️  $1${NC}"
+}
+
 # Verificar se há mudanças locais no Git
 if [ -d ".git" ]; then
     if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
@@ -34,18 +47,6 @@ if [ -d ".git" ]; then
     git pull 2>/dev/null || print_warning "Erro ao fazer pull (continuando mesmo assim...)"
     echo ""
 fi
-
-print_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
-}
-
-print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-}
 
 print_error() {
     echo -e "${RED}❌ $1${NC}"
