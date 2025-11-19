@@ -1,0 +1,96 @@
+"""
+Configurações da aplicação
+Gerencia variáveis de ambiente e configurações globais
+"""
+from pydantic_settings import BaseSettings
+from typing import Optional
+
+
+class Settings(BaseSettings):
+    """
+    Configurações da aplicação
+    Carrega automaticamente do .env
+    """
+    
+    # Aplicação
+    APP_NAME: str = "DeBrief API"
+    APP_VERSION: str = "1.0.0"
+    DEBUG: bool = True
+    
+    # Servidor
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+    
+    # Banco de Dados PostgreSQL
+    DATABASE_URL: str = "postgresql://debrief:debrief123@localhost:5432/debrief"
+    DATABASE_ECHO: bool = False  # SQL logs
+    
+    # JWT
+    SECRET_KEY: str = "seu-secret-key-super-seguro-mude-em-producao"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 horas
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # 7 dias
+    
+    # CORS
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+    ]
+    
+    # Senha
+    PWD_CONTEXT_SCHEMES: list = ["bcrypt"]
+    PWD_CONTEXT_DEPRECATED: str = "auto"
+    
+    # Upload de Arquivos
+    MAX_FILE_SIZE: int = 50 * 1024 * 1024  # 50MB
+    ALLOWED_FILE_TYPES: list = [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/jpg"
+    ]
+    MAX_FILES_PER_DEMANDA: int = 5
+    UPLOAD_DIR: str = "uploads"
+    
+    # Paginação
+    DEFAULT_PAGE_SIZE: int = 20
+    MAX_PAGE_SIZE: int = 100
+    
+    # Email (opcional - configurar depois)
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: Optional[int] = None
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    EMAILS_FROM_EMAIL: Optional[str] = None
+    EMAILS_FROM_NAME: Optional[str] = None
+    
+    # Trello Integration
+    TRELLO_API_KEY: Optional[str] = None
+    TRELLO_TOKEN: Optional[str] = None
+    TRELLO_BOARD_ID: Optional[str] = None
+    TRELLO_LIST_ID: Optional[str] = None
+    
+    # WhatsApp/WPPConnect Integration
+    WPP_URL: Optional[str] = None
+    WPP_INSTANCE: Optional[str] = None
+    WPP_TOKEN: Optional[str] = None
+    
+    # Google reCAPTCHA
+    RECAPTCHA_SECRET_KEY: Optional[str] = None
+    
+    # Environment
+    ENVIRONMENT: str = "development"
+    FRONTEND_URL: str = "http://localhost:5173"
+    MAX_UPLOAD_SIZE: int = 52428800  # 50MB
+    ALLOWED_EXTENSIONS: list[str] = ["pdf", "jpg", "jpeg", "png"]
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+
+
+# Instância global das configurações
+settings = Settings()
+
