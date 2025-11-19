@@ -31,9 +31,15 @@ print_error() {
     echo -e "${RED}❌ $1${NC}"
 }
 
-# 1. Verificar PostgreSQL local
-print_info "1️⃣  Verificando PostgreSQL local..."
-./verificar-postgresql-local.sh
+# 1. Configurar banco completo
+print_info "1️⃣  Configurando banco de dados completo..."
+if [ -f "./configurar-banco-completo.sh" ]; then
+    ./configurar-banco-completo.sh
+else
+    print_warning "Script configurar-banco-completo.sh não encontrado"
+    print_info "Verificando PostgreSQL local..."
+    ./verificar-postgresql-local.sh
+fi
 echo ""
 
 # 2. Testar conexão local
