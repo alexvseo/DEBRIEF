@@ -23,10 +23,10 @@ echo ""
 # 2. Verificar se backend está rodando
 echo "2️⃣  Verificando se backend está acessível..."
 echo "----------------------------------------"
-BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health 2>/dev/null)
+BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:2025/health 2>/dev/null)
 if [ "$BACKEND_STATUS" = "200" ]; then
     echo -e "${GREEN}✅ Backend está respondendo (HTTP $BACKEND_STATUS)${NC}"
-    curl -s http://localhost:8000/health | jq . 2>/dev/null || curl -s http://localhost:8000/health
+    curl -s http://localhost:2025/health | jq . 2>/dev/null || curl -s http://localhost:2025/health
 else
     echo -e "${RED}❌ Backend não está respondendo (HTTP $BACKEND_STATUS)${NC}"
     echo "   Verifique os logs: docker-compose logs backend"
@@ -61,7 +61,7 @@ echo ""
 # 5. Testar endpoint de login diretamente
 echo "5️⃣  Testando endpoint de login..."
 echo "----------------------------------------"
-LOGIN_RESPONSE=$(curl -s -X POST http://localhost:8000/api/auth/login \
+LOGIN_RESPONSE=$(curl -s -X POST http://localhost:2025/api/auth/login \
     -H "Content-Type: application/x-www-form-urlencoded" \
     -d "username=admin&password=admin123" \
     -w "\nHTTP_CODE:%{http_code}")

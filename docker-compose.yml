@@ -9,7 +9,7 @@ services:
     container_name: debrief-backend
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "2025:8000"
     environment:
       # Banco de Dados Remoto
       - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief

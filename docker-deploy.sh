@@ -89,8 +89,8 @@ case $option in
         docker-compose up -d
         print_success "Aplicação iniciada!"
         print_info "Frontend: http://82.25.92.217:2022"
-        print_info "Backend: http://localhost:8000"
-        print_info "API Docs: http://localhost:8000/docs"
+        print_info "Backend: http://82.25.92.217:2025"
+        print_info "API Docs: http://82.25.92.217:2025/docs"
         ;;
     2)
         print_info "Parando aplicação..."
@@ -103,7 +103,7 @@ case $option in
         docker-compose up -d
         print_success "Aplicação reiniciada!"
         print_info "Frontend: http://82.25.92.217:2022"
-        print_info "Backend: http://localhost:8000"
+        print_info "Backend: http://82.25.92.217:2025"
         ;;
     4)
         print_info "Mostrando logs (Ctrl+C para sair)..."
@@ -127,7 +127,7 @@ case $option in
         docker-compose up -d
         print_success "Rebuild concluído!"
         print_info "Frontend: http://82.25.92.217:2022"
-        print_info "Backend: http://localhost:8000"
+        print_info "Backend: http://82.25.92.217:2025"
         ;;
     7)
         print_info "Operação cancelada"

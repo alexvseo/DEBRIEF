@@ -182,8 +182,8 @@ SERVER_IP=$(hostname -I | awk '{print $1}')
 
 print_info "Acesse a aplicação em:"
 echo "  - Frontend: http://$SERVER_IP:2022"
-echo "  - Backend:  http://$SERVER_IP:8000"
-echo "  - Docs:     http://$SERVER_IP:8000/docs"
+echo "  - Backend:  http://$SERVER_IP:2025"
+echo "  - Docs:     http://$SERVER_IP:2025/docs"
 echo ""
 print_info "Login padrão:"
 echo "  - Username: admin"
