@@ -42,8 +42,10 @@ services:
       - MAX_UPLOAD_SIZE=52428800
       - ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png
     volumes:
+      # Apenas uploads - código vem do build (produção)
       - ./backend/uploads:/app/uploads
-      - ./backend:/app
+      # NÃO montar código fonte em produção para evitar conflitos
+      # - ./backend:/app
     networks:
       - debrief-network
     healthcheck:
