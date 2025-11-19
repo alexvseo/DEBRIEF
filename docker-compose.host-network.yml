@@ -1,5 +1,9 @@
 version: '3.8'
 
+# Versão alternativa do docker-compose.yml usando network_mode: host
+# Use este arquivo se o PostgreSQL estiver rodando apenas em localhost
+# Execute: docker-compose -f docker-compose.host-network.yml up -d
+
 services:
   # Backend FastAPI
   backend:
@@ -9,15 +13,10 @@ services:
     image: debrief-backend:latest
     container_name: debrief-backend
     restart: unless-stopped
-    ports:
-      - "2025:8000"  # Porta externa 2025, interna 8000
-    # Permitir container acessar serviços do host
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # Usar rede do host - permite acessar localhost diretamente
+    network_mode: host
     environment:
-      # Banco de Dados
-      # Tentar localhost primeiro (se PostgreSQL estiver no mesmo servidor)
-      # Se não funcionar, use host.docker.internal ou configure network_mode: host
+      # Banco de Dados - usar localhost já que está na rede do host
       - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@localhost:5432/dbrief
       
       # JWT
@@ -49,10 +48,7 @@ services:
     volumes:
       # Apenas uploads - código vem do build (produção)
       - ./backend/uploads:/app/uploads
-      # NÃO montar código fonte em produção para evitar conflitos
-      # - ./backend:/app
-    networks:
-      - debrief-network
+    # Não precisa de networks com network_mode: host
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
       interval: 30s
@@ -70,7 +66,7 @@ services:
     image: debrief-frontend:latest
     container_name: debrief-frontend
     restart: unless-stopped
-    # Não expor porta externa - Caddy faz proxy
+    # Frontend ainda usa rede bridge para funcionar com Caddy
     expose:
       - "80"
     depends_on:
@@ -118,3 +114,4 @@ volumes:
     driver: local
   uploads:
     driver: local
+
