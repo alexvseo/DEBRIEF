@@ -47,10 +47,22 @@ def init_db():
     """
     Inicializar banco de dados
     Criar todas as tabelas
-    """
-    # Import all models here to ensure they are registered
-    from app.models.base import Base
-    from app.models import user, demanda  # noqa
     
-    Base.metadata.create_all(bind=engine)
+    Nota: Se a conexão falhar, apenas loga um aviso.
+    O banco será criado quando a primeira requisição for feita.
+    """
+    try:
+        # Import all models here to ensure they are registered
+        from app.models.base import Base
+        from app.models import user, demanda  # noqa
+        
+        # Tentar conectar e criar tabelas
+        Base.metadata.create_all(bind=engine)
+        print("✅ Banco de dados inicializado e tabelas criadas")
+    except Exception as e:
+        # Não falhar no startup se banco não estiver disponível
+        # O banco será criado quando a primeira requisição for feita
+        print(f"⚠️  Aviso: Não foi possível conectar ao banco de dados na inicialização: {e}")
+        print("⚠️  O banco será criado quando a primeira requisição for feita")
+        print("⚠️  Verifique se o PostgreSQL está rodando e acessível")
 

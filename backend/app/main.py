@@ -48,9 +48,12 @@ async def startup_event():
     print(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION} iniciando...")
     print(f"📝 Documentação: http://{settings.HOST}:{settings.PORT}/api/docs")
     
-    # Inicializar banco de dados
-    init_db()
-    print("✅ Banco de dados inicializado")
+    # Inicializar banco de dados (não falha se banco não estiver disponível)
+    try:
+        init_db()
+    except Exception as e:
+        print(f"⚠️  Aviso na inicialização do banco: {e}")
+        print("⚠️  A aplicação continuará, mas funcionalidades do banco podem não estar disponíveis")
 
 
 @app.on_event("shutdown")
