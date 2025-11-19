@@ -15,10 +15,9 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      # Banco de Dados
-      # Tentar localhost primeiro (se PostgreSQL estiver no mesmo servidor)
-      # Se não funcionar, use host.docker.internal ou configure network_mode: host
-      - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@localhost:5432/dbrief
+      # Banco de Dados - usar postgres em vez de root
+      # Testar primeiro com: ./testar-usuario-postgres.sh
+      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief
       
       # JWT
       - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}

@@ -16,8 +16,9 @@ services:
     # Usar rede do host - permite acessar localhost diretamente
     network_mode: host
     environment:
-      # Banco de Dados - usar localhost já que está na rede do host
-      - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@localhost:5432/dbrief
+      # Banco de Dados - usar postgres em vez de root
+      # Testar primeiro com: ./testar-usuario-postgres.sh
+      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief
       
       # JWT
       - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}
