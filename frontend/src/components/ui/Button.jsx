@@ -3,7 +3,7 @@
  * Baseado no padrão shadcn/ui com múltiplas variantes e tamanhos
  */
 import React from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils.js'
 
 /**
  * Botão flexível com suporte a variantes, tamanhos e estados

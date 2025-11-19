@@ -3,7 +3,7 @@
  * Alertas e notificações com ícones e variantes
  */
 import React from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils.js'
 import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react'
 
 /**

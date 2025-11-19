@@ -3,7 +3,7 @@
  * Etiquetas/tags coloridas para status, categorias, etc.
  */
 import React from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils.js'
 
 /**
  * Badge para exibir status, tags, categorias
