@@ -20,7 +20,7 @@ services:
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
       
       # CORS
-      - FRONTEND_URL=http://localhost:3000
+      - FRONTEND_URL=http://82.25.92.217:2022
       
       # Trello (opcional)
       - TRELLO_API_KEY=${TRELLO_API_KEY:-}
@@ -59,7 +59,7 @@ services:
     container_name: debrief-frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "2022:80"
     depends_on:
       - backend
     networks:

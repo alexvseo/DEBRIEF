@@ -132,7 +132,7 @@ echo "- SECRET_KEY=$SECRET_KEY"
 if [ ! -z "$ENCRYPTION_KEY" ]; then
     echo "- ENCRYPTION_KEY=$ENCRYPTION_KEY"
 fi
-echo "- FRONTEND_URL=http://SEU-IP-OU-DOMINIO:3000"
+echo "- FRONTEND_URL=http://82.25.92.217:2022"
 echo ""
 read -p "Pressione ENTER quando tiver configurado o .env..."
 
@@ -181,7 +181,7 @@ echo ""
 SERVER_IP=$(hostname -I | awk '{print $1}')
 
 print_info "Acesse a aplicação em:"
-echo "  - Frontend: http://$SERVER_IP:3000"
+echo "  - Frontend: http://$SERVER_IP:2022"
 echo "  - Backend:  http://$SERVER_IP:8000"
 echo "  - Docs:     http://$SERVER_IP:8000/docs"
 echo ""

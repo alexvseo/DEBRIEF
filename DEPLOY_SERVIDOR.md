@@ -77,7 +77,7 @@ ENCRYPTION_KEY=<GERAR-NOVA-CHAVE>
 
 # ==================== CORS ====================
 # Ajustar para seu domínio ou IP
-FRONTEND_URL=http://82.25.92.217:3000
+FRONTEND_URL=http://82.25.92.217:2022
 ```
 
 **Gerar chaves de segurança:**
@@ -134,14 +134,14 @@ docker-compose exec backend python init_db.py
 ufw allow 22/tcp    # SSH
 ufw allow 80/tcp    # HTTP
 ufw allow 443/tcp   # HTTPS
-ufw allow 3000/tcp  # Frontend (temporário)
+ufw allow 2022/tcp  # Frontend (temporário)
 ufw allow 8000/tcp  # Backend (temporário)
 ufw enable
 ```
 
 ### 9️⃣ Acessar Aplicação
 
-- **Frontend:** http://82.25.92.217:3000
+- **Frontend:** http://82.25.92.217:2022
 - **Backend API:** http://82.25.92.217:8000
 - **Docs:** http://82.25.92.217:8000/docs
 
@@ -315,7 +315,7 @@ docker-compose exec backend env | grep DATABASE
 
 ```bash
 # Ver processos usando portas
-lsof -i :3000
+lsof -i :2022
 lsof -i :8000
 
 # Matar processo
@@ -404,7 +404,7 @@ server {
     server_name seudominio.com;
 
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:2022;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -565,7 +565,7 @@ Docs:     http://82.25.92.217:8000/docs
 ## 🎉 Pronto!
 
 Seu sistema estará rodando em:
-- **Frontend:** http://82.25.92.217:3000
+- **Frontend:** http://82.25.92.217:2022
 - **Backend:** http://82.25.92.217:8000
 
 Para acessar de qualquer lugar, use o IP do servidor ou configure um domínio!

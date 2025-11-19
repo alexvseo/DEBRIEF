@@ -39,7 +39,7 @@ python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().
 # Colar as chaves geradas no .env:
 SECRET_KEY=<cole-aqui>
 ENCRYPTION_KEY=<cole-aqui>
-FRONTEND_URL=http://82.25.92.217:3000
+FRONTEND_URL=http://82.25.92.217:2022
 ```
 
 ### 3️⃣ Deploy
@@ -62,7 +62,7 @@ docker-compose logs -f
 
 ### 4️⃣ Acessar
 
-- **Frontend:** http://82.25.92.217:3000
+- **Frontend:** http://82.25.92.217:2022
 - **Backend:** http://82.25.92.217:8000/docs
 - **Login:** admin / admin123
 
