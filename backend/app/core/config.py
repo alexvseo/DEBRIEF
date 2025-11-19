@@ -22,7 +22,9 @@ class Settings(BaseSettings):
     PORT: int = 8000
     
     # Banco de Dados PostgreSQL
-    DATABASE_URL: str = "postgresql://debrief:debrief123@localhost:5432/debrief"
+    # URL padrão aponta para o servidor remoto
+    # Para desenvolvimento local, sobrescreva no .env
+    DATABASE_URL: str = "postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief"
     DATABASE_ECHO: bool = False  # SQL logs
     
     # JWT
