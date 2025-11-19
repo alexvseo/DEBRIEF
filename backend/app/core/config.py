@@ -3,7 +3,8 @@ Configurações da aplicação
 Gerencia variáveis de ambiente e configurações globais
 """
 from pydantic_settings import BaseSettings
-from typing import Optional
+from pydantic import field_validator
+from typing import Optional, Union
 
 
 class Settings(BaseSettings):
@@ -89,7 +90,16 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     FRONTEND_URL: str = "http://localhost:5173"
     MAX_UPLOAD_SIZE: int = 52428800  # 50MB
-    ALLOWED_EXTENSIONS: list[str] = ["pdf", "jpg", "jpeg", "png"]
+    ALLOWED_EXTENSIONS: Union[str, list[str]] = ["pdf", "jpg", "jpeg", "png"]
+    
+    @field_validator('ALLOWED_EXTENSIONS', mode='before')
+    @classmethod
+    def parse_allowed_extensions(cls, v):
+        """Converter string separada por vírgulas em lista"""
+        if isinstance(v, str):
+            # Remover espaços e dividir por vírgula
+            return [ext.strip() for ext in v.split(',') if ext.strip()]
+        return v
     
     class Config:
         env_file = ".env"

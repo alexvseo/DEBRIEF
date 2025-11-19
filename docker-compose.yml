@@ -39,6 +39,7 @@ services:
       # Ambiente
       - ENVIRONMENT=production
       - MAX_UPLOAD_SIZE=52428800
+      - ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png
     volumes:
       - ./backend/uploads:/app/uploads
       - ./backend:/app
