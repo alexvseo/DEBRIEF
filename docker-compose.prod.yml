@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: debrief-backend:latest
+    container_name: debrief-backend
+    restart: unless-stopped
+    ports:
+      - "2025:8000"  # Porta externa 2025, interna 8000
+    environment:
+      # Banco de Dados Remoto
+      - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+      
+      # JWT
+      - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      
+      # CORS
+      - FRONTEND_URL=http://82.25.92.217:2022
+      
+      # Trello (opcional)
+      - TRELLO_API_KEY=${TRELLO_API_KEY:-}
+      - TRELLO_TOKEN=${TRELLO_TOKEN:-}
+      - TRELLO_BOARD_ID=${TRELLO_BOARD_ID:-}
+      - TRELLO_LIST_ID=${TRELLO_LIST_ID:-}
+      
+      # WhatsApp (opcional)
+      - WPP_URL=${WPP_URL:-}
+      - WPP_INSTANCE=${WPP_INSTANCE:-}
+      - WPP_TOKEN=${WPP_TOKEN:-}
+      
+      # Criptografia
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-}
+      
+      # Ambiente
+      - ENVIRONMENT=production
+      - MAX_UPLOAD_SIZE=52428800
+      - ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png
+    volumes:
+      # Apenas uploads - código vem do build (produção)
+      - ./backend/uploads:/app/uploads
+      # NÃO montar código fonte em produção para evitar conflitos
+      # - ./backend:/app
+    networks:
+      - debrief-network
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=/api
+    image: debrief-frontend:latest
+    container_name: debrief-frontend
+    restart: unless-stopped
+    # Não expor porta externa - Caddy faz proxy
+    expose:
+      - "80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - debrief-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Caddy - Proxy Reverso
+  caddy:
+    image: caddy:2
+    container_name: debrief-caddy
+    restart: unless-stopped
+    ports:
+      - "2022:80"  # Porta externa 2022
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - debrief-network
+    healthcheck:
+      test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  debrief-network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+  uploads:
+    driver: local
+
