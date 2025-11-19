@@ -89,14 +89,15 @@ export const authService = {
     
     // Código real da API (quando backend estiver pronto)
     try {
-      // FastAPI OAuth2 espera FormData
-      const formData = new FormData()
-      formData.append('username', username)
-      formData.append('password', password)
+      // FastAPI OAuth2PasswordRequestForm espera application/x-www-form-urlencoded
+      // Usar URLSearchParams ao invés de FormData
+      const params = new URLSearchParams()
+      params.append('username', username)
+      params.append('password', password)
       
-      const response = await api.post('/auth/login', formData, {
+      const response = await api.post('/auth/login', params.toString(), {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
       })
       
