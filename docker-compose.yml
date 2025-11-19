@@ -11,9 +11,13 @@ services:
     restart: unless-stopped
     ports:
       - "2025:8000"  # Porta externa 2025, interna 8000
+    # Permitir container acessar serviços do host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       # Banco de Dados Remoto
-      - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+      # Usar host.docker.internal para acessar serviços do host
+      - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@host.docker.internal:5432/dbrief
       
       # JWT
       - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}
