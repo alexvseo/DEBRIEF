@@ -34,9 +34,11 @@ class TipoUsuario(str, enum.Enum):
              - Pode criar e gerenciar suas próprias demandas
              - Pode ver apenas dados do seu cliente
              - Acesso restrito às suas secretarias
+    
+    Nota: Valores minúsculos ('master', 'cliente') para compatibilidade com banco
     """
-    MASTER = "master"
-    CLIENTE = "cliente"
+    MASTER = "master"  # Minúsculo para compatibilidade com banco
+    CLIENTE = "cliente"  # Minúsculo para compatibilidade com banco
 
 
 class User(BaseModel):
