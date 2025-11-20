@@ -142,7 +142,7 @@ const Configuracoes = () => {
   
   const carregarSecretarias = async () => {
     try {
-      const response = await api.get('/api/secretarias/')
+      const response = await api.get('/secretarias/')
       setSecretarias(response.data)
     } catch (error) {
       console.error('Erro ao carregar secretarias:', error)
@@ -151,7 +151,7 @@ const Configuracoes = () => {
   
   const carregarTiposDemanda = async () => {
     try {
-      const response = await api.get('/api/tipos-demanda/')
+      const response = await api.get('/tipos-demanda/')
       setTiposDemanda(response.data)
     } catch (error) {
       console.error('Erro ao carregar tipos:', error)
@@ -160,7 +160,7 @@ const Configuracoes = () => {
   
   const carregarPrioridades = async () => {
     try {
-      const response = await api.get('/api/prioridades/')
+      const response = await api.get('/prioridades/')
       setPrioridades(response.data)
     } catch (error) {
       console.error('Erro ao carregar prioridades:', error)
@@ -330,10 +330,10 @@ const Configuracoes = () => {
   const salvarSecretaria = async (dados) => {
     try {
       if (modalSecretaria.item) {
-        await api.put(`/api/secretarias/${modalSecretaria.item.id}`, dados)
+        await api.put(`/secretarias/${modalSecretaria.item.id}`, dados)
         setSuccessMessage('✅ Secretaria atualizada com sucesso!')
       } else {
-        await api.post('/api/secretarias/', dados)
+        await api.post('/secretarias/', dados)
         setSuccessMessage('✅ Secretaria criada com sucesso!')
       }
       
@@ -386,10 +386,10 @@ const Configuracoes = () => {
   const toggleTipoDemanda = async (tipo) => {
     try {
       if (tipo.ativo) {
-        await api.delete(`/api/tipos-demanda/${tipo.id}`)
+        await api.delete(`/tipos-demanda/${tipo.id}`)
         setSuccessMessage('✅ Tipo desativado com sucesso!')
       } else {
-        await api.post(`/api/tipos-demanda/${tipo.id}/reativar`)
+        await api.post(`/tipos-demanda/${tipo.id}/reativar`)
         setSuccessMessage('✅ Tipo reativado com sucesso!')
       }
       await carregarTiposDemanda()
