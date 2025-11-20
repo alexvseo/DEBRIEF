@@ -229,7 +229,7 @@ const Configuracoes = () => {
     try {
       setSalvando(true)
       
-      await api.put(`/api/configuracoes/${config.id}`, {
+      await api.put(`/configuracoes/${config.id}`, {
         valor: valores[config.chave],
         is_sensivel: config.is_sensivel
       })
@@ -314,7 +314,7 @@ const Configuracoes = () => {
       }
       
       if (modalCliente.item) {
-        await api.put(`/api/clientes/${modalCliente.item.id}`, dadosLimpos)
+        await api.put(`/clientes/${modalCliente.item.id}`, dadosLimpos)
         setSuccessMessage('✅ Cliente atualizado com sucesso!')
       } else {
         // Criar novo cliente
@@ -379,7 +379,7 @@ const Configuracoes = () => {
     try {
       // Primeiro desativar, depois deletar permanentemente (se o endpoint existir)
       // Por enquanto, apenas desativar
-      await api.delete(`/api/clientes/${cliente.id}`)
+      await api.delete(`/clientes/${cliente.id}`)
       setSuccessMessage('✅ Cliente deletado com sucesso!')
       await carregarClientes()
       setTimeout(() => setSuccessMessage(''), 3000)
@@ -513,7 +513,7 @@ const Configuracoes = () => {
         await api.delete(`/tipos-demanda/${tipo.id}`)
         setSuccessMessage('✅ Tipo desativado com sucesso!')
       } else {
-        await api.post(`/api/tipos-demanda/${tipo.id}/reativar`)
+        await api.post(`/tipos-demanda/${tipo.id}/reativar`)
         setSuccessMessage('✅ Tipo reativado com sucesso!')
       }
       await carregarTiposDemanda()
@@ -550,7 +550,7 @@ const Configuracoes = () => {
         await api.delete(`/prioridades/${prioridade.id}`)
         setSuccessMessage('✅ Prioridade desativada com sucesso!')
       } else {
-        await api.post(`/api/prioridades/${prioridade.id}/reativar`)
+        await api.post(`/prioridades/${prioridade.id}/reativar`)
         setSuccessMessage('✅ Prioridade reativada com sucesso!')
       }
       await carregarPrioridades()
