@@ -61,7 +61,7 @@ class Configuracao(BaseModel):
     )
     
     tipo = Column(
-        Enum(TipoConfiguracao),
+        Enum(TipoConfiguracao, native_enum=False),
         nullable=False,
         default=TipoConfiguracao.SISTEMA,
         index=True,
