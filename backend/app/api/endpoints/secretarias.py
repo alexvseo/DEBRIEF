@@ -267,6 +267,51 @@ def atualizar_secretaria(
     return secretaria
 
 
+@router.delete("/{secretaria_id}/permanente", status_code=status.HTTP_204_NO_CONTENT)
+def deletar_secretaria_permanente(
+    secretaria_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_master)
+):
+    """
+    Deleta uma secretaria permanentemente do banco (hard delete)
+    
+    **Permissão:** Master apenas
+    
+    **Atenção:**
+    - Esta ação é IRREVERSÍVEL
+    - Secretaria será removida permanentemente do banco
+    - Demandas vinculadas serão preservadas (secretaria_id ficará NULL)
+    - Use com cuidado!
+    
+    **Não pode deletar se:**
+    - Houver demandas vinculadas
+    """
+    # Buscar secretaria
+    secretaria = db.query(Secretaria).filter(Secretaria.id == secretaria_id).first()
+    
+    if not secretaria:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Secretaria ID {secretaria_id} não encontrada"
+        )
+    
+    # Verificar se tem demandas vinculadas
+    total_demandas = db.query(Demanda).filter(Demanda.secretaria_id == secretaria_id).count()
+    
+    if total_demandas > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Não é possível deletar. Secretaria possui {total_demandas} demanda(s) vinculada(s). Desative a secretaria em vez de deletá-la."
+        )
+    
+    # Deletar permanentemente
+    db.delete(secretaria)
+    db.commit()
+    
+    return None
+
+
 @router.delete("/{secretaria_id}", status_code=status.HTTP_204_NO_CONTENT)
 def desativar_secretaria(
     secretaria_id: str,
