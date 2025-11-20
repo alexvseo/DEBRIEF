@@ -138,6 +138,10 @@ def criar_usuario(
             detail="cliente_id é obrigatório para usuários do tipo 'cliente'"
         )
     
+    # Se tipo for master, garantir que cliente_id seja None
+    if user_data.tipo == TipoUsuario.MASTER:
+        user_data.cliente_id = None
+    
     # Criar novo usuário
     new_user = User(
         username=user_data.username,
@@ -199,6 +203,18 @@ def atualizar_usuario(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email já cadastrado"
+            )
+    
+    # Se tipo for master, garantir que cliente_id seja None
+    if 'tipo' in update_data and update_data['tipo'] == TipoUsuario.MASTER:
+        update_data['cliente_id'] = None
+    
+    # Validar cliente_id se tipo for cliente
+    if 'tipo' in update_data and update_data['tipo'] == TipoUsuario.CLIENTE:
+        if not update_data.get('cliente_id'):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="cliente_id é obrigatório para usuários do tipo 'cliente'"
             )
     
     for field, value in update_data.items():

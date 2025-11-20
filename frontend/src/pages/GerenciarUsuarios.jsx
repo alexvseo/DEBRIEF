@@ -488,12 +488,25 @@ const ModalUsuario = ({ open, item, clientes, onClose, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     
+    // Preparar dados para envio
+    let dadosParaEnvio = { ...form }
+    
+    // Se tipo for master, não enviar cliente_id
+    if (dadosParaEnvio.tipo === 'master') {
+      dadosParaEnvio.cliente_id = null
+    }
+    
+    // Se cliente_id estiver vazio, enviar null
+    if (!dadosParaEnvio.cliente_id || dadosParaEnvio.cliente_id === '') {
+      dadosParaEnvio.cliente_id = null
+    }
+    
     // Se for edição, não enviar senha se estiver vazia
     if (item && !form.password) {
-      const { password, ...dadosSemSenha } = form
+      const { password, ...dadosSemSenha } = dadosParaEnvio
       onSave(dadosSemSenha)
     } else {
-      onSave(form)
+      onSave(dadosParaEnvio)
     }
   }
   
@@ -554,7 +567,15 @@ const ModalUsuario = ({ open, item, clientes, onClose, onSave }) => {
                 <select
                   required
                   value={form.tipo}
-                  onChange={(e) => setForm(prev => ({ ...prev, tipo: e.target.value }))}
+                  onChange={(e) => {
+                    const novoTipo = e.target.value
+                    setForm(prev => ({ 
+                      ...prev, 
+                      tipo: novoTipo,
+                      // Limpar cliente_id se mudar para master
+                      cliente_id: novoTipo === 'master' ? '' : prev.cliente_id
+                    }))
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="master">Master (Administrador)</option>
