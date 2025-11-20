@@ -189,21 +189,17 @@ def criar_secretaria(
     
     # Verificar se já existe secretaria ATIVA com esse nome no mesmo cliente
     # Permitir criar secretaria com mesmo nome se a anterior estiver inativa
-    # Buscar todas as secretarias com esse nome (para debug)
-    todas_secretarias = db.query(Secretaria).filter(
+    # Usar comparação case-insensitive (ilike) e verificar apenas ATIVAS
+    existe = db.query(Secretaria).filter(
         Secretaria.cliente_id == secretaria_data.cliente_id,
-        Secretaria.nome.ilike(secretaria_data.nome)
-    ).all()
+        Secretaria.nome.ilike(secretaria_data.nome.strip()),  # Trim e case-insensitive
+        Secretaria.ativo == True  # Apenas verificar secretarias ATIVAS
+    ).first()
     
-    # Verificar se há alguma ATIVA
-    existe_ativa = any(s.ativo for s in todas_secretarias)
-    
-    if existe_ativa:
-        # Buscar a secretaria ativa para mostrar detalhes no erro
-        secretaria_ativa = next((s for s in todas_secretarias if s.ativo), None)
+    if existe:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Secretaria '{secretaria_data.nome}' já existe para este cliente (ID: {secretaria_ativa.id if secretaria_ativa else 'N/A'}, Status: Ativa)"
+            detail=f"Secretaria '{secretaria_data.nome}' já existe para este cliente (ID: {existe.id}, Status: Ativa)"
         )
     
     # Criar secretaria
