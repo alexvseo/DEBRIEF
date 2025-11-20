@@ -22,7 +22,7 @@ router = APIRouter()
 @router.get("/", response_model=List[SecretariaResponseComplete])
 def listar_secretarias(
     skip: int = Query(0, ge=0, description="Registros a pular"),
-    limit: int = Query(100, ge=1, le=100, description="Limite de registros"),
+    limit: int = Query(1000, ge=1, le=10000, description="Limite de registros"),
     cliente_id: Optional[str] = Query(None, description="Filtrar por cliente"),
     apenas_ativas: bool = Query(True, description="Apenas secretarias ativas"),
     busca: Optional[str] = Query(None, description="Buscar por nome"),

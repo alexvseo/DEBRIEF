@@ -153,7 +153,9 @@ const Configuracoes = () => {
       // Carregar todas as secretarias (ativas e inativas) para gerenciamento
       const response = await api.get('/api/secretarias/', {
         params: {
-          apenas_ativas: false  // Mostrar todas para gerenciamento
+          apenas_ativas: false,  // Mostrar todas para gerenciamento
+          skip: 0,
+          limit: 10000  // Aumentar limite para garantir que todas sejam carregadas
         }
       })
       setSecretarias(response.data || [])
