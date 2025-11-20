@@ -87,11 +87,8 @@ services:
     image: caddy:2
     container_name: debrief-caddy
     restart: unless-stopped
-    ports:
-      - "2022:80"  # Porta externa 2022
-    # Permitir Caddy acessar serviços do host
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # Usar network_mode: host para acessar backend em localhost:8000
+    network_mode: host
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -99,8 +96,7 @@ services:
     depends_on:
       - frontend
       - backend
-    networks:
-      - debrief-network
+    # Não precisa de networks com network_mode: host
     healthcheck:
       test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile"]
       interval: 30s
