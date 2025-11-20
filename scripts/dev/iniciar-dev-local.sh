@@ -40,6 +40,42 @@ if [ ! -f "docker-compose.dev.yml" ]; then
     exit 1
 fi
 
+# Criar arquivos .env.dev se não existirem
+if [ ! -f "backend/.env.dev" ]; then
+    print_info "Criando backend/.env.dev a partir do exemplo..."
+    if [ -f "backend/.env.dev.example" ]; then
+        cp backend/.env.dev.example backend/.env.dev
+        print_success "backend/.env.dev criado"
+    else
+        print_warning "backend/.env.dev.example não encontrado. Criando arquivo básico..."
+        cat > backend/.env.dev << 'EOF'
+DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+SECRET_KEY=dev-secret-key-local-change-me
+FRONTEND_URL=http://localhost:5173
+ENVIRONMENT=development
+DEBUG=True
+EOF
+        print_success "backend/.env.dev criado com configurações básicas"
+    fi
+fi
+
+if [ ! -f "frontend/.env.dev" ]; then
+    print_info "Criando frontend/.env.dev a partir do exemplo..."
+    if [ -f "frontend/.env.dev.example" ]; then
+        cp frontend/.env.dev.example frontend/.env.dev
+        print_success "frontend/.env.dev criado"
+    else
+        print_warning "frontend/.env.dev.example não encontrado. Criando arquivo básico..."
+        cat > frontend/.env.dev << 'EOF'
+VITE_API_URL=http://localhost:8000/api
+VITE_ENV=development
+VITE_DEBUG_MODE=true
+EOF
+        print_success "frontend/.env.dev criado com configurações básicas"
+    fi
+fi
+echo ""
+
 # 1. Verificar conexão com banco remoto
 print_info "1️⃣  Verificando conexão com banco de dados remoto..."
 if [ -f "scripts/dev/testar-conexao-banco-remoto.sh" ]; then
