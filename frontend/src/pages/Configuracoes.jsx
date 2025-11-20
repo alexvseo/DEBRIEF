@@ -329,11 +329,24 @@ const Configuracoes = () => {
   // SECRETARIAS
   const salvarSecretaria = async (dados) => {
     try {
+      // Validar que cliente_id foi selecionado
+      if (!dados.cliente_id || dados.cliente_id.trim() === '') {
+        alert('Por favor, selecione um cliente')
+        return
+      }
+
+      // Limpar dados antes de enviar
+      const dadosLimpos = {
+        nome: dados.nome.trim(),
+        cliente_id: dados.cliente_id.trim(),
+        ativo: dados.ativo !== undefined ? dados.ativo : true
+      }
+
       if (modalSecretaria.item) {
-        await api.put(`/secretarias/${modalSecretaria.item.id}`, dados)
+        await api.put(`/secretarias/${modalSecretaria.item.id}`, dadosLimpos)
         setSuccessMessage('✅ Secretaria atualizada com sucesso!')
       } else {
-        await api.post('/secretarias/', dados)
+        await api.post('/secretarias/', dadosLimpos)
         setSuccessMessage('✅ Secretaria criada com sucesso!')
       }
       
@@ -342,7 +355,29 @@ const Configuracoes = () => {
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
       console.error('Erro ao salvar secretaria:', error)
-      alert('Erro ao salvar secretaria')
+      console.error('Dados enviados:', dados)
+      console.error('Resposta do servidor:', error.response?.data)
+      
+      // Extrair mensagem de erro detalhada
+      let errorMessage = 'Erro ao salvar secretaria'
+      
+      if (error.response?.data) {
+        // Se for array de erros de validação (422)
+        if (Array.isArray(error.response.data.detail)) {
+          const errors = error.response.data.detail.map(err => {
+            const field = err.loc?.join('.') || 'campo'
+            return `${field}: ${err.msg}`
+          }).join('\n')
+          errorMessage = `Erros de validação:\n${errors}`
+        } else {
+          // Mensagem única
+          errorMessage = error.response.data.detail || error.response.data.message || errorMessage
+        }
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      alert(`Erro ao salvar secretaria:\n\n${errorMessage}\n\nVerifique o console para mais detalhes.`)
     }
   }
   
