@@ -816,6 +816,12 @@ const Configuracoes = () => {
           </CardHeader>
           
           <CardContent>
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                Carregando secretarias...
+              </div>
+            ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
