@@ -53,6 +53,8 @@ def listar_configuracoes(
     ]
 
 
+# IMPORTANTE: Rotas específicas devem vir ANTES de rotas com parâmetros
+# /agrupadas deve vir antes de /{configuracao_id} para evitar conflito
 @router.get("/agrupadas", response_model=List[ConfiguracaoPorTipo])
 def listar_configuracoes_agrupadas(
     db: Session = Depends(get_db),
@@ -82,6 +84,29 @@ def listar_configuracoes_agrupadas(
             )
     
     return agrupadas
+
+
+# Rotas com parâmetros devem vir DEPOIS de rotas específicas
+@router.get("/chave/{chave}", response_model=ConfiguracaoResponse)
+def buscar_configuracao_por_chave(
+    chave: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_master)
+):
+    """
+    Buscar configuração por chave
+    
+    **Permissão:** Apenas Master
+    """
+    config = Configuracao.get_by_chave(db, chave)
+    
+    if not config:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Configuração '{chave}' não encontrada"
+        )
+    
+    return ConfiguracaoResponse(**config.to_dict(include_valor=True))
 
 
 @router.get("/{configuracao_id}", response_model=ConfiguracaoResponse)
