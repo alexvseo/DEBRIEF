@@ -20,36 +20,6 @@ from app.models.base import BaseModel
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-class TipoUsuarioType(TypeDecorator):
-    """
-    TypeDecorator para converter entre enum Python e string do banco
-    Permite usar TipoUsuario.MASTER no código, mas armazena 'master' no banco
-    """
-    impl = String
-    cache_ok = True
-    
-    def __init__(self):
-        super().__init__(length=20)
-    
-    def process_bind_param(self, value, dialect):
-        """Converter enum Python para string do banco"""
-        if value is None:
-            return None
-        if isinstance(value, TipoUsuario):
-            return value.value  # Retorna 'master' ou 'cliente'
-        return str(value)
-    
-    def process_result_value(self, value, dialect):
-        """Converter string do banco para enum Python"""
-        if value is None:
-            return None
-        # Buscar enum pelo valor
-        for tipo in TipoUsuario:
-            if tipo.value == value:
-                return tipo
-        return value  # Retornar string se não encontrar
-
-
 class TipoUsuario(str, enum.Enum):
     """
     Enum para tipos de usuário no sistema
