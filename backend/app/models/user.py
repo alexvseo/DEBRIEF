@@ -10,7 +10,7 @@ Responsável por:
 """
 import enum
 from typing import Optional, List
-from sqlalchemy import Column, String, Boolean, Enum, ForeignKey, Index
+from sqlalchemy import Column, String, Boolean, Enum as SQLEnum, ForeignKey, Index, TypeDecorator
 from sqlalchemy.orm import relationship, validates
 from passlib.context import CryptContext
 from app.models.base import BaseModel
@@ -18,6 +18,36 @@ from app.models.base import BaseModel
 # Configurar contexto de criptografia para senhas
 # bcrypt é considerado seguro e resistente a ataques de força bruta
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+class TipoUsuarioType(TypeDecorator):
+    """
+    TypeDecorator para converter entre enum Python e string do banco
+    Permite usar TipoUsuario.MASTER no código, mas armazena 'master' no banco
+    """
+    impl = String
+    cache_ok = True
+    
+    def __init__(self):
+        super().__init__(length=20)
+    
+    def process_bind_param(self, value, dialect):
+        """Converter enum Python para string do banco"""
+        if value is None:
+            return None
+        if isinstance(value, TipoUsuario):
+            return value.value  # Retorna 'master' ou 'cliente'
+        return str(value)
+    
+    def process_result_value(self, value, dialect):
+        """Converter string do banco para enum Python"""
+        if value is None:
+            return None
+        # Buscar enum pelo valor
+        for tipo in TipoUsuario:
+            if tipo.value == value:
+                return tipo
+        return value  # Retornar string se não encontrar
 
 
 class TipoUsuario(str, enum.Enum):
@@ -95,7 +125,7 @@ class User(BaseModel):
     # ==================== TIPO E PERMISSÕES ====================
     
     tipo = Column(
-        Enum(TipoUsuario),
+        TipoUsuarioType(),
         nullable=False,
         default=TipoUsuario.CLIENTE,
         index=True,
