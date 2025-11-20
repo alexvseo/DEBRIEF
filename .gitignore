@@ -192,3 +192,8 @@ temp/
 *.swp
 *.swo
 
+# ==================== DOCUMENTAÇÃO ====================
+# Documentação é versionada no GitHub mas não vai para o servidor
+# (controlado via .dockerignore)
+# docs/ está no Git, mas não no Docker
+

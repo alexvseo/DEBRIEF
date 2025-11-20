@@ -89,8 +89,12 @@ DEBRIEF/
 │   └── package.json
 │
 ├── docker-compose.yml     # Orquestração Docker
-├── docker-deploy.sh       # Script de deploy
-└── docs/                  # Documentação (30+ arquivos .md)
+├── scripts/               # Scripts auxiliares organizados
+│   ├── deploy/           # Scripts de deploy
+│   ├── diagnostico/      # Scripts de diagnóstico
+│   ├── correcao/         # Scripts de correção
+│   └── configuracao/     # Scripts de configuração
+└── docs/                  # Documentação (60+ arquivos .md)
 ```
 
 ---
@@ -276,16 +280,20 @@ alembic downgrade -1
 
 ## 📚 Documentação
 
-### Guias Principais
-- 📖 **[DOCKER_README.md](DOCKER_README.md)** - Guia completo Docker
-- 🚀 **[INICIO_RAPIDO_DOCKER.md](INICIO_RAPIDO_DOCKER.md)** - Quick start
-- 🐙 **[GITHUB_SETUP.md](GITHUB_SETUP.md)** - Configurar GitHub
-- 🏗️ **[PROJECT_SPEC.md](PROJECT_SPEC.md)** - Especificação completa
-- 🎨 **[FRONTEND_GUIDE.md](FRONTEND_GUIDE.md)** - Guia frontend
-- 🔧 **[BACKEND_GUIDE.md](BACKEND_GUIDE.md)** - Guia backend
+Toda a documentação está organizada na pasta **[`docs/`](docs/)**.
 
-### Documentação Técnica (30+ arquivos)
-Veja a pasta raiz para documentação detalhada de cada módulo.
+### Guias Principais
+- 📖 **[docs/DOCKER_README.md](docs/DOCKER_README.md)** - Guia completo Docker
+- 🚀 **[docs/INICIO_RAPIDO_DOCKER.md](docs/INICIO_RAPIDO_DOCKER.md)** - Quick start
+- 🐙 **[docs/GITHUB_SETUP.md](docs/GITHUB_SETUP.md)** - Configurar GitHub
+- 🏗️ **[docs/PROJECT_SPEC.md](docs/PROJECT_SPEC.md)** - Especificação completa
+- 🎨 **[docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md)** - Guia frontend
+- 🔧 **[docs/BACKEND_GUIDE.md](docs/BACKEND_GUIDE.md)** - Guia backend
+
+### Índice Completo
+Veja **[docs/README.md](docs/README.md)** para o índice completo de toda a documentação (60+ arquivos).
+
+**Nota:** A documentação é versionada no GitHub mas **não é enviada para o servidor** (via `.dockerignore`).
 
 ---
 
