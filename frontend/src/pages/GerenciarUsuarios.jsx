@@ -119,10 +119,10 @@ const GerenciarUsuarios = () => {
   const salvarUsuario = async (dados) => {
     try {
       if (modalUsuario.item) {
-        await api.put(`/api/usuarios/${modalUsuario.item.id}`, dados)
+        await api.put(`/usuarios/${modalUsuario.item.id}`, dados)
         setSuccessMessage('✅ Usuário atualizado com sucesso!')
       } else {
-        await api.post('/api/usuarios/', dados)
+        await api.post('/usuarios/', dados)
         setSuccessMessage('✅ Usuário criado com sucesso!')
       }
       

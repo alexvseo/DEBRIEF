@@ -118,7 +118,7 @@ const GerenciarPrioridades = () => {
     try {
       if (editingPrioridade) {
         // Atualizar prioridade
-        await api.put(`/api/prioridades/${editingPrioridade.id}`, data)
+        await api.put(`/prioridades/${editingPrioridade.id}`, data)
         toast.success("Prioridade atualizada com sucesso!")
         setSuccessMessage("Prioridade atualizada com sucesso!")
       } else {
