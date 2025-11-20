@@ -26,8 +26,8 @@ router = APIRouter()
 @router.get("/demandas/estatisticas")
 async def get_demandas_estatisticas(
     cliente_id: Optional[str] = Query(None, description="Filtrar por cliente"),
-    secretaria_id: Optional[str] = Query(None, description="Filtrar por secretaria"),
-    tipo_demanda_id: Optional[str] = Query(None, description="Filtrar por tipo"),
+    secretaria_id: Optional[List[str]] = Query(None, description="Filtrar por secretaria (múltipla escolha)"),
+    tipo_demanda_id: Optional[List[str]] = Query(None, description="Filtrar por tipo (múltipla escolha)"),
     data_inicio: Optional[str] = Query(None, description="Data início (YYYY-MM-DD)"),
     data_fim: Optional[str] = Query(None, description="Data fim (YYYY-MM-DD)"),
     current_user: User = Depends(get_current_user),
@@ -60,10 +60,10 @@ async def get_demandas_estatisticas(
         query = query.join(Secretaria).filter(Secretaria.cliente_id == cliente_id)
     
     if secretaria_id:
-        query = query.filter(Demanda.secretaria_id == secretaria_id)
+        query = query.filter(Demanda.secretaria_id.in_(secretaria_id))
     
     if tipo_demanda_id:
-        query = query.filter(Demanda.tipo_demanda_id == tipo_demanda_id)
+        query = query.filter(Demanda.tipo_demanda_id.in_(tipo_demanda_id))
     
     if data_inicio:
         try:
