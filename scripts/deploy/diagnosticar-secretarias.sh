@@ -34,18 +34,56 @@ finally:
 " 2>&1
 echo ""
 
-echo "2️⃣  Testando endpoint diretamente no backend (apenas_ativas=false)..."
+echo "2️⃣  Obtendo token de autenticação..."
 echo ""
-# Obter token (se disponível)
+# Tentar fazer login para obter token
+LOGIN_RESPONSE=$(curl -s -X POST "http://localhost:8000/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' 2>&1)
+
 TOKEN=""
-if [ -f "/tmp/debrief_token.txt" ]; then
-    TOKEN=$(cat /tmp/debrief_token.txt)
+if echo "$LOGIN_RESPONSE" | grep -q "access_token"; then
+    TOKEN=$(echo "$LOGIN_RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin).get('access_token', ''))" 2>/dev/null || echo "")
+fi
+
+if [ -z "$TOKEN" ]; then
+    echo "   ⚠️  Não foi possível obter token. Tentando com usuário do banco..."
+    # Tentar obter usuário master do banco
+    USERNAME=$(docker-compose exec -T backend python -c "
+from app.core.database import SessionLocal
+from app.models import User
+
+db = SessionLocal()
+try:
+    user = db.query(User).filter(User.tipo == 'master').first()
+    if user:
+        print(user.username)
+finally:
+    db.close()
+" 2>/dev/null | head -1)
+    
+    if [ -n "$USERNAME" ]; then
+        echo "   📝 Tentando login com usuário: $USERNAME"
+        LOGIN_RESPONSE=$(curl -s -X POST "http://localhost:8000/api/auth/login" \
+          -H "Content-Type: application/json" \
+          -d "{\"username\":\"$USERNAME\",\"password\":\"admin123\"}" 2>&1)
+        TOKEN=$(echo "$LOGIN_RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin).get('access_token', ''))" 2>/dev/null || echo "")
+    fi
 fi
 
 if [ -n "$TOKEN" ]; then
+    echo "   ✅ Token obtido com sucesso"
+else
+    echo "   ❌ Não foi possível obter token. Testes sem autenticação falharão."
+fi
+echo ""
+
+echo "3️⃣  Testando endpoint diretamente no backend (apenas_ativas=false)..."
+echo ""
+if [ -n "$TOKEN" ]; then
     RESPONSE=$(curl -s -w "\nHTTP_CODE:%{http_code}" -H "Authorization: Bearer $TOKEN" "http://localhost:8000/api/secretarias/?apenas_ativas=false&limit=10000")
 else
-    echo "   ⚠️  Token não encontrado, testando sem autenticação (pode falhar)"
+    echo "   ⚠️  Testando sem autenticação (esperado: 401)"
     RESPONSE=$(curl -s -w "\nHTTP_CODE:%{http_code}" "http://localhost:8000/api/secretarias/?apenas_ativas=false&limit=10000")
 fi
 
@@ -64,7 +102,7 @@ else
 fi
 echo ""
 
-echo "3️⃣  Testando endpoint via Caddy (apenas_ativas=false)..."
+echo "4️⃣  Testando endpoint via Caddy (apenas_ativas=false)..."
 echo ""
 if [ -n "$TOKEN" ]; then
     RESPONSE=$(curl -s -w "\nHTTP_CODE:%{http_code}" -H "Authorization: Bearer $TOKEN" "http://localhost:2022/api/secretarias/?apenas_ativas=false&limit=10000")
@@ -85,9 +123,20 @@ else
 fi
 echo ""
 
-echo "4️⃣  Verificando logs do backend (últimas 20 linhas com 'secretaria')..."
+echo "5️⃣  Verificando logs do backend (últimas 30 linhas com 'secretaria' ou '401')..."
 echo ""
-docker-compose logs backend | grep -i "secretaria" | tail -20 || echo "   Nenhum log encontrado"
+docker-compose logs backend | grep -iE "(secretaria|401|unauthorized)" | tail -30 || echo "   Nenhum log encontrado"
+echo ""
+
+echo "6️⃣  Verificando se o frontend está enviando token corretamente..."
+echo ""
+echo "   💡 Para verificar no navegador:"
+echo "      1. Abra o DevTools (F12)"
+echo "      2. Vá para a aba 'Network'"
+echo "      3. Recarregue a página de Configurações"
+echo "      4. Procure por requisições para '/api/secretarias/'"
+echo "      5. Verifique se o header 'Authorization: Bearer ...' está presente"
+echo "      6. Verifique o status code da resposta"
 echo ""
 
 echo "✅ Diagnóstico concluído"
@@ -96,3 +145,4 @@ echo "💡 Se o endpoint retornar dados mas o frontend não mostrar:"
 echo "   1. Verifique o console do navegador (F12)"
 echo "   2. Verifique se há erros de CORS ou autenticação"
 echo "   3. Verifique se o parâmetro apenas_ativas está sendo enviado corretamente"
+echo "   4. Verifique se o token está sendo enviado no header Authorization"

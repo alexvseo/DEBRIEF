@@ -150,8 +150,24 @@ const Configuracoes = () => {
   
   const carregarSecretarias = async () => {
     try {
-      // Carregar todas as secretarias (ativas e inativas) para gerenciamento
+      // Verificar autenticação antes de fazer a requisição
+      const token = localStorage.getItem('debrief_auth')
+      if (!token) {
+        console.error('❌ Token não encontrado no localStorage')
+        setSecretarias([])
+        return
+      }
+      
+      const authData = JSON.parse(token)
+      if (!authData?.token) {
+        console.error('❌ Token inválido no localStorage')
+        setSecretarias([])
+        return
+      }
+      
       console.log('🔍 Carregando secretarias com apenas_ativas=false, limit=10000')
+      console.log('🔑 Token presente:', authData.token.substring(0, 20) + '...')
+      
       const response = await api.get('/secretarias/', {
         params: {
           apenas_ativas: 'false',  // Enviar como string para garantir compatibilidade com backend
@@ -162,7 +178,6 @@ const Configuracoes = () => {
       
       console.log('✅ Secretarias carregadas:', response.data?.length || 0, 'registros')
       console.log('📋 Primeiras secretarias:', response.data?.slice(0, 3))
-      console.log('📋 Todas as secretarias:', response.data)
       
       if (response.data && Array.isArray(response.data)) {
         setSecretarias(response.data)
@@ -175,23 +190,29 @@ const Configuracoes = () => {
       console.error('❌ Erro ao carregar secretarias:', error)
       console.error('Detalhes do erro:', {
         status: error.response?.status,
+        statusText: error.response?.statusText,
         data: error.response?.data,
         message: error.message,
         url: error.config?.url,
-        params: error.config?.params
+        baseURL: error.config?.baseURL,
+        params: error.config?.params,
+        headers: error.config?.headers
       })
       
       // Se for erro 401, não mostrar alerta (já será tratado pelo interceptor)
-      if (error.response?.status !== 401) {
+      if (error.response?.status === 401) {
+        console.error('❌ Erro 401: Token inválido ou expirado')
+        console.error('   Redirecionando para login...')
+        // O interceptor já vai redirecionar, mas garantir que o estado seja limpo
+        setSecretarias([])
+      } else if (error.response?.status !== 401) {
         // Mostrar erro ao usuário apenas se não for erro de autenticação
         const errorMsg = error.response?.data?.detail || error.message || 'Erro ao carregar secretarias'
         console.error('Erro detalhado:', errorMsg)
         // Mostrar toast de erro
         alert(`Erro ao carregar secretarias:\n\n${errorMsg}\n\nVerifique o console para mais detalhes.`)
+        setSecretarias([])
       }
-      
-      // Sempre definir array vazio em caso de erro para evitar undefined
-      setSecretarias([])
     }
   }
   
