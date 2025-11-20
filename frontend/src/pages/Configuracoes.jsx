@@ -89,7 +89,10 @@ const Configuracoes = () => {
   const carregarTodosDados = async () => {
     try {
       setLoading(true)
-      await Promise.all([
+      
+      // Carregar dados em paralelo, mas com tratamento individual de erros
+      // para que um erro não impeça os outros de carregar
+      await Promise.allSettled([
         carregarConfiguracoes(),
         carregarClientes(),
         carregarSecretarias(),
@@ -142,12 +145,30 @@ const Configuracoes = () => {
   
   const carregarSecretarias = async () => {
     try {
-      const response = await api.get('/api/secretarias/')
-      setSecretarias(response.data)
+      // Carregar todas as secretarias (ativas e inativas) para gerenciamento
+      const response = await api.get('/api/secretarias/', {
+        params: {
+          apenas_ativas: false  // Mostrar todas para gerenciamento
+        }
+      })
+      setSecretarias(response.data || [])
     } catch (error) {
       console.error('Erro ao carregar secretarias:', error)
-      // Mostrar erro ao usuário
-      alert('Erro ao carregar secretarias. Verifique o console para mais detalhes.')
+      console.error('Detalhes do erro:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      })
+      
+      // Se for erro 401, não mostrar alerta (já será tratado pelo interceptor)
+      if (error.response?.status !== 401) {
+        // Mostrar erro ao usuário apenas se não for erro de autenticação
+        const errorMsg = error.response?.data?.detail || error.message || 'Erro ao carregar secretarias'
+        console.error('Erro detalhado:', errorMsg)
+      }
+      
+      // Sempre definir array vazio em caso de erro para evitar undefined
+      setSecretarias([])
     }
   }
   
