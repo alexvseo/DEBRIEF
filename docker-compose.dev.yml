@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI - Desenvolvimento Local
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: debrief-backend:dev
+    container_name: debrief-backend-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # Porta local 8000
+    environment:
+      # Banco de Dados - Conectar ao banco remoto do servidor
+      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+      
+      # JWT
+      - SECRET_KEY=dev-secret-key-local-change-me
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      
+      # CORS - Permitir frontend local
+      - FRONTEND_URL=http://localhost:5173
+      - CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000
+      
+      # Ambiente
+      - ENVIRONMENT=development
+      - DEBUG=True
+      - DATABASE_ECHO=False
+      
+      # Upload
+      - MAX_UPLOAD_SIZE=52428800
+      - ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png
+      
+      # Trello (opcional - usar variáveis do .env se necessário)
+      - TRELLO_API_KEY=${TRELLO_API_KEY:-}
+      - TRELLO_TOKEN=${TRELLO_TOKEN:-}
+      - TRELLO_BOARD_ID=${TRELLO_BOARD_ID:-}
+      - TRELLO_LIST_ID=${TRELLO_LIST_ID:-}
+      
+      # WhatsApp (opcional)
+      - WPP_URL=${WPP_URL:-}
+      - WPP_INSTANCE=${WPP_INSTANCE:-}
+      - WPP_TOKEN=${WPP_TOKEN:-}
+      
+      # reCAPTCHA (opcional)
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY:-}
+      
+    volumes:
+      # Montar código para hot-reload
+      - ./backend:/app
+      # Uploads
+      - ./backend/uploads:/app/uploads
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # Frontend React - Desenvolvimento Local
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    image: debrief-frontend:dev
+    container_name: debrief-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "5173:5173"  # Porta Vite padrão
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+      - VITE_ENV=development
+      - VITE_DEBUG_MODE=true
+    volumes:
+      # Montar código para hot-reload
+      - ./frontend:/app
+      - /app/node_modules  # Evitar sobrescrever node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+networks:
+  default:
+    name: debrief-dev-network
+    driver: bridge
+

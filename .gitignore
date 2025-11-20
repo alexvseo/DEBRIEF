@@ -78,6 +78,9 @@ celerybeat.pid
 .env.local
 .env.*.local
 *.env
+.env.dev
+backend/.env.dev
+frontend/.env.dev
 
 # Spyder project settings
 .spyderproject
