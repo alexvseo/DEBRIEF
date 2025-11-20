@@ -1146,17 +1146,22 @@ const ModalSecretaria = ({ open, item, clientes, onClose, onSave }) => {
                 </label>
                 <select
                   required
-                  value={form.cliente_id}
+                  value={form.cliente_id || ''}
                   onChange={(e) => setForm(prev => ({ ...prev, cliente_id: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Selecione um cliente</option>
-                  {clientes.filter(c => c.ativo).map(cliente => (
+                  {clientes && clientes.filter(c => c.ativo).map(cliente => (
                     <option key={cliente.id} value={cliente.id}>
                       {cliente.nome}
                     </option>
                   ))}
                 </select>
+                {(!clientes || clientes.length === 0) && (
+                  <p className="text-sm text-red-500 mt-1">
+                    Nenhum cliente ativo disponível. Crie um cliente primeiro.
+                  </p>
+                )}
               </div>
               
               <Input
