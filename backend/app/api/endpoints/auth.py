@@ -28,7 +28,6 @@ router = APIRouter()
 
 
 @router.post("/login", response_model=LoginResponse)
-@limiter.limit("5/minute")  # Rate limit: 5 tentativas por minuto
 async def login(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
