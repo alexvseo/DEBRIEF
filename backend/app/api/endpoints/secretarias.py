@@ -194,20 +194,27 @@ def criar_secretaria(
     # Verificar se já existe secretaria ATIVA com esse nome no mesmo cliente
     # Permitir criar secretaria com mesmo nome se a anterior estiver inativa
     # Usar comparação case-insensitive (ilike) e verificar apenas ATIVAS
+    # IMPORTANTE: Normalizar nome (trim e case-insensitive) para comparação
+    nome_normalizado = secretaria_data.nome.strip()
+    
     existe = db.query(Secretaria).filter(
         Secretaria.cliente_id == secretaria_data.cliente_id,
-        Secretaria.nome.ilike(secretaria_data.nome.strip()),  # Trim e case-insensitive
+        Secretaria.nome.ilike(nome_normalizado),  # Case-insensitive
         Secretaria.ativo == True  # Apenas verificar secretarias ATIVAS
     ).first()
     
     if existe:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Secretaria '{secretaria_data.nome}' já existe para este cliente (ID: {existe.id}, Status: Ativa)"
+            detail=f"Secretaria '{nome_normalizado}' já existe para este cliente (ID: {existe.id}, Status: Ativa). Se você deletou uma secretaria, use o botão de deletar permanente (ícone de lixeira) em vez de desativar."
         )
     
     # Criar secretaria
-    nova_secretaria = Secretaria(**secretaria_data.model_dump())
+    # Garantir que o nome está normalizado (trim)
+    dados_criacao = secretaria_data.model_dump()
+    dados_criacao['nome'] = nome_normalizado  # Usar nome normalizado
+    
+    nova_secretaria = Secretaria(**dados_criacao)
     
     db.add(nova_secretaria)
     db.commit()
@@ -247,10 +254,11 @@ def atualizar_secretaria(
     
     # Verificar nome duplicado (se estiver atualizando nome)
     # Apenas verificar secretarias ATIVAS
-    if secretaria_data.nome and secretaria_data.nome != secretaria.nome:
+    if secretaria_data.nome and secretaria_data.nome.strip() != secretaria.nome:
+        nome_normalizado = secretaria_data.nome.strip()
         existe = db.query(Secretaria).filter(
             Secretaria.cliente_id == secretaria.cliente_id,
-            Secretaria.nome.ilike(secretaria_data.nome),
+            Secretaria.nome.ilike(nome_normalizado),  # Case-insensitive
             Secretaria.id != secretaria_id,
             Secretaria.ativo == True  # Apenas verificar secretarias ativas
         ).first()
@@ -258,7 +266,7 @@ def atualizar_secretaria(
         if existe:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Secretaria '{secretaria_data.nome}' já existe para este cliente"
+                detail=f"Secretaria '{nome_normalizado}' já existe para este cliente (Status: Ativa)"
             )
     
     # Atualizar campos
