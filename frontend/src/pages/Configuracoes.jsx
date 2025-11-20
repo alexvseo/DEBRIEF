@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -851,71 +851,120 @@ const Configuracoes = () => {
               </div>
             ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Nome</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Cliente</th>
-                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Demandas</th>
-                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Status</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {secretarias.map(secretaria => (
-                    <tr key={secretaria.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">{secretaria.nome}</td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{secretaria.cliente_nome}</td>
-                      <td className="py-3 px-4 text-center">
-                        <Badge variant="secondary">{secretaria.total_demandas || 0}</Badge>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <Badge variant={secretaria.ativo ? 'success' : 'error'}>
-                          {secretaria.ativo ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setModalSecretaria({ open: true, item: secretaria })}
-                            title="Editar secretaria"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="error"
-                            onClick={() => deletarSecretaria(secretaria)}
-                            title="Deletar secretaria permanentemente"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="md"
-                            variant={secretaria.ativo ? 'error' : 'success'}
-                            onClick={() => toggleSecretaria(secretaria)}
-                            title={secretaria.ativo ? 'Desativar secretaria' : 'Reativar secretaria'}
-                          >
-                            {secretaria.ativo ? (
-                              <>
-                                <ToggleLeft className="h-4 w-4 mr-1" />
-                                Desativar
-                              </>
-                            ) : (
-                              <>
-                                <ToggleRight className="h-4 w-4 mr-1" />
-                                Reativar
-                              </>
+              {(() => {
+                // Agrupar secretarias por cliente
+                const secretariasPorCliente = secretarias.reduce((acc, secretaria) => {
+                  const clienteNome = secretaria.cliente_nome || 'Sem Cliente'
+                  if (!acc[clienteNome]) {
+                    acc[clienteNome] = []
+                  }
+                  acc[clienteNome].push(secretaria)
+                  return acc
+                }, {})
+                
+                // Ordenar clientes alfabeticamente
+                const clientesOrdenados = Object.keys(secretariasPorCliente).sort()
+                
+                return (
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Cliente</th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Nome</th>
+                        <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Demandas</th>
+                        <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Status</th>
+                        <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clientesOrdenados.map((clienteNome, clienteIndex) => {
+                        const secretariasDoCliente = secretariasPorCliente[clienteNome]
+                        // Ordenar secretarias do cliente alfabeticamente
+                        secretariasDoCliente.sort((a, b) => a.nome.localeCompare(b.nome))
+                        
+                        return (
+                          <React.Fragment key={clienteNome}>
+                            {secretariasDoCliente.map((secretaria, secretariaIndex) => (
+                              <tr key={secretaria.id} className="border-b hover:bg-gray-50">
+                                {secretariaIndex === 0 && (
+                                  <td 
+                                    className="py-3 px-4 font-semibold text-base text-gray-900 align-top bg-gray-50" 
+                                    rowSpan={secretariasDoCliente.length}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Building2 className="h-4 w-4 text-indigo-600" />
+                                      <span>{clienteNome}</span>
+                                    </div>
+                                  </td>
+                                )}
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-400">-</span>
+                                    <span>{secretaria.nome}</span>
+                                  </div>
+                                </td>
+                                <td className="py-3 px-4 text-center">
+                                  <Badge variant="secondary">{secretaria.total_demandas || 0}</Badge>
+                                </td>
+                                <td className="py-3 px-4 text-center">
+                                  <Badge variant={secretaria.ativo ? 'success' : 'error'}>
+                                    {secretaria.ativo ? 'Ativo' : 'Inativo'}
+                                  </Badge>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setModalSecretaria({ open: true, item: secretaria })}
+                                      title="Editar secretaria"
+                                    >
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="error"
+                                      onClick={() => deletarSecretaria(secretaria)}
+                                      title="Deletar secretaria permanentemente"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      size="md"
+                                      variant={secretaria.ativo ? 'error' : 'success'}
+                                      onClick={() => toggleSecretaria(secretaria)}
+                                      title={secretaria.ativo ? 'Desativar secretaria' : 'Reativar secretaria'}
+                                    >
+                                      {secretaria.ativo ? (
+                                        <>
+                                          <ToggleLeft className="h-4 w-4 mr-1" />
+                                          Desativar
+                                        </>
+                                      ) : (
+                                        <>
+                                          <ToggleRight className="h-4 w-4 mr-1" />
+                                          Reativar
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                            {clienteIndex < clientesOrdenados.length - 1 && (
+                              <tr>
+                                <td colSpan="5" className="py-2 px-4">
+                                  <div className="border-t border-gray-200"></div>
+                                </td>
+                              </tr>
                             )}
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          </React.Fragment>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                )
+              })()}
               
               {secretarias.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
