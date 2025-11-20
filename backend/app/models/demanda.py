@@ -51,8 +51,10 @@ class Demanda(BaseModel):
     descricao = Column(Text, nullable=False)
     
     # Status
+    # Usar native_enum=False para evitar problemas com valores do banco
+    # O banco pode ter valores em minúsculo enquanto o enum Python tem nomes em maiúsculo
     status = Column(
-        Enum(StatusDemanda),
+        Enum(StatusDemanda, native_enum=False, values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=StatusDemanda.ABERTA,
         index=True
