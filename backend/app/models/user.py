@@ -267,6 +267,16 @@ class User(BaseModel):
         - Obrigatório para usuários tipo CLIENTE
         - Deve ser NULL para usuários tipo MASTER
         """
+        # Converter string vazia para None
+        if cliente_id == '' or cliente_id is None:
+            cliente_id = None
+        
+        # Se tipo ainda não foi definido (durante criação), pular validação
+        # O tipo será validado depois
+        if not hasattr(self, 'tipo') or self.tipo is None:
+            return cliente_id
+        
+        # Validar apenas se tipo já foi definido
         if self.tipo == TipoUsuario.CLIENTE and not cliente_id:
             raise ValueError("cliente_id é obrigatório para usuários do tipo CLIENTE")
         
