@@ -52,6 +52,10 @@ def listar_secretarias(
         query = query.filter(Secretaria.cliente_id == cliente_id)
     
     # Filtro: apenas ativas
+    # Converter string "false" para boolean False se necessário
+    if isinstance(apenas_ativas, str):
+        apenas_ativas = apenas_ativas.lower() == 'true'
+    
     if apenas_ativas:
         query = query.filter(Secretaria.ativo == True)
     

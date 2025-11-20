@@ -151,6 +151,7 @@ const Configuracoes = () => {
   const carregarSecretarias = async () => {
     try {
       // Carregar todas as secretarias (ativas e inativas) para gerenciamento
+      console.log('🔍 Carregando secretarias com apenas_ativas=false, limit=10000')
       const response = await api.get('/secretarias/', {
         params: {
           apenas_ativas: false,  // Mostrar todas para gerenciamento
@@ -158,13 +159,19 @@ const Configuracoes = () => {
           limit: 10000  // Aumentar limite para garantir que todas sejam carregadas
         }
       })
+      
+      console.log('✅ Secretarias carregadas:', response.data?.length || 0, 'registros')
+      console.log('📋 Primeiras secretarias:', response.data?.slice(0, 3))
+      
       setSecretarias(response.data || [])
     } catch (error) {
-      console.error('Erro ao carregar secretarias:', error)
+      console.error('❌ Erro ao carregar secretarias:', error)
       console.error('Detalhes do erro:', {
         status: error.response?.status,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
+        url: error.config?.url,
+        params: error.config?.params
       })
       
       // Se for erro 401, não mostrar alerta (já será tratado pelo interceptor)
@@ -172,6 +179,8 @@ const Configuracoes = () => {
         // Mostrar erro ao usuário apenas se não for erro de autenticação
         const errorMsg = error.response?.data?.detail || error.message || 'Erro ao carregar secretarias'
         console.error('Erro detalhado:', errorMsg)
+        // Mostrar toast de erro
+        alert(`Erro ao carregar secretarias:\n\n${errorMsg}\n\nVerifique o console para mais detalhes.`)
       }
       
       // Sempre definir array vazio em caso de erro para evitar undefined
