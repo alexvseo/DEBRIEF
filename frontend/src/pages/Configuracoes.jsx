@@ -1125,6 +1125,19 @@ const ModalSecretaria = ({ open, item, clientes, onClose, onSave }) => {
   
   const handleSubmit = (e) => {
     e.preventDefault()
+    
+    // Validar que cliente foi selecionado
+    if (!form.cliente_id || form.cliente_id.trim() === '') {
+      alert('Por favor, selecione um cliente')
+      return
+    }
+    
+    // Validar que nome foi preenchido
+    if (!form.nome || form.nome.trim() === '') {
+      alert('Por favor, preencha o nome da secretaria')
+      return
+    }
+    
     onSave(form)
   }
   
