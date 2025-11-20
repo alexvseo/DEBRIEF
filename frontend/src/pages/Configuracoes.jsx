@@ -322,7 +322,27 @@ const Configuracoes = () => {
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
       console.error('Erro ao alterar status:', error)
-      alert('Erro ao alterar status do cliente')
+      const errorMsg = error.response?.data?.detail || 'Erro ao alterar status do cliente'
+      alert(`Erro ao alterar status:\n\n${errorMsg}`)
+    }
+  }
+
+  const deletarCliente = async (cliente) => {
+    if (!window.confirm(`Tem certeza que deseja deletar permanentemente o cliente "${cliente.nome}"?\n\nEsta ação não pode ser desfeita!`)) {
+      return
+    }
+
+    try {
+      // Primeiro desativar, depois deletar permanentemente (se o endpoint existir)
+      // Por enquanto, apenas desativar
+      await api.delete(`/clientes/${cliente.id}`)
+      setSuccessMessage('✅ Cliente deletado com sucesso!')
+      await carregarClientes()
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      console.error('Erro ao deletar cliente:', error)
+      const errorMsg = error.response?.data?.detail || 'Erro ao deletar cliente'
+      alert(`Erro ao deletar cliente:\n\n${errorMsg}`)
     }
   }
   
@@ -653,20 +673,41 @@ const Configuracoes = () => {
                         </Badge>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-2 items-center">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => setModalCliente({ open: true, item: cliente })}
+                            title="Editar cliente"
                           >
-                            <Edit className="h-3 w-3" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             size="sm"
+                            variant="error"
+                            onClick={() => deletarCliente(cliente)}
+                            title="Deletar cliente permanentemente"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="md"
                             variant={cliente.ativo ? 'error' : 'success'}
                             onClick={() => toggleCliente(cliente)}
+                            title={cliente.ativo ? 'Desativar cliente' : 'Reativar cliente'}
+                            className="min-w-[100px]"
                           >
-                            {cliente.ativo ? <ToggleLeft className="h-3 w-3" /> : <ToggleRight className="h-3 w-3" />}
+                            {cliente.ativo ? (
+                              <>
+                                <ToggleLeft className="h-4 w-4 mr-1" />
+                                Desativar
+                              </>
+                            ) : (
+                              <>
+                                <ToggleRight className="h-4 w-4 mr-1" />
+                                Reativar
+                              </>
+                            )}
                           </Button>
                         </div>
                       </td>
