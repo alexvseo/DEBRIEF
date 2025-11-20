@@ -108,7 +108,7 @@ const Configuracoes = () => {
   
   const carregarConfiguracoes = async () => {
     try {
-      const response = await api.get('/api/configuracoes/agrupadas')
+      const response = await api.get('/configuracoes/agrupadas')
       
       const configsFormatadas = {
         trello: [],
