@@ -77,7 +77,7 @@ def upgrade() -> None:
     sa.Column('email', sa.String(length=100), nullable=False, comment='Email do usuário (único)'),
     sa.Column('password_hash', sa.String(length=255), nullable=False, comment='Senha criptografada com bcrypt'),
     sa.Column('nome_completo', sa.String(length=200), nullable=False, comment='Nome completo do usuário'),
-    sa.Column('tipo', sa.Enum('MASTER', 'CLIENTE', name='tipousuario'), nullable=False, comment='Tipo de usuário: master (admin) ou cliente'),
+    sa.Column('tipo', sa.Enum('master', 'cliente', name='tipousuario'), nullable=False, comment='Tipo de usuário: master (admin) ou cliente'),
     sa.Column('cliente_id', sa.String(length=36), nullable=True, comment='ID do cliente (NULL para usuários master)'),
     sa.Column('ativo', sa.Boolean(), nullable=False, comment='Se o usuário está ativo no sistema'),
     sa.Column('id', sa.String(length=36), nullable=False, comment='Identificador único universal (UUID v4)'),
