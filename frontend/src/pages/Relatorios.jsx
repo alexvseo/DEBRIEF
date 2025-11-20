@@ -19,6 +19,7 @@ import {
   Badge,
   Input,
   Select,
+  MultiSelect,
   Alert,
   AlertDescription
 } from '@/components/ui'
@@ -36,8 +37,11 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  LineChart,
+  Line
 } from 'recharts'
+import { MultiSelect } from '@/components/ui'
 
 const Relatorios = () => {
   const navigate = useNavigate()
@@ -61,8 +65,8 @@ const Relatorios = () => {
     dataFim: '',
     status: '',
     cliente_id: '',
-    secretaria_id: '',
-    tipo_demanda_id: '',
+    secretaria_ids: [],  // Múltipla escolha
+    tipo_demanda_ids: [],  // Múltipla escolha
     prioridade_id: ''
   })
 
@@ -119,12 +123,14 @@ const Relatorios = () => {
       filtered = filtered.filter(d => d.cliente_id === filtros.cliente_id)
     }
 
-    if (filtros.secretaria_id) {
-      filtered = filtered.filter(d => d.secretaria_id === filtros.secretaria_id)
+    // Filtro múltiplo de secretarias
+    if (filtros.secretaria_ids && filtros.secretaria_ids.length > 0) {
+      filtered = filtered.filter(d => filtros.secretaria_ids.includes(d.secretaria_id))
     }
 
-    if (filtros.tipo_demanda_id) {
-      filtered = filtered.filter(d => d.tipo_demanda_id === filtros.tipo_demanda_id)
+    // Filtro múltiplo de tipos de demanda
+    if (filtros.tipo_demanda_ids && filtros.tipo_demanda_ids.length > 0) {
+      filtered = filtered.filter(d => filtros.tipo_demanda_ids.includes(d.tipo_demanda_id))
     }
 
     if (filtros.prioridade_id) {
@@ -141,24 +147,96 @@ const Relatorios = () => {
       dataFim: '',
       status: '',
       cliente_id: '',
-      secretaria_id: '',
-      tipo_demanda_id: '',
+      secretaria_ids: [],
+      tipo_demanda_ids: [],
       prioridade_id: ''
     })
     setDemandasFiltradas(demandas)
     toast.info("Filtros limpos!")
   }
 
-  const handleExportPDF = () => {
-    setGerando(true)
-    toast.info("Exportação PDF", { description: "Esta funcionalidade será implementada em breve!" })
-    setTimeout(() => setGerando(false), 1500)
+  const handleExportPDF = async () => {
+    try {
+      setGerando(true)
+      toast.info("Gerando PDF...", { description: "Aguarde enquanto o relatório é gerado." })
+      
+      // Construir query params
+      const params = new URLSearchParams()
+      if (filtros.dataInicio) params.append('data_inicio', filtros.dataInicio)
+      if (filtros.dataFim) params.append('data_fim', filtros.dataFim)
+      if (filtros.status) params.append('status', filtros.status)
+      if (filtros.cliente_id) params.append('cliente_id', filtros.cliente_id)
+      if (filtros.secretaria_ids && filtros.secretaria_ids.length > 0) {
+        filtros.secretaria_ids.forEach(id => params.append('secretaria_id', id))
+      }
+      if (filtros.tipo_demanda_ids && filtros.tipo_demanda_ids.length > 0) {
+        filtros.tipo_demanda_ids.forEach(id => params.append('tipo_demanda_id', id))
+      }
+      
+      // Fazer requisição e baixar arquivo
+      const response = await api.get(`/relatorios/pdf?${params.toString()}`, {
+        responseType: 'blob'
+      })
+      
+      // Criar link para download
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `relatorio_demandas_${new Date().toISOString().split('T')[0]}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      
+      toast.success("PDF gerado com sucesso!")
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error)
+      toast.error("Erro ao gerar PDF", { description: error.response?.data?.detail || "Tente novamente." })
+    } finally {
+      setGerando(false)
+    }
   }
 
-  const handleExportExcel = () => {
-    setGerando(true)
-    toast.info("Exportação Excel", { description: "Esta funcionalidade será implementada em breve!" })
-    setTimeout(() => setGerando(false), 1500)
+  const handleExportExcel = async () => {
+    try {
+      setGerando(true)
+      toast.info("Gerando Excel...", { description: "Aguarde enquanto o relatório é gerado." })
+      
+      // Construir query params
+      const params = new URLSearchParams()
+      if (filtros.dataInicio) params.append('data_inicio', filtros.dataInicio)
+      if (filtros.dataFim) params.append('data_fim', filtros.dataFim)
+      if (filtros.status) params.append('status', filtros.status)
+      if (filtros.cliente_id) params.append('cliente_id', filtros.cliente_id)
+      if (filtros.secretaria_ids && filtros.secretaria_ids.length > 0) {
+        filtros.secretaria_ids.forEach(id => params.append('secretaria_id', id))
+      }
+      if (filtros.tipo_demanda_ids && filtros.tipo_demanda_ids.length > 0) {
+        filtros.tipo_demanda_ids.forEach(id => params.append('tipo_demanda_id', id))
+      }
+      
+      // Fazer requisição e baixar arquivo
+      const response = await api.get(`/relatorios/excel?${params.toString()}`, {
+        responseType: 'blob'
+      })
+      
+      // Criar link para download
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `relatorio_demandas_${new Date().toISOString().split('T')[0]}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      
+      toast.success("Excel gerado com sucesso!")
+    } catch (error) {
+      console.error('Erro ao gerar Excel:', error)
+      toast.error("Erro ao gerar Excel", { description: error.response?.data?.detail || "Tente novamente." })
+    } finally {
+      setGerando(false)
+    }
   }
 
   const calcularEstatisticas = () => {
@@ -187,6 +265,71 @@ const Relatorios = () => {
       quantidade: demandasFiltradas.filter(d => d.tipo_demanda_id === tipo.id).length,
       fill: tipo.cor
     })).filter(d => d.quantidade > 0)
+  }
+
+  // Gráfico de evolução mensal (últimos 12 meses)
+  const dadosEvolucaoMensal = () => {
+    const meses = []
+    const hoje = new Date()
+    
+    for (let i = 11; i >= 0; i--) {
+      const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1)
+      const mesAno = data.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })
+      
+      const inicioMes = new Date(data.getFullYear(), data.getMonth(), 1)
+      const fimMes = new Date(data.getFullYear(), data.getMonth() + 1, 0)
+      
+      const count = demandasFiltradas.filter(d => {
+        const dataCriacao = new Date(d.created_at)
+        return dataCriacao >= inicioMes && dataCriacao <= fimMes
+      }).length
+      
+      meses.push({
+        mes: mesAno,
+        quantidade: count
+      })
+    }
+    
+    return meses
+  }
+
+  // Calcular média de dias até conclusão
+  const calcularMediaDiasConclusao = () => {
+    const concluidas = demandasFiltradas.filter(d => 
+      d.status === 'CONCLUIDA' && d.data_conclusao && d.created_at
+    )
+    
+    if (concluidas.length === 0) return 0
+    
+    const totalDias = concluidas.reduce((acc, d) => {
+      const inicio = new Date(d.created_at)
+      const fim = new Date(d.data_conclusao)
+      const dias = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24))
+      return acc + dias
+    }, 0)
+    
+    return Math.round(totalDias / concluidas.length)
+  }
+
+  // Calcular totais resumidos
+  const calcularTotaisResumidos = () => {
+    return {
+      porTipo: tipos.map(tipo => ({
+        tipo: tipo.nome,
+        total: demandasFiltradas.filter(d => d.tipo_demanda_id === tipo.id).length
+      })).filter(t => t.total > 0),
+      porSecretaria: secretarias.map(secretaria => ({
+        secretaria: secretaria.nome,
+        total: demandasFiltradas.filter(d => d.secretaria_id === secretaria.id).length
+      })).filter(s => s.total > 0),
+      porStatus: {
+        ABERTA: demandasFiltradas.filter(d => d.status === 'ABERTA').length,
+        EM_ANDAMENTO: demandasFiltradas.filter(d => d.status === 'EM_ANDAMENTO').length,
+        CONCLUIDA: demandasFiltradas.filter(d => d.status === 'CONCLUIDA').length,
+        CANCELADA: demandasFiltradas.filter(d => d.status === 'CANCELADA').length
+      },
+      mediaDias: calcularMediaDiasConclusao()
+    }
   }
 
   const getStatusBadge = (status) => {
@@ -282,23 +425,19 @@ const Relatorios = () => {
                   ...clientes.map(c => ({ value: c.id, label: c.nome }))
                 ]}
               />
-              <Select
+              <MultiSelect
                 label="Secretaria"
-                value={filtros.secretaria_id}
-                onChange={(e) => setFiltros({ ...filtros, secretaria_id: e.target.value })}
-                options={[
-                  { value: '', label: 'Todas' },
-                  ...secretarias.map(s => ({ value: s.id, label: s.nome }))
-                ]}
+                value={filtros.secretaria_ids || []}
+                onChange={(values) => setFiltros({ ...filtros, secretaria_ids: values })}
+                options={secretarias.map(s => ({ value: s.id, label: s.nome }))}
+                placeholder="Selecione secretarias..."
               />
-              <Select
-                label="Tipo"
-                value={filtros.tipo_demanda_id}
-                onChange={(e) => setFiltros({ ...filtros, tipo_demanda_id: e.target.value })}
-                options={[
-                  { value: '', label: 'Todos' },
-                  ...tipos.map(t => ({ value: t.id, label: t.nome }))
-                ]}
+              <MultiSelect
+                label="Tipo de Demanda"
+                value={filtros.tipo_demanda_ids || []}
+                onChange={(values) => setFiltros({ ...filtros, tipo_demanda_ids: values })}
+                options={tipos.map(t => ({ value: t.id, label: t.nome }))}
+                placeholder="Selecione tipos..."
               />
               <Select
                 label="Prioridade"
@@ -357,27 +496,95 @@ const Relatorios = () => {
           </Card>
         </div>
 
+        {/* Tabela Resumida */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tabela Resumida</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Total por Tipo */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Total por Tipo de Demanda</h3>
+                <div className="space-y-2">
+                  {calcularTotaisResumidos().porTipo.length > 0 ? (
+                    calcularTotaisResumidos().porTipo.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center py-2 border-b">
+                        <span className="text-sm text-gray-600">{item.tipo}</span>
+                        <Badge variant="secondary">{item.total}</Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">Nenhum dado disponível</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Total por Secretaria */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Total por Secretaria</h3>
+                <div className="space-y-2">
+                  {calcularTotaisResumidos().porSecretaria.length > 0 ? (
+                    calcularTotaisResumidos().porSecretaria.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center py-2 border-b">
+                        <span className="text-sm text-gray-600">{item.secretaria}</span>
+                        <Badge variant="secondary">{item.total}</Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">Nenhum dado disponível</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Total por Status */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Total por Status</h3>
+                <div className="space-y-2">
+                  {Object.entries(calcularTotaisResumidos().porStatus).map(([status, total]) => (
+                    <div key={status} className="flex justify-between items-center py-2 border-b">
+                      <span className="text-sm text-gray-600">{status.replace('_', ' ')}</span>
+                      <Badge variant="secondary">{total}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Média de Dias */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Média de Dias até Conclusão</h3>
+                <div className="py-2">
+                  <div className="text-3xl font-bold text-blue-600">
+                    {calcularTotaisResumidos().mediaDias}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">dias</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Gráficos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Demandas por Status</CardTitle>
+              <CardTitle>Distribuição por Tipo</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={dadosGraficoStatus()}
+                    data={dadosGraficoTipo()}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
                     label={({ name, value }) => `${name}: ${value}`}
                     outerRadius={80}
                     fill="#8884d8"
-                    dataKey="value"
+                    dataKey="quantidade"
                   >
-                    {dadosGraficoStatus().map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    {dadosGraficoTipo().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill || '#8884d8'} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -389,22 +596,47 @@ const Relatorios = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Demandas por Tipo</CardTitle>
+              <CardTitle>Evolução Mensal</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dadosGraficoTipo()}>
+                <BarChart data={dadosEvolucaoMensal()}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="mes" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="quantidade" />
+                  <Bar dataKey="quantidade" fill="#3B82F6" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
+
+        {/* Gráfico de Linhas - Tendência */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tendência de Abertura de Demandas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={dadosEvolucaoMensal()}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="mes" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="quantidade" 
+                  stroke="#3B82F6" 
+                  strokeWidth={2}
+                  name="Demandas Abertas"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
         {/* Tabela de Resultados */}
         <Card>

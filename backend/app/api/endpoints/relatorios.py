@@ -152,8 +152,8 @@ async def get_demandas_estatisticas(
 @router.get("/pdf")
 async def gerar_relatorio_pdf(
     cliente_id: Optional[str] = Query(None),
-    secretaria_id: Optional[str] = Query(None),
-    tipo_demanda_id: Optional[str] = Query(None),
+    secretaria_id: Optional[List[str]] = Query(None),
+    tipo_demanda_id: Optional[List[str]] = Query(None),
     status: Optional[str] = Query(None),
     data_inicio: Optional[str] = Query(None),
     data_fim: Optional[str] = Query(None),
@@ -258,8 +258,8 @@ async def gerar_relatorio_pdf(
 @router.get("/excel")
 async def gerar_relatorio_excel(
     cliente_id: Optional[str] = Query(None),
-    secretaria_id: Optional[str] = Query(None),
-    tipo_demanda_id: Optional[str] = Query(None),
+    secretaria_id: Optional[List[str]] = Query(None),
+    tipo_demanda_id: Optional[List[str]] = Query(None),
     status: Optional[str] = Query(None),
     data_inicio: Optional[str] = Query(None),
     data_fim: Optional[str] = Query(None),
@@ -295,9 +295,9 @@ async def gerar_relatorio_excel(
     if cliente_id:
         query = query.join(Secretaria).filter(Secretaria.cliente_id == cliente_id)
     if secretaria_id:
-        query = query.filter(Demanda.secretaria_id == secretaria_id)
+        query = query.filter(Demanda.secretaria_id.in_(secretaria_id))
     if tipo_demanda_id:
-        query = query.filter(Demanda.tipo_demanda_id == tipo_demanda_id)
+        query = query.filter(Demanda.tipo_demanda_id.in_(tipo_demanda_id))
     if status:
         try:
             status_enum = StatusDemanda(status.lower())
