@@ -2,6 +2,7 @@
 Configurações da aplicação
 Gerencia variáveis de ambiente e configurações globais
 """
+import json
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
 from typing import Optional, Union
