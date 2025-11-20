@@ -419,25 +419,37 @@ class User(BaseModel):
         """
         return self.demandas.count()
     
-    def get_demandas_abertas(self):
+    def get_demandas_abertas(self, db):
         """
         Retorna demandas abertas criadas pelo usuário
+        
+        Args:
+            db: Sessão do banco de dados
         
         Returns:
             Query: Query de demandas abertas
         """
-        from app.models.demanda import StatusDemanda
-        return self.demandas.filter_by(status=StatusDemanda.ABERTA)
+        from app.models.demanda import Demanda, StatusDemanda
+        return db.query(Demanda).filter(
+            Demanda.usuario_id == self.id,
+            Demanda.status == StatusDemanda.ABERTA
+        )
     
-    def get_demandas_em_andamento(self):
+    def get_demandas_em_andamento(self, db):
         """
         Retorna demandas em andamento criadas pelo usuário
+        
+        Args:
+            db: Sessão do banco de dados
         
         Returns:
             Query: Query de demandas em andamento
         """
-        from app.models.demanda import StatusDemanda
-        return self.demandas.filter_by(status=StatusDemanda.EM_ANDAMENTO)
+        from app.models.demanda import Demanda, StatusDemanda
+        return db.query(Demanda).filter(
+            Demanda.usuario_id == self.id,
+            Demanda.status == StatusDemanda.EM_ANDAMENTO
+        )
     
     # ==================== MÉTODOS DE STATUS ====================
     
