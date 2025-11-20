@@ -294,11 +294,8 @@ def deletar_secretaria_permanente(
     **Atenção:**
     - Esta ação é IRREVERSÍVEL
     - Secretaria será removida permanentemente do banco
-    - Demandas vinculadas serão preservadas (secretaria_id ficará NULL)
+    - Se houver demandas vinculadas, o campo secretaria_id será definido como NULL
     - Use com cuidado!
-    
-    **Não pode deletar se:**
-    - Houver demandas vinculadas
     """
     # Buscar secretaria
     secretaria = db.query(Secretaria).filter(Secretaria.id == secretaria_id).first()
@@ -312,11 +309,14 @@ def deletar_secretaria_permanente(
     # Verificar se tem demandas vinculadas
     total_demandas = db.query(Demanda).filter(Demanda.secretaria_id == secretaria_id).count()
     
+    # Se houver demandas vinculadas, definir secretaria_id como NULL antes de deletar
     if total_demandas > 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Não é possível deletar. Secretaria possui {total_demandas} demanda(s) vinculada(s). Desative a secretaria em vez de deletá-la."
+        # Atualizar todas as demandas vinculadas para ter secretaria_id = NULL
+        db.query(Demanda).filter(Demanda.secretaria_id == secretaria_id).update(
+            {Demanda.secretaria_id: None},
+            synchronize_session=False
         )
+        db.flush()  # Aplicar mudanças sem commit
     
     # Deletar permanentemente
     db.delete(secretaria)

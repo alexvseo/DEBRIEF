@@ -469,7 +469,7 @@ const Configuracoes = () => {
       `Esta ação é IRREVERSÍVEL!\n\n` +
       (secretaria.total_demandas > 0 
         ? `⚠️ ATENÇÃO: Esta secretaria possui ${secretaria.total_demandas} demanda(s) vinculada(s).\n` +
-          `Não será possível deletar se houver demandas.`
+          `As demandas serão preservadas, mas o vínculo com a secretaria será removido.`
         : '')
     )) {
       return
