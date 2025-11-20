@@ -130,11 +130,23 @@ class Configuracao(BaseModel):
         if self.is_sensivel == "true" and self.valor:
             try:
                 cipher = self._get_cipher()
-                return cipher.decrypt(self.valor.encode()).decode()
+                decrypted = cipher.decrypt(self.valor.encode()).decode()
+                return decrypted
             except Exception as e:
-                print(f"Erro ao descriptografar: {e}")
-                return ""
-        return self.valor
+                # Se falhar ao descriptografar, pode ser que o valor não esteja criptografado
+                # ou a chave de criptografia mudou. Retornar valor original como fallback
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Erro ao descriptografar configuração '{self.chave}': {e}")
+                # Tentar retornar o valor original se não for possível descriptografar
+                try:
+                    # Se o valor parece ser base64 (criptografado), retornar vazio
+                    if len(self.valor) > 50:  # Valores criptografados são geralmente longos
+                        return ""
+                    return self.valor
+                except:
+                    return ""
+        return self.valor or ""
     
     @classmethod
     def get_by_chave(cls, db, chave: str) -> "Configuracao":

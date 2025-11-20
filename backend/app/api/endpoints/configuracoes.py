@@ -71,17 +71,42 @@ def listar_configuracoes_agrupadas(
     agrupadas = []
     
     for tipo in TipoConfiguracao:
-        configs = Configuracao.get_all_by_tipo(db, tipo)
-        if configs:
-            agrupadas.append(
-                ConfiguracaoPorTipo(
-                    tipo=tipo,
-                    configuracoes=[
-                        ConfiguracaoResponse(**config.to_dict(include_valor=True))
-                        for config in configs
-                    ]
-                )
-            )
+        try:
+            configs = Configuracao.get_all_by_tipo(db, tipo)
+            if configs:
+                # Processar cada configuração individualmente para capturar erros
+                configs_response = []
+                for config in configs:
+                    try:
+                        config_dict = config.to_dict(include_valor=True)
+                        configs_response.append(ConfiguracaoResponse(**config_dict))
+                    except Exception as e:
+                        # Se houver erro ao processar uma configuração, logar e continuar
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f"Erro ao processar configuração {config.chave}: {e}")
+                        # Adicionar configuração sem valor se houver erro
+                        try:
+                            config_dict = config.to_dict(include_valor=False)
+                            config_dict["valor"] = ""  # Valor vazio em caso de erro
+                            configs_response.append(ConfiguracaoResponse(**config_dict))
+                        except:
+                            # Se ainda falhar, pular esta configuração
+                            continue
+                
+                if configs_response:
+                    agrupadas.append(
+                        ConfiguracaoPorTipo(
+                            tipo=tipo,
+                            configuracoes=configs_response
+                        )
+                    )
+        except Exception as e:
+            # Se houver erro ao buscar configurações de um tipo, logar e continuar
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Erro ao buscar configurações do tipo {tipo}: {e}")
+            continue
     
     return agrupadas
 
