@@ -274,7 +274,8 @@ const Configuracoes = () => {
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
       console.error('Erro ao salvar cliente:', error)
-      alert('Erro ao salvar cliente')
+      const errorMessage = error.response?.data?.detail || error.message || 'Erro ao salvar cliente'
+      alert(`Erro ao salvar cliente: ${errorMessage}`)
     }
   }
   
