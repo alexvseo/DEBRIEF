@@ -2,17 +2,18 @@
 Endpoints de autenticação
 Login, refresh token, perfil do usuário
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import (
-    verify_password,
-    hash_password,
     create_access_token,
-    create_refresh_token
+    create_refresh_token,
+    verify_recaptcha,
+    blacklist_token
 )
 from app.core.dependencies import get_current_user, get_current_active_user
+from app.core.rate_limit import limiter
 from app.models.user import User
 from app.schemas.user import (
     LoginResponse,
@@ -27,16 +28,19 @@ router = APIRouter()
 
 
 @router.post("/login", response_model=LoginResponse)
+@limiter.limit("5/minute")  # Rate limit: 5 tentativas por minuto
 async def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
     """
-    Login de usuário
+    Login de usuário com reCAPTCHA (opcional)
     
     OAuth2 compatible token login, get an access token for future requests
     
     Args:
+        request: Request object (para acessar headers)
         form_data: Dados de login (username e password)
         db: Sessão do banco de dados
         
@@ -44,8 +48,18 @@ async def login(
         LoginResponse: Token de acesso e dados do usuário
         
     Raises:
-        HTTPException: Se credenciais inválidas
+        HTTPException: Se credenciais inválidas ou reCAPTCHA inválido
     """
+    # Verificar reCAPTCHA se token fornecido via header
+    recaptcha_token = request.headers.get("X-Recaptcha-Token")
+    if recaptcha_token:
+        is_valid = await verify_recaptcha(recaptcha_token)
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="reCAPTCHA inválido"
+            )
+    
     # Buscar usuário por username ou email
     user = db.query(User).filter(
         (User.username == form_data.username) | (User.email == form_data.username)
@@ -207,4 +221,42 @@ async def register(
     db.refresh(new_user)
     
     return UserResponse.from_orm(new_user)
+
+
+@router.post("/logout")
+async def logout(
+    request: Request,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Logout de usuário
+    
+    Invalida o token JWT atual adicionando-o à blacklist.
+    
+    Args:
+        request: Request object (para extrair token)
+        current_user: Usuário autenticado
+        
+    Returns:
+        dict: Mensagem de sucesso
+    """
+    # Extrair token do header Authorization
+    try:
+        authorization = request.headers.get("Authorization", "")
+        if authorization.startswith("Bearer "):
+            token = authorization.replace("Bearer ", "")
+            blacklist_token(token)
+            return {
+                "message": "Logout realizado com sucesso",
+                "token_invalidated": True
+            }
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Erro ao extrair token no logout: {e}")
+    
+    return {
+        "message": "Logout realizado com sucesso",
+        "token_invalidated": False,
+        "note": "Token não pôde ser extraído, mas logout foi registrado"
+    }
 

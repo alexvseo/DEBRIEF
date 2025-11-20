@@ -2,10 +2,11 @@
 DeBrief API - FastAPI Application
 Sistema de Gestão de Demandas e Briefings
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.rate_limit import setup_rate_limiting
 from app.api.endpoints import (
     auth,
     demandas,
@@ -36,6 +37,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Configurar Rate Limiting
+limiter = setup_rate_limiting(app)
+
+# Middleware personalizado
+from app.core.middleware import LoggingMiddleware
+app.add_middleware(LoggingMiddleware)
 
 
 # Event Handlers

@@ -85,6 +85,18 @@ class Settings(BaseSettings):
     
     # Google reCAPTCHA
     RECAPTCHA_SECRET_KEY: Optional[str] = None
+    RECAPTCHA_SITE_KEY: Optional[str] = None  # Chave pública (para frontend)
+    
+    # Rate Limiting
+    RATE_LIMIT_ENABLED: bool = True
+    RATE_LIMIT_DEFAULT: str = "100/minute"
+    RATE_LIMIT_AUTH: str = "5/minute"
+    RATE_LIMIT_UPLOAD: str = "10/minute"
+    RATE_LIMIT_REPORTS: str = "20/minute"
+    
+    # CSRF Protection
+    CSRF_ENABLED: bool = True
+    CSRF_TOKEN_EXPIRE_SECONDS: int = 3600  # 1 hora
     
     # Environment
     ENVIRONMENT: str = "development"
