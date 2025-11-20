@@ -1,8 +1,8 @@
 # Caddyfile - DeBrief
 # Proxy reverso para Frontend e Backend
-# Caddy escuta na porta 80 (dentro do container), mapeada para 2022 externamente
+# Caddy escuta na porta 2022 diretamente (network_mode: host)
 
-:80 {
+:2022 {
     # Compressão automática
     encode zstd gzip
 
