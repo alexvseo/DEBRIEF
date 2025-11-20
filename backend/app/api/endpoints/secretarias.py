@@ -53,11 +53,16 @@ def listar_secretarias(
     
     # Filtro: apenas ativas
     # Converter string "false" para boolean False se necessário
+    # FastAPI pode receber como string quando vem de query params
     if isinstance(apenas_ativas, str):
         apenas_ativas = apenas_ativas.lower() == 'true'
+    elif apenas_ativas is None:
+        apenas_ativas = True  # Padrão: apenas ativas
     
+    # Aplicar filtro apenas se for True (quando False, mostrar todas)
     if apenas_ativas:
         query = query.filter(Secretaria.ativo == True)
+    # Se apenas_ativas for False, não aplicar filtro (mostrar todas)
     
     # Filtro: busca por nome
     if busca:
