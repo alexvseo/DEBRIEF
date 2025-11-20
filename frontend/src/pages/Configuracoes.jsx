@@ -133,7 +133,7 @@ const Configuracoes = () => {
   
   const carregarClientes = async () => {
     try {
-      const response = await api.get('/api/clientes/')
+      const response = await api.get('/clientes/')
       setClientes(response.data)
     } catch (error) {
       console.error('Erro ao carregar clientes:', error)
@@ -273,7 +273,8 @@ const Configuracoes = () => {
         await api.put(`/api/clientes/${modalCliente.item.id}`, dadosLimpos)
         setSuccessMessage('✅ Cliente atualizado com sucesso!')
       } else {
-        await api.post('/api/clientes/', dadosLimpos)
+        // Criar novo cliente
+        const response = await api.post('/clientes/', dadosLimpos)
         setSuccessMessage('✅ Cliente criado com sucesso!')
       }
       
