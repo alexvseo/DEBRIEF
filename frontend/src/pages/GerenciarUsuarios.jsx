@@ -138,10 +138,10 @@ const GerenciarUsuarios = () => {
   const toggleUsuario = async (usuario) => {
     try {
       if (usuario.ativo) {
-        await api.delete(`/api/usuarios/${usuario.id}`)
+        await api.delete(`/usuarios/${usuario.id}`)
         setSuccessMessage('✅ Usuário desativado com sucesso!')
       } else {
-        await api.post(`/api/usuarios/${usuario.id}/reativar`)
+        await api.post(`/usuarios/${usuario.id}/reativar`)
         setSuccessMessage('✅ Usuário reativado com sucesso!')
       }
       await carregarTodosDados()
@@ -154,7 +154,7 @@ const GerenciarUsuarios = () => {
   
   const resetarSenha = async (userId, newPassword) => {
     try {
-      await api.post(`/api/usuarios/${userId}/reset-password`, {
+      await api.post(`/usuarios/${userId}/reset-password`, {
         new_password: newPassword
       })
       
