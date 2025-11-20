@@ -51,10 +51,10 @@ class Demanda(BaseModel):
     descricao = Column(Text, nullable=False)
     
     # Status
-    # Usar native_enum=False para evitar problemas com valores do banco
-    # O banco pode ter valores em minúsculo enquanto o enum Python tem nomes em maiúsculo
+    # Usar native_enum=False para armazenar como VARCHAR e evitar problemas com enum nativo do PostgreSQL
+    # Isso permite que valores em minúsculo do banco funcionem com o enum Python
     status = Column(
-        Enum(StatusDemanda, native_enum=False, values_callable=lambda x: [e.value for e in x]),
+        Enum(StatusDemanda, native_enum=False),
         nullable=False,
         default=StatusDemanda.ABERTA,
         index=True
