@@ -188,10 +188,15 @@ const Configuracoes = () => {
   
   const carregarPrioridades = async () => {
     try {
-      const response = await api.get('/prioridades/')
-      setPrioridades(response.data)
+      const response = await api.get('/api/prioridades/', {
+        params: {
+          apenas_ativas: false  // Mostrar todas para gerenciamento
+        }
+      })
+      setPrioridades(response.data || [])
     } catch (error) {
       console.error('Erro ao carregar prioridades:', error)
+      setPrioridades([])
     }
   }
   
