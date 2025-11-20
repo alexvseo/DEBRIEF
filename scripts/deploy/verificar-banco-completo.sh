@@ -106,7 +106,7 @@ ssh ${SERVER_USER}@${SERVER_HOST} << 'ENDSSH'
     
     echo "8️⃣  Verificando usuários no banco..."
     echo ""
-    psql -h localhost -U postgres -d dbrief -c "SELECT id, username, email, tipo, ativo FROM usuarios LIMIT 5;" 2>&1 || echo "⚠️  Tabela usuarios não existe ou erro"
+    psql -h localhost -U postgres -d dbrief -c "SELECT id, username, email, tipo, ativo FROM users LIMIT 5;" 2>&1 || echo "⚠️  Tabela users não existe ou erro"
     echo ""
     
     echo "9️⃣  Testando conexão do container backend com banco..."
@@ -136,15 +136,16 @@ try:
         tables = [row[0] for row in result.fetchall()]
         print(f'   Tabelas encontradas: {len(tables)}')
         if tables:
-            print(f'   Primeiras tabelas: {', '.join(tables[:5])}')
+            tables_str = ', '.join(tables[:5])
+            print(f'   Primeiras tabelas: {tables_str}')
         
         # Verificar usuários
         try:
-            result = conn.execute(text('SELECT COUNT(*) FROM usuarios'))
+            result = conn.execute(text('SELECT COUNT(*) FROM users'))
             count = result.fetchone()[0]
             print(f'   Usuários no banco: {count}')
         except Exception as e:
-            print(f'   ⚠️  Tabela usuarios não existe: {str(e)[:50]}')
+            print(f'   ⚠️  Tabela users não existe: {str(e)[:50]}')
         
     print()
     print('✅ ✅ CONEXÃO COM BANCO FUNCIONANDO PERFEITAMENTE!')
