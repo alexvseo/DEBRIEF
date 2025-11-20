@@ -25,8 +25,7 @@ from app.models.demanda import Demanda, StatusDemanda
 from app.models.anexo import Anexo
 from app.models.configuracao import Configuracao, TipoConfiguracao
 
-# TODO: Criar estes modelos
-# from app.models.notification_log import NotificationLog
+from app.models.notification_log import NotificationLog, TipoNotificacao, StatusNotificacao
 
 __all__ = [
     'Base',
@@ -42,7 +41,8 @@ __all__ = [
     'Anexo',
     'Configuracao',
     'TipoConfiguracao',
-    # TODO: Adicionar quando forem criados
-    # 'NotificationLog',
+    'NotificationLog',
+    'TipoNotificacao',
+    'StatusNotificacao',
 ]
 

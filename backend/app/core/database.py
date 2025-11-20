@@ -54,7 +54,7 @@ def init_db():
     try:
         # Import all models here to ensure they are registered
         from app.models.base import Base
-        from app.models import user, demanda  # noqa
+        from app.models import user, demanda, notification_log  # noqa
         
         # Tentar conectar e criar tabelas
         Base.metadata.create_all(bind=engine)

@@ -14,7 +14,8 @@ from app.api.endpoints import (
     tipos_demanda,
     prioridades,
     configuracoes,
-    usuarios
+    usuarios,
+    relatorios
 )
 
 # Criar aplicação FastAPI
@@ -149,6 +150,13 @@ app.include_router(
     usuarios.router,
     prefix="/api/usuarios",
     tags=["Usuários - Admin"]
+)
+
+# Relatórios
+app.include_router(
+    relatorios.router,
+    prefix="/api/relatorios",
+    tags=["Relatórios"]
 )
 
 

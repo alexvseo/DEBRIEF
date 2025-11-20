@@ -10,6 +10,7 @@ from app.api.endpoints import tipos_demanda
 from app.api.endpoints import prioridades
 from app.api.endpoints import configuracoes
 from app.api.endpoints import usuarios
+from app.api.endpoints import relatorios
 
 __all__ = [
     'auth',
@@ -20,4 +21,5 @@ __all__ = [
     'prioridades',
     'configuracoes',
     'usuarios',
+    'relatorios',
 ]
