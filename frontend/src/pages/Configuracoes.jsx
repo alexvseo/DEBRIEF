@@ -154,7 +154,7 @@ const Configuracoes = () => {
       console.log('🔍 Carregando secretarias com apenas_ativas=false, limit=10000')
       const response = await api.get('/secretarias/', {
         params: {
-          apenas_ativas: false,  // Mostrar todas para gerenciamento
+          apenas_ativas: 'false',  // Enviar como string para garantir compatibilidade com backend
           skip: 0,
           limit: 10000  // Aumentar limite para garantir que todas sejam carregadas
         }
@@ -162,8 +162,15 @@ const Configuracoes = () => {
       
       console.log('✅ Secretarias carregadas:', response.data?.length || 0, 'registros')
       console.log('📋 Primeiras secretarias:', response.data?.slice(0, 3))
+      console.log('📋 Todas as secretarias:', response.data)
       
-      setSecretarias(response.data || [])
+      if (response.data && Array.isArray(response.data)) {
+        setSecretarias(response.data)
+        console.log('✅ Estado atualizado com', response.data.length, 'secretarias')
+      } else {
+        console.warn('⚠️ Resposta não é um array:', response.data)
+        setSecretarias([])
+      }
     } catch (error) {
       console.error('❌ Erro ao carregar secretarias:', error)
       console.error('Detalhes do erro:', {
