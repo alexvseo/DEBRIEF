@@ -443,10 +443,10 @@ const Configuracoes = () => {
   const toggleTipoDemanda = async (tipo) => {
     try {
       if (tipo.ativo) {
-        await api.delete(`/tipos-demanda/${tipo.id}`)
+        await api.delete(`/api/tipos-demanda/${tipo.id}`)
         setSuccessMessage('✅ Tipo desativado com sucesso!')
       } else {
-        await api.post(`/tipos-demanda/${tipo.id}/reativar`)
+        await api.post(`/api/tipos-demanda/${tipo.id}/reativar`)
         setSuccessMessage('✅ Tipo reativado com sucesso!')
       }
       await carregarTiposDemanda()
