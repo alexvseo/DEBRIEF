@@ -29,11 +29,9 @@
     }
 
     # Proxy para Frontend (tudo mais)
-    # Frontend está na rede Docker, precisa descobrir IP do container
+    # Frontend também está em network_mode: host, então usa localhost:80
     handle {
-        # Tentar acessar frontend via IP do container na rede bridge
-        # Se Caddy também estiver em network_mode: host, precisa usar IP do container frontend
-        reverse_proxy 172.19.0.2:80 {
+        reverse_proxy localhost:80 {
             # Headers para proxy
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
