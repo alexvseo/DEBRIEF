@@ -117,10 +117,10 @@ echo "🔟 Reiniciando Caddy..."
 docker-compose restart caddy
 sleep 5
 
-# 11. Testar login
+# 11. Testar login diretamente no backend (porta 8000)
 echo ""
-echo "1️⃣1️⃣  Testando login..."
-LOGIN_RESPONSE=$(curl -s -X POST http://localhost:2025/api/auth/login \
+echo "1️⃣1️⃣  Testando login diretamente no backend (porta 8000)..."
+LOGIN_RESPONSE=$(curl -s -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "username=admin&password=admin123" \
   -w "\nHTTP_CODE:%{http_code}")
@@ -134,6 +134,28 @@ if [ "$HTTP_CODE" = "200" ]; then
 else
     echo "❌ Login falhou! HTTP $HTTP_CODE"
     echo "Resposta: $BODY"
+fi
+
+# 12. Testar login via Caddy (porta 2022)
+echo ""
+echo "1️⃣2️⃣  Testando login via Caddy (porta 2022)..."
+CADDY_RESPONSE=$(curl -s -X POST http://localhost:2022/api/auth/login \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin&password=admin123" \
+  -w "\nHTTP_CODE:%{http_code}")
+
+CADDY_HTTP_CODE=$(echo "$CADDY_RESPONSE" | grep "HTTP_CODE" | cut -d: -f2)
+CADDY_BODY=$(echo "$CADDY_RESPONSE" | grep -v "HTTP_CODE")
+
+if [ "$CADDY_HTTP_CODE" = "200" ]; then
+    echo "✅ Login via Caddy funcionou! HTTP $CADDY_HTTP_CODE"
+    echo "$CADDY_BODY" | head -3
+else
+    echo "⚠️  Login via Caddy falhou! HTTP $CADDY_HTTP_CODE"
+    echo "Resposta: $CADDY_BODY"
+    echo ""
+    echo "📋 Verificando logs do Caddy..."
+    docker-compose logs --tail=10 caddy
 fi
 
 echo ""
