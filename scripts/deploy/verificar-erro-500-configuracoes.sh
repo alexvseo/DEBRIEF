@@ -72,28 +72,43 @@ echo ""
 docker-compose exec -T backend python -c "
 from app.core.database import SessionLocal
 from app.models import Configuracao, TipoConfiguracao
+from sqlalchemy import text
 
 db = SessionLocal()
 try:
-    total = db.query(Configuracao).count()
+    # Usar query SQL direta para evitar problemas com enum
+    total = db.execute(text('SELECT COUNT(*) FROM configuracoes')).scalar()
     print(f'   Total de configurações: {total}')
     
-    for tipo in TipoConfiguracao:
-        count = db.query(Configuracao).filter(Configuracao.tipo == tipo).count()
-        print(f'   {tipo.value}: {count}')
+    # Contar por tipo usando SQL direto
+    print()
+    print('   Configurações por tipo (via SQL):')
+    result = db.execute(text('SELECT tipo, COUNT(*) as total FROM configuracoes GROUP BY tipo ORDER BY tipo'))
+    for row in result:
+        print(f'     {row[0]}: {row[1]}')
     
-    # Listar algumas configurações
+    # Listar algumas configurações usando SQL direto
     print()
     print('   Primeiras 5 configurações:')
-    configs = db.query(Configuracao).limit(5).all()
-    for c in configs:
-        print(f'     - {c.chave} (tipo: {c.tipo.value}, sensível: {c.is_sensivel})')
-        # Tentar obter valor (pode falhar se criptografia estiver quebrada)
-        try:
-            valor = c.get_valor()
-            print(f'       Valor: {valor[:30] if valor else \"(vazio)\"}...')
-        except Exception as e:
-            print(f'       ⚠️  Erro ao obter valor: {e}')
+    result = db.execute(text('SELECT chave, tipo, is_sensivel FROM configuracoes LIMIT 5'))
+    for row in result:
+        print(f'     - {row[0]} (tipo: {row[1]}, sensível: {row[2]})')
+    
+    # Tentar carregar via ORM (pode falhar se enum estiver quebrado)
+    print()
+    print('   Tentando carregar via ORM...')
+    try:
+        configs = db.query(Configuracao).limit(3).all()
+        for c in configs:
+            print(f'     ✅ {c.chave} carregada via ORM')
+            try:
+                valor = c.get_valor()
+                print(f'       Valor: {valor[:30] if valor else \"(vazio)\"}...')
+            except Exception as e:
+                print(f'       ⚠️  Erro ao obter valor: {e}')
+    except Exception as e:
+        print(f'     ❌ Erro ao carregar via ORM: {e}')
+        print(f'     Isso indica que o enum precisa ser convertido para VARCHAR')
 finally:
     db.close()
 " 2>&1

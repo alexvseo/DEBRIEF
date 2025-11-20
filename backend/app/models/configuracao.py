@@ -3,7 +3,7 @@ Modelo de Configuração
 Armazena configurações do sistema (Trello, WhatsApp, etc)
 """
 import enum
-from sqlalchemy import Column, String, Text, Enum, Index
+from sqlalchemy import Column, String, Text, Enum, Index, TypeDecorator
 from sqlalchemy.sql import func
 from datetime import datetime
 from app.models.base import BaseModel
@@ -17,6 +17,44 @@ class TipoConfiguracao(str, enum.Enum):
     WHATSAPP = "whatsapp"
     SISTEMA = "sistema"
     EMAIL = "email"
+
+
+class TipoConfiguracaoType(TypeDecorator):
+    """
+    TypeDecorator para converter entre enum Python e string do banco
+    Permite usar TipoConfiguracao.TRELLO no código, mas armazena 'trello' no banco
+    """
+    impl = String
+    cache_ok = True
+    
+    def __init__(self):
+        super().__init__(length=50)
+    
+    def process_bind_param(self, value, dialect):
+        """Converter enum Python para string do banco"""
+        if value is None:
+            return None
+        if isinstance(value, TipoConfiguracao):
+            return value.value  # Retorna 'trello', 'whatsapp', etc.
+        # Se for string, verificar se é um valor válido do enum
+        if isinstance(value, str):
+            for tipo in TipoConfiguracao:
+                if tipo.value == value.lower():
+                    return tipo.value
+        return str(value).lower()
+    
+    def process_result_value(self, value, dialect):
+        """Converter string do banco para enum Python"""
+        if value is None:
+            return None
+        # Normalizar para minúsculo para garantir compatibilidade
+        value_lower = str(value).lower()
+        # Buscar enum pelo valor
+        for tipo in TipoConfiguracao:
+            if tipo.value == value_lower:
+                return tipo
+        # Se não encontrar, retornar string (para compatibilidade)
+        return value
 
 
 class Configuracao(BaseModel):
@@ -61,7 +99,7 @@ class Configuracao(BaseModel):
     )
     
     tipo = Column(
-        Enum(TipoConfiguracao, native_enum=False),
+        TipoConfiguracaoType(),
         nullable=False,
         default=TipoConfiguracao.SISTEMA,
         index=True,
