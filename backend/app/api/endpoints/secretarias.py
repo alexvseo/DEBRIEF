@@ -8,6 +8,7 @@ from typing import List, Optional
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user, require_master
+from app.core.utils import normalizar_nome
 from app.models import Secretaria, Cliente, User, Demanda, Demanda
 from app.schemas import (
     SecretariaCreate,
@@ -197,22 +198,27 @@ def criar_secretaria(
         )
     
     # Verificar se já existe secretaria ATIVA com esse nome no mesmo cliente
-    # Permitir criar secretaria com mesmo nome se a anterior estiver inativa
-    # Usar comparação case-insensitive (ilike) e verificar apenas ATIVAS
-    # IMPORTANTE: Normalizar nome (trim e case-insensitive) para comparação
+    # IMPORTANTE: Normalizar nome removendo acentos e espaços extras
+    # Comparar usando normalização para detectar duplicatas mesmo com acentuação diferente
     nome_normalizado = secretaria_data.nome.strip()
+    nome_sem_acentos = normalizar_nome(nome_normalizado)
     
-    existe = db.query(Secretaria).filter(
+    # Buscar todas as secretarias ATIVAS do mesmo cliente
+    secretarias_ativas = db.query(Secretaria).filter(
         Secretaria.cliente_id == secretaria_data.cliente_id,
-        Secretaria.nome.ilike(nome_normalizado),  # Case-insensitive
-        Secretaria.ativo == True  # Apenas verificar secretarias ATIVAS
-    ).first()
+        Secretaria.ativo == True
+    ).all()
     
-    if existe:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Secretaria '{nome_normalizado}' já existe para este cliente (ID: {existe.id}, Status: Ativa). Se você deletou uma secretaria, use o botão de deletar permanente (ícone de lixeira) em vez de desativar."
-        )
+    # Verificar se alguma secretaria ativa tem nome equivalente (ignorando acentos)
+    for secretaria_existente in secretarias_ativas:
+        nome_existente_sem_acentos = normalizar_nome(secretaria_existente.nome)
+        if nome_sem_acentos == nome_existente_sem_acentos:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Secretaria '{nome_normalizado}' já existe para este cliente (nome existente: '{secretaria_existente.nome}', ID: {secretaria_existente.id}, Status: Ativa). "
+                       f"O sistema não permite secretarias com nomes equivalentes (mesmo ignorando acentuação). "
+                       f"Se você deletou uma secretaria, use o botão de deletar permanente (ícone de lixeira) em vez de desativar."
+            )
     
     # Criar secretaria
     # Garantir que o nome está normalizado (trim)
@@ -258,21 +264,27 @@ def atualizar_secretaria(
         )
     
     # Verificar nome duplicado (se estiver atualizando nome)
-    # Apenas verificar secretarias ATIVAS
+    # IMPORTANTE: Normalizar nome removendo acentos para detectar duplicatas
     if secretaria_data.nome and secretaria_data.nome.strip() != secretaria.nome:
         nome_normalizado = secretaria_data.nome.strip()
-        existe = db.query(Secretaria).filter(
-            Secretaria.cliente_id == secretaria.cliente_id,
-            Secretaria.nome.ilike(nome_normalizado),  # Case-insensitive
-            Secretaria.id != secretaria_id,
-            Secretaria.ativo == True  # Apenas verificar secretarias ativas
-        ).first()
+        nome_sem_acentos = normalizar_nome(nome_normalizado)
         
-        if existe:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Secretaria '{nome_normalizado}' já existe para este cliente (Status: Ativa)"
-            )
+        # Buscar todas as secretarias ATIVAS do mesmo cliente (exceto a atual)
+        secretarias_ativas = db.query(Secretaria).filter(
+            Secretaria.cliente_id == secretaria.cliente_id,
+            Secretaria.id != secretaria_id,
+            Secretaria.ativo == True
+        ).all()
+        
+        # Verificar se alguma secretaria ativa tem nome equivalente (ignorando acentos)
+        for secretaria_existente in secretarias_ativas:
+            nome_existente_sem_acentos = normalizar_nome(secretaria_existente.nome)
+            if nome_sem_acentos == nome_existente_sem_acentos:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Secretaria '{nome_normalizado}' já existe para este cliente (nome existente: '{secretaria_existente.nome}', Status: Ativa). "
+                           f"O sistema não permite secretarias com nomes equivalentes (mesmo ignorando acentuação)."
+                )
     
     # Atualizar campos
     update_data = secretaria_data.model_dump(exclude_unset=True)
