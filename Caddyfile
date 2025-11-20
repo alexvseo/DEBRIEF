@@ -11,9 +11,9 @@
         path /api/*
     }
     handle @api {
-        # Backend está em network_mode: host, então usa host.docker.internal ou IP do host
-        # Porta 2025 é a porta externa mapeada do backend
-        reverse_proxy host.docker.internal:2025 {
+        # Backend está em network_mode: host, escutando na porta 8000
+        # Usar gateway Docker para acessar o host
+        reverse_proxy 172.19.0.1:8000 {
             # Headers para proxy
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
