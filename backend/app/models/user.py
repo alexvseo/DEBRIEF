@@ -406,15 +406,18 @@ class User(BaseModel):
     
     # ==================== MÉTODOS DE CONSULTA ====================
     
-    def get_demandas_count(self) -> int:
+    def get_demandas_count(self, db) -> int:
         """
         Retorna o número de demandas criadas pelo usuário
+        
+        Args:
+            db: Sessão do banco de dados
         
         Returns:
             int: Número de demandas
         
         Exemplo:
-            total = user.get_demandas_count()
+            total = user.get_demandas_count(db)
             print(f"Usuário criou {total} demandas")
         """
         from app.models.demanda import Demanda
