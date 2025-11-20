@@ -61,6 +61,7 @@ class ClienteResponse(ClienteBase):
     id: str
     created_at: datetime
     updated_at: datetime
+    total_demandas: Optional[int] = Field(None, description="Total de demandas vinculadas (opcional)")
     
     class Config:
         from_attributes = True

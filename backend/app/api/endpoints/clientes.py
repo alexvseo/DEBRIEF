@@ -61,11 +61,18 @@ def listar_clientes(
     clientes_resposta = []
     for cliente in clientes:
         total_demandas = db.query(Demanda).filter(Demanda.cliente_id == cliente.id).count()
-        # Criar resposta usando to_dict e adicionar total_demandas
-        cliente_data = cliente.to_dict()
-        cliente_data['total_demandas'] = total_demandas
-        # Criar objeto ClienteResponse com os dados
-        clientes_resposta.append(ClienteResponse(**cliente_data))
+        # Criar resposta incluindo total_demandas
+        cliente_dict = {
+            'id': cliente.id,
+            'nome': cliente.nome,
+            'whatsapp_group_id': cliente.whatsapp_group_id,
+            'trello_member_id': cliente.trello_member_id,
+            'ativo': cliente.ativo,
+            'created_at': cliente.created_at,
+            'updated_at': cliente.updated_at,
+            'total_demandas': total_demandas
+        }
+        clientes_resposta.append(ClienteResponse(**cliente_dict))
     
     return clientes_resposta
 
