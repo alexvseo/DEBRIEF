@@ -133,7 +133,7 @@ const Configuracoes = () => {
   
   const carregarClientes = async () => {
     try {
-      const response = await api.get('/clientes/')
+      const response = await api.get('/api/clientes/')
       setClientes(response.data)
     } catch (error) {
       console.error('Erro ao carregar clientes:', error)
@@ -142,16 +142,18 @@ const Configuracoes = () => {
   
   const carregarSecretarias = async () => {
     try {
-      const response = await api.get('/secretarias/')
+      const response = await api.get('/api/secretarias/')
       setSecretarias(response.data)
     } catch (error) {
       console.error('Erro ao carregar secretarias:', error)
+      // Mostrar erro ao usuário
+      alert('Erro ao carregar secretarias. Verifique o console para mais detalhes.')
     }
   }
   
   const carregarTiposDemanda = async () => {
     try {
-      const response = await api.get('/tipos-demanda/')
+      const response = await api.get('/api/tipos-demanda/')
       setTiposDemanda(response.data)
     } catch (error) {
       console.error('Erro ao carregar tipos:', error)
@@ -270,11 +272,11 @@ const Configuracoes = () => {
       }
       
       if (modalCliente.item) {
-        await api.put(`/clientes/${modalCliente.item.id}`, dadosLimpos)
+        await api.put(`/api/clientes/${modalCliente.item.id}`, dadosLimpos)
         setSuccessMessage('✅ Cliente atualizado com sucesso!')
       } else {
         // Criar novo cliente
-        const response = await api.post('/clientes/', dadosLimpos)
+        const response = await api.post('/api/clientes/', dadosLimpos)
         setSuccessMessage('✅ Cliente criado com sucesso!')
       }
       
@@ -312,10 +314,10 @@ const Configuracoes = () => {
   const toggleCliente = async (cliente) => {
     try {
       if (cliente.ativo) {
-        await api.delete(`/clientes/${cliente.id}`)
+        await api.delete(`/api/clientes/${cliente.id}`)
         setSuccessMessage('✅ Cliente desativado com sucesso!')
       } else {
-        await api.post(`/clientes/${cliente.id}/reativar`)
+        await api.post(`/api/clientes/${cliente.id}/reativar`)
         setSuccessMessage('✅ Cliente reativado com sucesso!')
       }
       await carregarClientes()
@@ -335,7 +337,7 @@ const Configuracoes = () => {
     try {
       // Primeiro desativar, depois deletar permanentemente (se o endpoint existir)
       // Por enquanto, apenas desativar
-      await api.delete(`/clientes/${cliente.id}`)
+      await api.delete(`/api/clientes/${cliente.id}`)
       setSuccessMessage('✅ Cliente deletado com sucesso!')
       await carregarClientes()
       setTimeout(() => setSuccessMessage(''), 3000)
@@ -363,10 +365,10 @@ const Configuracoes = () => {
       }
 
       if (modalSecretaria.item) {
-        await api.put(`/secretarias/${modalSecretaria.item.id}`, dadosLimpos)
+        await api.put(`/api/secretarias/${modalSecretaria.item.id}`, dadosLimpos)
         setSuccessMessage('✅ Secretaria atualizada com sucesso!')
       } else {
-        await api.post('/secretarias/', dadosLimpos)
+        await api.post('/api/secretarias/', dadosLimpos)
         setSuccessMessage('✅ Secretaria criada com sucesso!')
       }
       
@@ -404,10 +406,10 @@ const Configuracoes = () => {
   const toggleSecretaria = async (secretaria) => {
     try {
       if (secretaria.ativo) {
-        await api.delete(`/secretarias/${secretaria.id}`)
+        await api.delete(`/api/secretarias/${secretaria.id}`)
         setSuccessMessage('✅ Secretaria desativada com sucesso!')
       } else {
-        await api.post(`/secretarias/${secretaria.id}/reativar`)
+        await api.post(`/api/secretarias/${secretaria.id}/reativar`)
         setSuccessMessage('✅ Secretaria reativada com sucesso!')
       }
       await carregarSecretarias()
@@ -422,10 +424,10 @@ const Configuracoes = () => {
   const salvarTipoDemanda = async (dados) => {
     try {
       if (modalTipo.item) {
-        await api.put(`/tipos-demanda/${modalTipo.item.id}`, dados)
+        await api.put(`/api/tipos-demanda/${modalTipo.item.id}`, dados)
         setSuccessMessage('✅ Tipo de demanda atualizado com sucesso!')
       } else {
-        await api.post('/tipos-demanda/', dados)
+        await api.post('/api/tipos-demanda/', dados)
         setSuccessMessage('✅ Tipo de demanda criado com sucesso!')
       }
       
@@ -459,10 +461,10 @@ const Configuracoes = () => {
   const salvarPrioridade = async (dados) => {
     try {
       if (modalPrioridade.item) {
-        await api.put(`/prioridades/${modalPrioridade.item.id}`, dados)
+        await api.put(`/api/prioridades/${modalPrioridade.item.id}`, dados)
         setSuccessMessage('✅ Prioridade atualizada com sucesso!')
       } else {
-        await api.post('/prioridades/', dados)
+        await api.post('/api/prioridades/', dados)
         setSuccessMessage('✅ Prioridade criada com sucesso!')
       }
       
@@ -478,10 +480,10 @@ const Configuracoes = () => {
   const togglePrioridade = async (prioridade) => {
     try {
       if (prioridade.ativo) {
-        await api.delete(`/prioridades/${prioridade.id}`)
+        await api.delete(`/api/prioridades/${prioridade.id}`)
         setSuccessMessage('✅ Prioridade desativada com sucesso!')
       } else {
-        await api.post(`/prioridades/${prioridade.id}/reativar`)
+        await api.post(`/api/prioridades/${prioridade.id}/reativar`)
         setSuccessMessage('✅ Prioridade reativada com sucesso!')
       }
       await carregarPrioridades()
