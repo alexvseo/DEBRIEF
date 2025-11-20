@@ -131,7 +131,24 @@ const GerenciarUsuarios = () => {
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
       console.error('Erro ao salvar usuário:', error)
-      alert(error.response?.data?.detail || 'Erro ao salvar usuário')
+      console.error('Resposta do servidor:', error.response?.data)
+      
+      // Extrair mensagem de erro detalhada
+      let errorMessage = 'Erro ao salvar usuário'
+      
+      if (error.response?.data) {
+        if (error.response.data.detail) {
+          errorMessage = error.response.data.detail
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message
+        }
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      alert(`Erro ao salvar usuário:\n\n${errorMessage}`)
     }
   }
   
