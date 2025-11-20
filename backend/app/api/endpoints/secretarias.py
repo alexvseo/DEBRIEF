@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user, require_master
-from app.models import Secretaria, Cliente, User, Demanda
+from app.models import Secretaria, Cliente, User, Demanda, Demanda
 from app.schemas import (
     SecretariaCreate,
     SecretariaUpdate,
