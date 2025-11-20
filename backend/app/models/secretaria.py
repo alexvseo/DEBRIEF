@@ -95,14 +95,26 @@ class Secretaria(BaseModel):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
     
-    def to_dict_complete(self):
+    def to_dict_complete(self, db=None):
         """
         Retorna dicionário completo com estatísticas
+        
+        Args:
+            db: Sessão do banco (opcional, necessário para contar demandas)
         """
+        # Contar demandas usando query explícita para evitar erro de enum
+        total_demandas = 0
+        if db is not None:
+            from app.models import Demanda
+            total_demandas = db.query(Demanda).filter(Demanda.secretaria_id == self.id).count()
+        elif hasattr(self, '_sa_instance_state') and 'demandas' in getattr(self._sa_instance_state, 'loaded_attrs', {}):
+            # Se relacionamento estiver carregado (não deveria com lazy="noload")
+            total_demandas = len(self.demandas) if self.demandas else 0
+        
         return {
             **self.to_dict(),
             'cliente': self.cliente.to_dict_summary() if self.cliente else None,
-            'total_demandas': len(self.demandas) if self.demandas else 0,
+            'total_demandas': total_demandas,
         }
     
     @classmethod
