@@ -124,24 +124,28 @@ echo ""
 
 # 5. Testar cliente duplicado
 print_info "5️⃣  Testando criação de cliente duplicado..."
-DUPLICADO_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}/clientes/" \
+NOME_DUPLICADO="Cliente Duplicado Teste $(date +%s)"
+
+# Criar primeiro cliente
+DUPLICADO_RESPONSE1=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}/clientes/" \
   -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: application/json" \
-  -d '{
-    "nome": "Cliente Duplicado",
-    "ativo": true
-  }')
+  -d "{
+    \"nome\": \"${NOME_DUPLICADO}\",
+    \"ativo\": true
+  }")
 
-HTTP_CODE1=$(echo "$DUPLICADO_RESPONSE" | tail -n1)
+HTTP_CODE1=$(echo "$DUPLICADO_RESPONSE1" | tail -n1)
+BODY1=$(echo "$DUPLICADO_RESPONSE1" | head -n-1)
 
-# Tentar criar novamente
+# Tentar criar novamente com mesmo nome
 DUPLICADO_RESPONSE2=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}/clientes/" \
   -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: application/json" \
-  -d '{
-    "nome": "Cliente Duplicado",
-    "ativo": true
-  }')
+  -d "{
+    \"nome\": \"${NOME_DUPLICADO}\",
+    \"ativo\": true
+  }")
 
 HTTP_CODE2=$(echo "$DUPLICADO_RESPONSE2" | tail -n1)
 BODY2=$(echo "$DUPLICADO_RESPONSE2" | head -n-1)
@@ -151,6 +155,11 @@ if [ "$HTTP_CODE1" = "201" ] && [ "$HTTP_CODE2" = "400" ]; then
     echo "$BODY2" | python3 -m json.tool 2>/dev/null || echo "$BODY2"
 else
     print_warning "Validação de duplicado pode não estar funcionando"
+    print_info "Primeira tentativa: HTTP $HTTP_CODE1"
+    print_info "Segunda tentativa: HTTP $HTTP_CODE2"
+    if [ "$HTTP_CODE2" != "400" ]; then
+        echo "$BODY2" | python3 -m json.tool 2>/dev/null || echo "$BODY2"
+    fi
 fi
 echo ""
 

@@ -261,11 +261,19 @@ const Configuracoes = () => {
   // CLIENTES
   const salvarCliente = async (dados) => {
     try {
+      // Limpar campos vazios (enviar null em vez de string vazia)
+      const dadosLimpos = {
+        nome: dados.nome.trim(),
+        whatsapp_group_id: dados.whatsapp_group_id?.trim() || null,
+        trello_member_id: dados.trello_member_id?.trim() || null,
+        ativo: dados.ativo !== undefined ? dados.ativo : true
+      }
+      
       if (modalCliente.item) {
-        await api.put(`/api/clientes/${modalCliente.item.id}`, dados)
+        await api.put(`/api/clientes/${modalCliente.item.id}`, dadosLimpos)
         setSuccessMessage('✅ Cliente atualizado com sucesso!')
       } else {
-        await api.post('/api/clientes/', dados)
+        await api.post('/api/clientes/', dadosLimpos)
         setSuccessMessage('✅ Cliente criado com sucesso!')
       }
       
@@ -274,8 +282,29 @@ const Configuracoes = () => {
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
       console.error('Erro ao salvar cliente:', error)
-      const errorMessage = error.response?.data?.detail || error.message || 'Erro ao salvar cliente'
-      alert(`Erro ao salvar cliente: ${errorMessage}`)
+      console.error('Dados enviados:', dados)
+      console.error('Resposta do servidor:', error.response?.data)
+      
+      // Extrair mensagem de erro detalhada
+      let errorMessage = 'Erro ao salvar cliente'
+      
+      if (error.response?.data) {
+        // Se for array de erros de validação (422)
+        if (Array.isArray(error.response.data.detail)) {
+          const errors = error.response.data.detail.map(err => {
+            const field = err.loc?.join('.') || 'campo'
+            return `${field}: ${err.msg}`
+          }).join('\n')
+          errorMessage = `Erros de validação:\n${errors}`
+        } else {
+          // Mensagem única
+          errorMessage = error.response.data.detail || error.response.data.message || errorMessage
+        }
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      alert(`Erro ao salvar cliente:\n\n${errorMessage}\n\nVerifique o console para mais detalhes.`)
     }
   }
   
