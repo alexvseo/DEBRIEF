@@ -389,44 +389,55 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`grid grid-cols-1 ${isMaster() ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4`}>
+            <div className={`grid grid-cols-1 ${isMaster() ? 'md:grid-cols-5' : 'md:grid-cols-3'} gap-4`}>
               <Button 
-                className="h-20" 
-                size="lg"
+                className="h-16" 
+                size="md"
                 onClick={() => navigate('/nova-demanda')}
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4 mr-2" />
                 Nova Demanda
               </Button>
               <Button 
                 variant="outline"
-                className="h-20"
-                size="lg"
+                className="h-16"
+                size="md"
                 onClick={() => navigate('/minhas-demandas')}
               >
-                <FileText className="h-5 w-5" />
+                <FileText className="h-4 w-4 mr-2" />
                 Minhas Demandas
               </Button>
               <Button 
                 variant="outline"
-                className="h-20"
-                size="lg"
+                className="h-16"
+                size="md"
                 onClick={() => navigate('/meu-perfil')}
               >
-                <User className="h-5 w-5" />
+                <User className="h-4 w-4 mr-2" />
                 Meu Perfil
               </Button>
               
               {isMaster() && (
-                <Button 
-                  variant="outline"
-                  className="h-20 border-blue-300 text-blue-700 hover:bg-blue-50"
-                  size="lg"
-                  onClick={() => navigate('/configuracoes')}
-                >
-                  <Settings className="h-5 w-5" />
-                  Configurações
-                </Button>
+                <>
+                  <Button 
+                    variant="outline"
+                    className="h-16"
+                    size="md"
+                    onClick={() => navigate('/relatorios')}
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Relatórios
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="h-16 border-blue-300 text-blue-700 hover:bg-blue-50"
+                    size="md"
+                    onClick={() => navigate('/configuracoes')}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Configurações
+                  </Button>
+                </>
               )}
             </div>
           </CardContent>
