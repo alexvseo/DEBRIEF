@@ -78,16 +78,32 @@ echo ""
 
 # 1. Verificar conexão com banco remoto
 print_info "1️⃣  Verificando conexão com banco de dados remoto..."
+USE_SSH_TUNNEL=false
+
 if [ -f "scripts/dev/testar-conexao-banco-remoto.sh" ]; then
-    if ./scripts/dev/testar-conexao-banco-remoto.sh; then
-        print_success "Conexão com banco remoto OK"
+    if ./scripts/dev/testar-conexao-banco-remoto.sh 2>/dev/null; then
+        print_success "Conexão direta com banco remoto OK"
     else
-        print_warning "Problemas na conexão com banco remoto"
-        print_info "Deseja continuar mesmo assim? (s/N)"
+        print_warning "Conexão direta com banco remoto falhou"
+        print_info "Deseja usar túnel SSH como alternativa? (S/n)"
         read -r resposta
-        if [ "$resposta" != "s" ] && [ "$resposta" != "S" ]; then
-            print_info "Abortando..."
-            exit 1
+        if [ "$resposta" != "n" ] && [ "$resposta" != "N" ]; then
+            USE_SSH_TUNNEL=true
+            print_info "Configurando túnel SSH..."
+            if [ -f "scripts/dev/iniciar-tunel-ssh.sh" ]; then
+                ./scripts/dev/iniciar-tunel-ssh.sh
+                # Atualizar DATABASE_URL para usar localhost
+                if [ -f "backend/.env.dev" ]; then
+                    sed -i.bak 's|@82\.25\.92\.217:5432|@localhost:5432|g' backend/.env.dev
+                    print_success "DATABASE_URL atualizado para usar túnel SSH (localhost:5432)"
+                fi
+            else
+                print_error "Script de túnel SSH não encontrado"
+                print_info "Execute manualmente: ./scripts/dev/iniciar-tunel-ssh.sh"
+                exit 1
+            fi
+        else
+            print_warning "Continuando sem túnel SSH (pode falhar)"
         fi
     fi
 else
@@ -200,4 +216,10 @@ echo ""
 print_warning "⚠️  ATENÇÃO: Você está conectado ao banco de dados de PRODUÇÃO!"
 print_warning "   Tenha cuidado ao fazer alterações que possam afetar dados reais."
 echo ""
+
+if [ "$USE_SSH_TUNNEL" = true ]; then
+    print_info "📡 Túnel SSH ativo"
+    print_info "   Para parar: ./scripts/dev/parar-tunel-ssh.sh"
+    echo ""
+fi
 
