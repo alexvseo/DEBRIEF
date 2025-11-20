@@ -79,17 +79,21 @@ O problema pode estar no servidor, não no Mac:
 
 Se não conseguir conectar diretamente, use túnel SSH:
 
-### 1. Criar túnel SSH
+### 1. Criar túnel SSH (Automático)
 
 ```bash
-ssh -L 5432:localhost:5432 -N user@82.25.92.217
+./scripts/dev/iniciar-tunel-ssh.sh
 ```
 
-Isso cria um túnel local que redireciona `localhost:5432` para `82.25.92.217:5432`.
+Este script:
+- Cria túnel SSH automaticamente
+- Usa `autossh` se disponível (reconexão automática)
+- Testa a conexão
+- Salva PID para gerenciamento
 
 ### 2. Atualizar DATABASE_URL
 
-No `backend/.env.dev`, altere:
+O script detecta automaticamente e atualiza, ou você pode atualizar manualmente no `backend/.env.dev`:
 
 ```bash
 # De:
@@ -99,17 +103,26 @@ DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@82.25.92.217:5432/dbrie
 DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief
 ```
 
-### 3. Manter túnel aberto
+### 3. Parar túnel SSH
 
-Mantenha o terminal com o túnel SSH aberto enquanto desenvolve.
+```bash
+./scripts/dev/parar-tunel-ssh.sh
+```
 
-**Ou use autossh para reconexão automática:**
+### 4. Manual (se preferir)
+
+**Criar túnel manualmente:**
+```bash
+ssh -L 5432:localhost:5432 -N root@82.25.92.217
+```
+
+**Ou com autossh (reconexão automática):**
 ```bash
 # Instalar autossh
 brew install autossh
 
 # Criar túnel persistente
-autossh -M 20000 -L 5432:localhost:5432 -N user@82.25.92.217
+autossh -M 20000 -L 5432:localhost:5432 -N root@82.25.92.217
 ```
 
 ## 📋 Checklist de Troubleshooting
