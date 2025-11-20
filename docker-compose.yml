@@ -65,14 +65,12 @@ services:
     image: debrief-frontend:latest
     container_name: debrief-frontend
     restart: unless-stopped
-    # Não expor porta externa - Caddy faz proxy
-    expose:
-      - "80"
+    # Usar rede do host para Caddy acessar via localhost
+    network_mode: host
     depends_on:
       backend:
         condition: service_healthy
-    networks:
-      - debrief-network
+    # Não precisa de networks com network_mode: host
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
       interval: 30s
@@ -85,8 +83,8 @@ services:
     image: caddy:2
     container_name: debrief-caddy
     restart: unless-stopped
-    ports:
-      - "2022:80"  # Porta externa 2022
+    # Usar rede do host para acessar backend em localhost:8000
+    network_mode: host
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -94,8 +92,7 @@ services:
     depends_on:
       - frontend
       - backend
-    networks:
-      - debrief-network
+    # Não precisa de networks com network_mode: host
     healthcheck:
       test: ["CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile"]
       interval: 30s
