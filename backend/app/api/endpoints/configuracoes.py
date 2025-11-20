@@ -131,28 +131,6 @@ def buscar_configuracao(
     return ConfiguracaoResponse(**config.to_dict(include_valor=True))
 
 
-@router.get("/chave/{chave}", response_model=ConfiguracaoResponse)
-def buscar_configuracao_por_chave(
-    chave: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_master)
-):
-    """
-    Buscar configuração por chave
-    
-    **Permissão:** Apenas Master
-    """
-    config = Configuracao.get_by_chave(db, chave)
-    
-    if not config:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Configuração '{chave}' não encontrada"
-        )
-    
-    return ConfiguracaoResponse(**config.to_dict(include_valor=True))
-
-
 @router.post("/", response_model=ConfiguracaoResponse, status_code=status.HTTP_201_CREATED)
 def criar_configuracao(
     config_data: ConfiguracaoCreate,
