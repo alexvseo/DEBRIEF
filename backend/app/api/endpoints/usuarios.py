@@ -138,27 +138,29 @@ def criar_usuario(
             detail="cliente_id é obrigatório para usuários do tipo 'cliente'"
         )
     
+    # Preparar dados para criação do usuário
     # Se tipo for master, garantir que cliente_id seja None (não string vazia)
-    cliente_id_final = None
+    user_kwargs = {
+        'username': user_data.username,
+        'email': user_data.email,
+        'nome_completo': user_data.nome_completo,
+        'tipo': user_data.tipo
+    }
+    
     if user_data.tipo == TipoUsuario.MASTER:
-        cliente_id_final = None
+        # Master não deve ter cliente_id
+        user_kwargs['cliente_id'] = None
     elif user_data.tipo == TipoUsuario.CLIENTE:
-        # Converter string vazia para None e depois validar
-        if user_data.cliente_id == '' or user_data.cliente_id is None:
+        # Cliente deve ter cliente_id
+        if not user_data.cliente_id or user_data.cliente_id == '':
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="cliente_id é obrigatório para usuários do tipo 'cliente'"
             )
-        cliente_id_final = user_data.cliente_id
+        user_kwargs['cliente_id'] = user_data.cliente_id
     
-    # Criar novo usuário - definir tipo primeiro, depois cliente_id
-    new_user = User(
-        username=user_data.username,
-        email=user_data.email,
-        nome_completo=user_data.nome_completo,
-        tipo=user_data.tipo,
-        cliente_id=cliente_id_final
-    )
+    # Criar novo usuário
+    new_user = User(**user_kwargs)
     new_user.set_password(user_data.password)
     
     db.add(new_user)
