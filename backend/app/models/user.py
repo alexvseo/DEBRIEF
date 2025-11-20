@@ -417,7 +417,8 @@ class User(BaseModel):
             total = user.get_demandas_count()
             print(f"Usuário criou {total} demandas")
         """
-        return self.demandas.count()
+        from app.models.demanda import Demanda
+        return db.query(Demanda).filter(Demanda.usuario_id == self.id).count()
     
     def get_demandas_abertas(self, db):
         """
