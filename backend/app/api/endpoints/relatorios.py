@@ -3,7 +3,7 @@ Endpoints de Relatórios
 Geração de relatórios em PDF e Excel
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, or_
 from typing import Optional, List
@@ -16,6 +16,7 @@ from app.models.cliente import Cliente
 from app.models.secretaria import Secretaria
 from app.models.tipo_demanda import TipoDemanda
 from app.models.prioridade import Prioridade
+from app.services.relatorio import RelatorioService
 import io
 import json
 
@@ -163,26 +164,24 @@ async def gerar_relatorio_pdf(
     Gerar relatório em PDF
     
     Retorna um arquivo PDF com as demandas filtradas.
-    Por enquanto retorna JSON (implementação futura com ReportLab).
     
     Args:
         cliente_id: Filtrar por cliente
         secretaria_id: Filtrar por secretaria
         tipo_demanda_id: Filtrar por tipo
         status: Filtrar por status
-        data_inicio: Data início
-        data_fim: Data fim
+        data_inicio: Data início (YYYY-MM-DD)
+        data_fim: Data fim (YYYY-MM-DD)
         current_user: Usuário autenticado
         db: Sessão do banco
         
     Returns:
         StreamingResponse: Arquivo PDF
     """
-    # TODO: Implementar geração de PDF com ReportLab
-    # Por enquanto, retornar JSON como placeholder
-    
+    # Construir query
     query = db.query(Demanda)
     
+    # Se não for master, filtrar apenas demandas do usuário
     if not current_user.is_master():
         query = query.filter(Demanda.usuario_id == current_user.id)
     
@@ -194,7 +193,14 @@ async def gerar_relatorio_pdf(
     if tipo_demanda_id:
         query = query.filter(Demanda.tipo_demanda_id == tipo_demanda_id)
     if status:
-        query = query.filter(Demanda.status == status)
+        try:
+            status_enum = StatusDemanda(status.lower())
+            query = query.filter(Demanda.status == status_enum)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Status inválido. Valores válidos: {[s.value for s in StatusDemanda]}"
+            )
     if data_inicio:
         try:
             data_ini = datetime.strptime(data_inicio, "%Y-%m-%d").date()
@@ -202,7 +208,7 @@ async def gerar_relatorio_pdf(
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Formato de data_inicio inválido"
+                detail="Formato de data_inicio inválido. Use YYYY-MM-DD"
             )
     if data_fim:
         try:
@@ -211,24 +217,42 @@ async def gerar_relatorio_pdf(
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Formato de data_fim inválido"
+                detail="Formato de data_fim inválido. Use YYYY-MM-DD"
             )
     
-    demandas = query.all()
+    # Carregar relacionamentos
+    demandas = query.options(
+        joinedload(Demanda.tipo_demanda),
+        joinedload(Demanda.prioridade),
+        joinedload(Demanda.secretaria).joinedload(Secretaria.cliente),
+        joinedload(Demanda.usuario)
+    ).all()
     
-    # Por enquanto, retornar JSON
-    # TODO: Implementar geração de PDF real
-    dados = {
-        "total": len(demandas),
-        "demandas": [d.to_dict() for d in demandas],
-        "gerado_em": datetime.now().isoformat(),
-        "usuario": current_user.username
+    # Preparar filtros para o relatório
+    filtros = {
+        "cliente_id": cliente_id,
+        "secretaria_id": secretaria_id,
+        "tipo_demanda_id": tipo_demanda_id,
+        "status": status,
+        "data_inicio": data_inicio,
+        "data_fim": data_fim
     }
     
-    return {
-        "message": "Geração de PDF ainda não implementada. Use /api/relatorios/excel ou aguarde implementação.",
-        "dados": dados
-    }
+    # Gerar PDF
+    relatorio_service = RelatorioService()
+    pdf_buffer = relatorio_service.gerar_pdf(demandas, filtros, current_user)
+    
+    # Nome do arquivo
+    filename = f"relatorio_demandas_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    
+    # Retornar como streaming response
+    return StreamingResponse(
+        io.BytesIO(pdf_buffer.read()),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
 
 
 @router.get("/excel")
@@ -246,30 +270,28 @@ async def gerar_relatorio_excel(
     Gerar relatório em Excel
     
     Retorna um arquivo Excel com as demandas filtradas.
-    Por enquanto retorna JSON (implementação futura com openpyxl).
     
     Args:
         cliente_id: Filtrar por cliente
         secretaria_id: Filtrar por secretaria
         tipo_demanda_id: Filtrar por tipo
         status: Filtrar por status
-        data_inicio: Data início
-        data_fim: Data fim
+        data_inicio: Data início (YYYY-MM-DD)
+        data_fim: Data fim (YYYY-MM-DD)
         current_user: Usuário autenticado
         db: Sessão do banco
         
     Returns:
-        StreamingResponse: Arquivo Excel
+        StreamingResponse: Arquivo Excel (.xlsx)
     """
-    # TODO: Implementar geração de Excel com openpyxl
-    # Por enquanto, retornar JSON como placeholder
-    
+    # Construir query (mesmo código do PDF)
     query = db.query(Demanda)
     
+    # Se não for master, filtrar apenas demandas do usuário
     if not current_user.is_master():
         query = query.filter(Demanda.usuario_id == current_user.id)
     
-    # Aplicar filtros (mesmo código do PDF)
+    # Aplicar filtros
     if cliente_id:
         query = query.join(Secretaria).filter(Secretaria.cliente_id == cliente_id)
     if secretaria_id:
@@ -277,7 +299,14 @@ async def gerar_relatorio_excel(
     if tipo_demanda_id:
         query = query.filter(Demanda.tipo_demanda_id == tipo_demanda_id)
     if status:
-        query = query.filter(Demanda.status == status)
+        try:
+            status_enum = StatusDemanda(status.lower())
+            query = query.filter(Demanda.status == status_enum)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Status inválido. Valores válidos: {[s.value for s in StatusDemanda]}"
+            )
     if data_inicio:
         try:
             data_ini = datetime.strptime(data_inicio, "%Y-%m-%d").date()
@@ -285,7 +314,7 @@ async def gerar_relatorio_excel(
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Formato de data_inicio inválido"
+                detail="Formato de data_inicio inválido. Use YYYY-MM-DD"
             )
     if data_fim:
         try:
@@ -294,22 +323,40 @@ async def gerar_relatorio_excel(
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Formato de data_fim inválido"
+                detail="Formato de data_fim inválido. Use YYYY-MM-DD"
             )
     
-    demandas = query.all()
+    # Carregar relacionamentos
+    demandas = query.options(
+        joinedload(Demanda.tipo_demanda),
+        joinedload(Demanda.prioridade),
+        joinedload(Demanda.secretaria).joinedload(Secretaria.cliente),
+        joinedload(Demanda.usuario)
+    ).all()
     
-    # Por enquanto, retornar JSON
-    # TODO: Implementar geração de Excel real
-    dados = {
-        "total": len(demandas),
-        "demandas": [d.to_dict() for d in demandas],
-        "gerado_em": datetime.now().isoformat(),
-        "usuario": current_user.username
+    # Preparar filtros para o relatório
+    filtros = {
+        "cliente_id": cliente_id,
+        "secretaria_id": secretaria_id,
+        "tipo_demanda_id": tipo_demanda_id,
+        "status": status,
+        "data_inicio": data_inicio,
+        "data_fim": data_fim
     }
     
-    return {
-        "message": "Geração de Excel ainda não implementada. Aguarde implementação com openpyxl.",
-        "dados": dados
-    }
+    # Gerar Excel
+    relatorio_service = RelatorioService()
+    excel_buffer = relatorio_service.gerar_excel(demandas, filtros, current_user)
+    
+    # Nome do arquivo
+    filename = f"relatorio_demandas_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    
+    # Retornar como streaming response
+    return StreamingResponse(
+        io.BytesIO(excel_buffer.read()),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
 
