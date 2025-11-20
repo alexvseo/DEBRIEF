@@ -138,12 +138,17 @@ def buscar_secretaria(
             detail=f"Secretaria ID {secretaria_id} não encontrada"
         )
     
+    # Contar demandas sem carregar o relacionamento (evita erro de enum)
+    total_demandas = db.query(Demanda).filter(
+        Demanda.secretaria_id == secretaria_id
+    ).count()
+    
     # Montar resposta completa
     response = SecretariaResponseComplete(
         **secretaria.to_dict(),
         cliente_nome=secretaria.cliente.nome if secretaria.cliente else None,
-        total_demandas=len(secretaria.demandas) if secretaria.demandas else 0,
-        tem_demandas=secretaria.tem_demandas()
+        total_demandas=total_demandas,
+        tem_demandas=total_demandas > 0
     )
     
     return response
