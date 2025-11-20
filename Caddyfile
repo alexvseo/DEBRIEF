@@ -14,6 +14,7 @@
         # Backend está em network_mode: host, então acessa via 127.0.0.1:8000 (IPv4)
         # Usar 127.0.0.1 em vez de localhost para evitar tentativa de IPv6
         # Backend tem rotas com prefixo /api, então fazer proxy direto
+        # IMPORTANTE: Não remover o prefixo /api porque o backend já espera receber com /api
         reverse_proxy 127.0.0.1:8000 {
             # Headers para proxy
             header_up X-Real-IP {remote_host}
