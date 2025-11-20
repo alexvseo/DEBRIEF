@@ -2,7 +2,7 @@
 Modelo Demanda
 Representa uma solicitação/briefing no sistema
 """
-from sqlalchemy import Column, String, Text, Enum, Date, DateTime, ForeignKey, Index
+from sqlalchemy import Column, String, Text, Enum, Date, DateTime, ForeignKey, Index, TypeDecorator
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -17,6 +17,37 @@ class StatusDemanda(str, enum.Enum):
     AGUARDANDO_CLIENTE = "aguardando_cliente"
     CONCLUIDA = "concluida"
     CANCELADA = "cancelada"
+
+
+class StatusDemandaType(TypeDecorator):
+    """
+    TypeDecorator para converter entre enum Python e string do banco
+    Permite usar StatusDemanda.ABERTA no código, mas armazena 'aberta' no banco
+    """
+    impl = String
+    cache_ok = True
+    
+    def __init__(self):
+        super().__init__(length=50)
+    
+    def process_bind_param(self, value, dialect):
+        """Converter enum Python para string do banco"""
+        if value is None:
+            return None
+        if isinstance(value, StatusDemanda):
+            return value.value  # Retorna 'aberta', 'em_andamento', etc.
+        return str(value)
+    
+    def process_result_value(self, value, dialect):
+        """Converter string do banco para enum Python"""
+        if value is None:
+            return None
+        # Buscar enum pelo valor
+        for status in StatusDemanda:
+            if status.value == value:
+                return status
+        # Se não encontrar, retornar string (para compatibilidade)
+        return value
 
 
 class PrioridadeDemanda(str, enum.Enum):
@@ -51,10 +82,10 @@ class Demanda(BaseModel):
     descricao = Column(Text, nullable=False)
     
     # Status
-    # Usar native_enum=False para armazenar como VARCHAR e evitar problemas com enum nativo do PostgreSQL
-    # Isso permite que valores em minúsculo do banco funcionem com o enum Python
+    # Usar TypeDecorator customizado para converter entre enum Python e string do banco
+    # Isso resolve problemas com enum nativo do PostgreSQL que tem valores em minúsculo
     status = Column(
-        Enum(StatusDemanda, native_enum=False),
+        StatusDemandaType(),
         nullable=False,
         default=StatusDemanda.ABERTA,
         index=True

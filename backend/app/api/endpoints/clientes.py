@@ -84,12 +84,16 @@ def buscar_cliente(
             detail=f"Cliente ID {cliente_id} não encontrado"
         )
     
+    # Contar demandas usando query explícita para evitar erro de enum
+    from app.models import Demanda
+    total_demandas = db.query(Demanda).filter(Demanda.cliente_id == cliente.id).count()
+    
     # Montar resposta completa
     response = ClienteResponseComplete(
         **cliente.to_dict(),
         total_usuarios=len(cliente.usuarios) if cliente.usuarios else 0,
         total_secretarias=len(cliente.secretarias) if cliente.secretarias else 0,
-        total_demandas=len(cliente.demandas) if cliente.demandas else 0,
+        total_demandas=total_demandas,
         tem_whatsapp=bool(cliente.whatsapp_group_id),
         tem_trello=bool(cliente.trello_member_id)
     )
@@ -229,10 +233,11 @@ def desativar_cliente(
         )
     
     # Verificar se tem demandas em andamento
+    # Usar valores do enum (strings) em vez de objetos enum para evitar erro
     from app.models import Demanda, StatusDemanda
     demandas_abertas = db.query(Demanda).filter(
         Demanda.cliente_id == cliente_id,
-        Demanda.status.in_([StatusDemanda.ABERTA, StatusDemanda.EM_ANDAMENTO])
+        Demanda.status.in_([StatusDemanda.ABERTA.value, StatusDemanda.EM_ANDAMENTO.value])
     ).count()
     
     if demandas_abertas > 0:
@@ -321,6 +326,9 @@ def estatisticas_cliente(
     for status, total in demandas_por_status:
         stats_status[status.value] = total
     
+    # Contar demandas usando query explícita para evitar erro de enum
+    total_demandas = db.query(Demanda).filter(Demanda.cliente_id == cliente_id).count()
+    
     # Estatísticas gerais
     return {
         "cliente": {
@@ -331,7 +339,7 @@ def estatisticas_cliente(
         "totais": {
             "usuarios": len(cliente.usuarios) if cliente.usuarios else 0,
             "secretarias": len(cliente.secretarias) if cliente.secretarias else 0,
-            "demandas": len(cliente.demandas) if cliente.demandas else 0
+            "demandas": total_demandas
         },
         "demandas_por_status": stats_status,
         "integrações": {

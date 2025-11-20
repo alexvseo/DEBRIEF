@@ -79,10 +79,12 @@ class Cliente(BaseModel):
     )
     
     # Relacionamento com demandas
+    # Usar lazy="noload" para evitar carregar automaticamente (evita erro de enum)
+    # Quando necessário, usar query explícita: db.query(Demanda).filter(Demanda.cliente_id == self.id)
     demandas = relationship(
         "Demanda",
         back_populates="cliente",
-        lazy="select"
+        lazy="noload"  # Nunca carregar automaticamente
     )
     
     # ==================== MÉTODOS ====================
@@ -105,16 +107,28 @@ class Cliente(BaseModel):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
     
-    def to_dict_complete(self):
+    def to_dict_complete(self, db=None):
         """
         Retorna dicionário completo com estatísticas
         Útil para visualização detalhada
+        
+        Args:
+            db: Sessão do banco (opcional, necessário para contar demandas)
         """
+        # Contar usando query explícita para evitar erro de enum
+        total_demandas = 0
+        if db is not None:
+            from app.models import Demanda
+            total_demandas = db.query(Demanda).filter(Demanda.cliente_id == self.id).count()
+        elif hasattr(self, '_sa_instance_state') and 'demandas' in getattr(self._sa_instance_state, 'loaded_attrs', {}):
+            # Se relacionamento estiver carregado (não deveria com lazy="noload")
+            total_demandas = len(self.demandas) if self.demandas else 0
+        
         return {
             **self.to_dict(),
             'total_usuarios': len(self.usuarios) if self.usuarios else 0,
             'total_secretarias': len(self.secretarias) if self.secretarias else 0,
-            'total_demandas': len(self.demandas) if self.demandas else 0,
+            'total_demandas': total_demandas,
         }
     
     @classmethod

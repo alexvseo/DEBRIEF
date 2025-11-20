@@ -163,11 +163,13 @@ class User(BaseModel):
     # ==================== RELACIONAMENTOS INVERSOS ====================
     
     # Demandas criadas por este usuário
+    # Usar lazy="noload" para evitar carregar automaticamente (evita erro de enum)
+    # Quando necessário, usar query explícita: db.query(Demanda).filter(Demanda.usuario_id == self.id)
     demandas = relationship(
         "Demanda",
         back_populates="usuario",
         cascade="all, delete-orphan",
-        lazy="dynamic"  # Query ao invés de lista (melhor performance)
+        lazy="noload"  # Nunca carregar automaticamente
     )
     
     # ==================== ÍNDICES COMPOSTOS ====================
