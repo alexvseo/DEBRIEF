@@ -242,7 +242,7 @@ const Configuracoes = () => {
       setTestando(prev => ({ ...prev, trello: true }))
       setTestResult(prev => ({ ...prev, trello: null }))
       
-      const response = await api.post('/api/configuracoes/testar/trello', {
+      const response = await api.post('/configuracoes/testar/trello', {
         api_key: valores.trello_api_key,
         token: valores.trello_token,
         board_id: valores.trello_board_id || null
