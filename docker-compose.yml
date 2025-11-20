@@ -9,16 +9,12 @@ services:
     image: debrief-backend:latest
     container_name: debrief-backend
     restart: unless-stopped
-    ports:
-      - "2025:8000"  # Porta externa 2025, interna 8000
-    # Permitir container acessar serviços do host
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # Usar rede do host para acessar PostgreSQL em localhost
+    network_mode: host
     environment:
-      # Banco de Dados - Conectar ao PostgreSQL do host
-      # No servidor, PostgreSQL está rodando no host, então usamos host.docker.internal
-      # Se host.docker.internal não funcionar, usar o IP do host (172.17.0.1 ou verificar com: ip addr show docker0)
-      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5432/dbrief
+      # Banco de Dados - Conectar ao PostgreSQL do host via localhost
+      # Com network_mode: host, o container acessa localhost diretamente
+      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief
       
       # JWT
       - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}
@@ -51,8 +47,7 @@ services:
       - ./backend/uploads:/app/uploads
       # NÃO montar código fonte em produção para evitar conflitos
       # - ./backend:/app
-    networks:
-      - debrief-network
+    # Não precisa de networks com network_mode: host
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
       interval: 30s

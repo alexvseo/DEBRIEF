@@ -11,9 +11,9 @@
         path /api/*
     }
     handle @api {
-        # Backend está na rede Docker, então usa o nome do serviço
+        # Backend está em network_mode: host, então acessa via localhost:8000
         # Backend tem rotas com prefixo /api, então fazer proxy direto
-        reverse_proxy debrief-backend:8000 {
+        reverse_proxy localhost:8000 {
             # Headers para proxy
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
