@@ -889,6 +889,7 @@ const Configuracoes = () => {
                 </div>
               )}
             </div>
+            )}
           </CardContent>
         </Card>
         
