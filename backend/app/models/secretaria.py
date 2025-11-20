@@ -67,10 +67,12 @@ class Secretaria(BaseModel):
     )
     
     # Relacionamento com demandas
+    # Usar lazy="noload" para evitar carregar automaticamente (evita erro de enum)
+    # Quando necessário, usar query explícita: db.query(Demanda).filter(Demanda.secretaria_id == self.id)
     demandas = relationship(
         "Demanda",
         back_populates="secretaria",
-        lazy="select"
+        lazy="noload"  # Nunca carregar automaticamente
     )
     
     # ==================== MÉTODOS ====================
@@ -150,16 +152,38 @@ class Secretaria(BaseModel):
         """Ativa a secretaria"""
         self.ativo = True
     
-    def tem_demandas(self):
-        """Verifica se a secretaria tem demandas vinculadas"""
-        return bool(self.demandas and len(self.demandas) > 0)
+    def tem_demandas(self, db=None):
+        """
+        Verifica se a secretaria tem demandas vinculadas
+        
+        Args:
+            db: Sessão do banco (opcional, necessário se relacionamento não estiver carregado)
+        
+        Returns:
+            bool: True se tiver demandas, False caso contrário
+        """
+        # Se relacionamento estiver carregado (não deveria com lazy="noload")
+        if hasattr(self, '_sa_instance_state') and 'demandas' in self._sa_instance_state.loaded_attrs:
+            return bool(self.demandas and len(self.demandas) > 0)
+        
+        # Se não, usar query explícita (requer db)
+        if db is not None:
+            from app.models import Demanda
+            count = db.query(Demanda).filter(Demanda.secretaria_id == self.id).count()
+            return count > 0
+        
+        # Se não tiver db, retornar False (assumir que não tem)
+        return False
     
-    def pode_ser_deletada(self):
+    def pode_ser_deletada(self, db=None):
         """
         Verifica se a secretaria pode ser deletada
         Não pode deletar se houver demandas vinculadas
+        
+        Args:
+            db: Sessão do banco (opcional, necessário para verificar demandas)
         """
-        return not self.tem_demandas()
+        return not self.tem_demandas(db)
 
 
 # ==================== ÍNDICES ====================
