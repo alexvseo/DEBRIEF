@@ -136,10 +136,15 @@ const Configuracoes = () => {
   
   const carregarClientes = async () => {
     try {
-      const response = await api.get('/api/clientes/')
-      setClientes(response.data)
+      const response = await api.get('/api/clientes/', {
+        params: {
+          apenas_ativos: false  // Mostrar todos para gerenciamento
+        }
+      })
+      setClientes(response.data || [])
     } catch (error) {
       console.error('Erro ao carregar clientes:', error)
+      setClientes([])
     }
   }
   
