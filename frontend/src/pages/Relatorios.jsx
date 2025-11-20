@@ -41,7 +41,6 @@ import {
   LineChart,
   Line
 } from 'recharts'
-import { MultiSelect } from '@/components/ui'
 
 const Relatorios = () => {
   const navigate = useNavigate()
