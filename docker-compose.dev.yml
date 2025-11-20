@@ -10,8 +10,10 @@ services:
     ports:
       - "8000:8000"  # Porta local 8000
     environment:
-      # Banco de Dados - Conectar ao banco remoto do servidor
-      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+      # Banco de Dados - Conectar via túnel SSH (localhost:5432)
+      # IMPORTANTE: O túnel SSH deve estar ativo antes de iniciar o backend
+      # Execute: ./scripts/dev/iniciar-tunel-ssh.sh
+      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5432/dbrief
       
       # JWT
       - SECRET_KEY=dev-secret-key-local-change-me
