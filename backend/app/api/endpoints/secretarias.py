@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user, require_master
-from app.models import Secretaria, Cliente, User
+from app.models import Secretaria, Cliente, User, Demanda
 from app.schemas import (
     SecretariaCreate,
     SecretariaUpdate,
@@ -63,13 +63,20 @@ def listar_secretarias(
     secretarias = query.order_by(Secretaria.nome).offset(skip).limit(limit).all()
     
     # Montar resposta completa
+    # Usar query separada para contar demandas para evitar erro de enum
+    from app.models import Demanda
     response = []
     for secretaria in secretarias:
+        # Contar demandas sem carregar o relacionamento (evita erro de enum)
+        total_demandas = db.query(Demanda).filter(
+            Demanda.secretaria_id == secretaria.id
+        ).count()
+        
         response.append(SecretariaResponseComplete(
             **secretaria.to_dict(),
             cliente_nome=secretaria.cliente.nome if secretaria.cliente else None,
-            total_demandas=len(secretaria.demandas) if secretaria.demandas else 0,
-            tem_demandas=secretaria.tem_demandas()
+            total_demandas=total_demandas,
+            tem_demandas=total_demandas > 0
         ))
     
     return response
