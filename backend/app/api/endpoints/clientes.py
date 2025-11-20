@@ -233,11 +233,11 @@ def desativar_cliente(
         )
     
     # Verificar se tem demandas em andamento
-    # Usar valores do enum (strings) em vez de objetos enum para evitar erro
+    # Usar objetos enum diretamente - o TypeDecorator faz a conversão
     from app.models import Demanda, StatusDemanda
     demandas_abertas = db.query(Demanda).filter(
         Demanda.cliente_id == cliente_id,
-        Demanda.status.in_([StatusDemanda.ABERTA.value, StatusDemanda.EM_ANDAMENTO.value])
+        Demanda.status.in_([StatusDemanda.ABERTA, StatusDemanda.EM_ANDAMENTO])
     ).count()
     
     if demandas_abertas > 0:

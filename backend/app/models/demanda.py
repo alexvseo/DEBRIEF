@@ -36,15 +36,22 @@ class StatusDemandaType(TypeDecorator):
             return None
         if isinstance(value, StatusDemanda):
             return value.value  # Retorna 'aberta', 'em_andamento', etc.
+        # Se for string, verificar se é um valor válido do enum
+        if isinstance(value, str):
+            for status in StatusDemanda:
+                if status.value == value.lower():
+                    return status.value
         return str(value)
     
     def process_result_value(self, value, dialect):
         """Converter string do banco para enum Python"""
         if value is None:
             return None
+        # Normalizar para minúsculo para garantir compatibilidade
+        value_lower = str(value).lower()
         # Buscar enum pelo valor
         for status in StatusDemanda:
-            if status.value == value:
+            if status.value == value_lower:
                 return status
         # Se não encontrar, retornar string (para compatibilidade)
         return value

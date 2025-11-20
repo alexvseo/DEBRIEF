@@ -112,7 +112,7 @@ async def get_demandas_estatisticas(
     hoje = date.today()
     atrasadas = query.filter(
         Demanda.prazo_final < hoje,
-        Demanda.status.in_([StatusDemanda.ABERTA.value, StatusDemanda.EM_ANDAMENTO.value])
+        Demanda.status.in_([StatusDemanda.ABERTA, StatusDemanda.EM_ANDAMENTO])
     ).count()
     
     # Por mês (últimos 12 meses)

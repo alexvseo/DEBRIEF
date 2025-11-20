@@ -257,7 +257,7 @@ async def get_demandas_stats(
     from datetime import date
     atrasadas = query.filter(
         Demanda.prazo_final < date.today(),
-        Demanda.status.in_([StatusDemanda.ABERTA.value, StatusDemanda.EM_ANDAMENTO.value])
+        Demanda.status.in_([StatusDemanda.ABERTA, StatusDemanda.EM_ANDAMENTO])
     ).count()
     
     return {
