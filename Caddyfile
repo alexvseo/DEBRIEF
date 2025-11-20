@@ -13,6 +13,10 @@
     handle @api {
         # Backend está em network_mode: host, escutando na porta 8000
         # Caddy também está em network_mode: host, então pode acessar localhost:8000
+        # Fazer rewrite: /api/* -> /* (remover prefixo /api)
+        rewrite @api {
+            uri strip_prefix /api
+        }
         reverse_proxy localhost:8000 {
             # Headers para proxy
             header_up X-Real-IP {remote_host}
