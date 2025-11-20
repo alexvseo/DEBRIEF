@@ -1,46 +1,37 @@
 #!/bin/bash
 
-# Script para limpar cache do frontend e forçar rebuild
-
-echo "🧹 Limpando cache do frontend..."
+echo "🧹 Limpando cache e forçando rebuild do frontend..."
 echo ""
 
-echo "1️⃣  Parando containers..."
+# 1. Parar e remover o container frontend
+echo "1️⃣  Parando e removendo container 'debrief-frontend'..."
 docker-compose stop frontend
-echo ""
-
-echo "2️⃣  Removendo container frontend..."
 docker-compose rm -f frontend
+echo "   ✅ Container removido."
 echo ""
 
-echo "3️⃣  Removendo imagem do frontend..."
-docker rmi debrief-frontend:latest 2>/dev/null || echo "   (Imagem não encontrada ou já removida)"
+# 2. Remover a imagem antiga do frontend
+echo "2️⃣  Removendo imagem 'debrief-frontend:latest' (se existir)..."
+docker rmi debrief-frontend:latest 2>/dev/null || true
+echo "   ✅ Imagem removida (ou não existia)."
 echo ""
 
-echo "4️⃣  Limpando cache do Docker BuildKit..."
-docker builder prune -f
-echo ""
-
-echo "5️⃣  Reconstruindo frontend (sem cache)..."
+# 3. Reconstruir a imagem do frontend sem cache
+echo "3️⃣  Reconstruindo imagem 'debrief-frontend' sem cache..."
 docker-compose build --no-cache frontend
+echo "   ✅ Imagem reconstruída."
 echo ""
 
-echo "6️⃣  Iniciando frontend..."
+# 4. Iniciar o container frontend
+echo "4️⃣  Iniciando container 'debrief-frontend'..."
 docker-compose up -d frontend
+echo "   ✅ Container iniciado."
 echo ""
 
-echo "7️⃣  Aguardando frontend ficar healthy..."
-sleep 10
-
-echo ""
-echo "8️⃣  Verificando status..."
+# 5. Verificar o status do container
+echo "5️⃣  Verificando status do container 'debrief-frontend'..."
 docker-compose ps frontend
 echo ""
 
-echo "✅ Cache limpo e frontend reconstruído!"
-echo ""
-echo "💡 Agora:"
-echo "   1. Limpe o cache do navegador (Ctrl+Shift+R ou Cmd+Shift+R)"
-echo "   2. Ou abra em modo anônimo/privado"
-echo "   3. Recarregue a página"
-
+echo "✅ Limpeza de cache e rebuild do frontend concluídos."
+echo "   Por favor, limpe o cache do seu navegador (Ctrl+Shift+R ou Cmd+Shift+R) e recarregue a página."
