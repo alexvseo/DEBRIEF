@@ -29,9 +29,9 @@
     }
 
     # Proxy para Frontend (tudo mais)
-    # Frontend também está em network_mode: host, então usa localhost:80
+    # Frontend está na rede Docker, então usa o nome do serviço
     handle {
-        reverse_proxy localhost:80 {
+        reverse_proxy debrief-frontend:80 {
             # Headers para proxy
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
