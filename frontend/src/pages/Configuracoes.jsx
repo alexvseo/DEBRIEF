@@ -136,7 +136,7 @@ const Configuracoes = () => {
   
   const carregarClientes = async () => {
     try {
-      const response = await api.get('/api/clientes/', {
+      const response = await api.get('/clientes/', {
         params: {
           apenas_ativos: false  // Mostrar todos para gerenciamento
         }
@@ -151,7 +151,7 @@ const Configuracoes = () => {
   const carregarSecretarias = async () => {
     try {
       // Carregar todas as secretarias (ativas e inativas) para gerenciamento
-      const response = await api.get('/api/secretarias/', {
+      const response = await api.get('/secretarias/', {
         params: {
           apenas_ativas: false,  // Mostrar todas para gerenciamento
           skip: 0,
@@ -181,7 +181,7 @@ const Configuracoes = () => {
   
   const carregarTiposDemanda = async () => {
     try {
-      const response = await api.get('/api/tipos-demanda/')
+      const response = await api.get('/tipos-demanda/')
       setTiposDemanda(response.data)
     } catch (error) {
       console.error('Erro ao carregar tipos:', error)
@@ -190,7 +190,7 @@ const Configuracoes = () => {
   
   const carregarPrioridades = async () => {
     try {
-      const response = await api.get('/api/prioridades/', {
+      const response = await api.get('/prioridades/', {
         params: {
           apenas_ativas: false  // Mostrar todas para gerenciamento
         }
@@ -269,7 +269,7 @@ const Configuracoes = () => {
       setTestando(prev => ({ ...prev, whatsapp: true }))
       setTestResult(prev => ({ ...prev, whatsapp: null }))
       
-      const response = await api.post('/api/configuracoes/testar/whatsapp', {
+      const response = await api.post('/configuracoes/testar/whatsapp', {
         url: valores.wpp_url,
         instance: valores.wpp_instance,
         token: valores.wpp_token
@@ -309,7 +309,7 @@ const Configuracoes = () => {
         setSuccessMessage('✅ Cliente atualizado com sucesso!')
       } else {
         // Criar novo cliente
-        const response = await api.post('/api/clientes/', dadosLimpos)
+        const response = await api.post('/clientes/', dadosLimpos)
         setSuccessMessage('✅ Cliente criado com sucesso!')
       }
       
@@ -347,10 +347,10 @@ const Configuracoes = () => {
   const toggleCliente = async (cliente) => {
     try {
       if (cliente.ativo) {
-        await api.delete(`/api/clientes/${cliente.id}`)
+        await api.delete(`/clientes/${cliente.id}`)
         setSuccessMessage('✅ Cliente desativado com sucesso!')
       } else {
-        await api.post(`/api/clientes/${cliente.id}/reativar`)
+        await api.post(`/clientes/${cliente.id}/reativar`)
         setSuccessMessage('✅ Cliente reativado com sucesso!')
       }
       await carregarClientes()
@@ -398,10 +398,10 @@ const Configuracoes = () => {
       }
 
       if (modalSecretaria.item) {
-        await api.put(`/api/secretarias/${modalSecretaria.item.id}`, dadosLimpos)
+        await api.put(`/secretarias/${modalSecretaria.item.id}`, dadosLimpos)
         setSuccessMessage('✅ Secretaria atualizada com sucesso!')
       } else {
-        await api.post('/api/secretarias/', dadosLimpos)
+        await api.post('/secretarias/', dadosLimpos)
         setSuccessMessage('✅ Secretaria criada com sucesso!')
       }
       
@@ -439,10 +439,10 @@ const Configuracoes = () => {
   const toggleSecretaria = async (secretaria) => {
     try {
       if (secretaria.ativo) {
-        await api.delete(`/api/secretarias/${secretaria.id}`)
+        await api.delete(`/secretarias/${secretaria.id}`)
         setSuccessMessage('✅ Secretaria desativada com sucesso!')
       } else {
-        await api.post(`/api/secretarias/${secretaria.id}/reativar`)
+        await api.post(`/secretarias/${secretaria.id}/reativar`)
         setSuccessMessage('✅ Secretaria reativada com sucesso!')
       }
       await carregarSecretarias()
@@ -467,7 +467,7 @@ const Configuracoes = () => {
     }
     
     try {
-      await api.delete(`/api/secretarias/${secretaria.id}/permanente`)
+      await api.delete(`/secretarias/${secretaria.id}/permanente`)
       setSuccessMessage('✅ Secretaria deletada permanentemente!')
       await carregarSecretarias()
       setTimeout(() => setSuccessMessage(''), 3000)
@@ -482,10 +482,10 @@ const Configuracoes = () => {
   const salvarTipoDemanda = async (dados) => {
     try {
       if (modalTipo.item) {
-        await api.put(`/api/tipos-demanda/${modalTipo.item.id}`, dados)
+        await api.put(`/tipos-demanda/${modalTipo.item.id}`, dados)
         setSuccessMessage('✅ Tipo de demanda atualizado com sucesso!')
       } else {
-        await api.post('/api/tipos-demanda/', dados)
+        await api.post('/tipos-demanda/', dados)
         setSuccessMessage('✅ Tipo de demanda criado com sucesso!')
       }
       
@@ -501,7 +501,7 @@ const Configuracoes = () => {
   const toggleTipoDemanda = async (tipo) => {
     try {
       if (tipo.ativo) {
-        await api.delete(`/api/tipos-demanda/${tipo.id}`)
+        await api.delete(`/tipos-demanda/${tipo.id}`)
         setSuccessMessage('✅ Tipo desativado com sucesso!')
       } else {
         await api.post(`/api/tipos-demanda/${tipo.id}/reativar`)
@@ -519,10 +519,10 @@ const Configuracoes = () => {
   const salvarPrioridade = async (dados) => {
     try {
       if (modalPrioridade.item) {
-        await api.put(`/api/prioridades/${modalPrioridade.item.id}`, dados)
+        await api.put(`/prioridades/${modalPrioridade.item.id}`, dados)
         setSuccessMessage('✅ Prioridade atualizada com sucesso!')
       } else {
-        await api.post('/api/prioridades/', dados)
+        await api.post('/prioridades/', dados)
         setSuccessMessage('✅ Prioridade criada com sucesso!')
       }
       
@@ -538,7 +538,7 @@ const Configuracoes = () => {
   const togglePrioridade = async (prioridade) => {
     try {
       if (prioridade.ativo) {
-        await api.delete(`/api/prioridades/${prioridade.id}`)
+        await api.delete(`/prioridades/${prioridade.id}`)
         setSuccessMessage('✅ Prioridade desativada com sucesso!')
       } else {
         await api.post(`/api/prioridades/${prioridade.id}/reativar`)
