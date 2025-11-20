@@ -75,10 +75,11 @@ print_info "  - Você será solicitado a digitar a senha do usuário '${REMOTE_U
 print_info "  - O túnel será executado em segundo plano."
 echo ""
 
-SSH_COMMAND="-N -L ${LOCAL_DB_PORT}:localhost:${REMOTE_DB_PORT} ${REMOTE_USER}@${REMOTE_HOST} -p ${REMOTE_SSH_PORT} -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=no"
+# Construir comando SSH (sem aspas para permitir expansão correta)
+SSH_OPTS=(-N -L "${LOCAL_DB_PORT}:localhost:${REMOTE_DB_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" -p "${REMOTE_SSH_PORT}" -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -o StrictHostKeyChecking=no)
 
 if [ "$USE_AUTOSSH" = true ]; then
-    autossh -M 0 -f "${SSH_COMMAND}"
+    autossh -M 0 -f "${SSH_OPTS[@]}"
     if [ $? -eq 0 ]; then
         print_success "Túnel SSH iniciado com autossh em segundo plano."
     else
@@ -86,7 +87,7 @@ if [ "$USE_AUTOSSH" = true ]; then
         exit 1
     fi
 else
-    ssh -f "${SSH_COMMAND}"
+    ssh -f "${SSH_OPTS[@]}"
     if [ $? -eq 0 ]; then
         print_success "Túnel SSH iniciado com ssh em segundo plano."
         print_warning "  - Este túnel NÃO irá reconectar automaticamente se a conexão cair."
