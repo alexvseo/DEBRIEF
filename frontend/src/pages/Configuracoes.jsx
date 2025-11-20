@@ -447,7 +447,32 @@ const Configuracoes = () => {
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
       console.error('Erro ao alterar status:', error)
-      alert('Erro ao alterar status da secretaria')
+      const errorMsg = error.response?.data?.detail || error.message || 'Erro ao alterar status da secretaria'
+      alert(`Erro ao alterar status:\n\n${errorMsg}`)
+    }
+  }
+  
+  const deletarSecretaria = async (secretaria) => {
+    if (!window.confirm(
+      `Tem certeza que deseja deletar PERMANENTEMENTE a secretaria "${secretaria.nome}"?\n\n` +
+      `Esta ação é IRREVERSÍVEL!\n\n` +
+      (secretaria.total_demandas > 0 
+        ? `⚠️ ATENÇÃO: Esta secretaria possui ${secretaria.total_demandas} demanda(s) vinculada(s).\n` +
+          `Não será possível deletar se houver demandas.`
+        : '')
+    )) {
+      return
+    }
+    
+    try {
+      await api.delete(`/api/secretarias/${secretaria.id}/permanente`)
+      setSuccessMessage('✅ Secretaria deletada permanentemente!')
+      await carregarSecretarias()
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      console.error('Erro ao deletar secretaria:', error)
+      const errorMsg = error.response?.data?.detail || error.message || 'Erro ao deletar secretaria'
+      alert(`Erro ao deletar secretaria:\n\n${errorMsg}`)
     }
   }
   
@@ -810,15 +835,35 @@ const Configuracoes = () => {
                             size="sm"
                             variant="outline"
                             onClick={() => setModalSecretaria({ open: true, item: secretaria })}
+                            title="Editar secretaria"
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
                           <Button
                             size="sm"
+                            variant="error"
+                            onClick={() => deletarSecretaria(secretaria)}
+                            title="Deletar secretaria permanentemente"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="md"
                             variant={secretaria.ativo ? 'error' : 'success'}
                             onClick={() => toggleSecretaria(secretaria)}
+                            title={secretaria.ativo ? 'Desativar secretaria' : 'Reativar secretaria'}
                           >
-                            {secretaria.ativo ? <ToggleLeft className="h-3 w-3" /> : <ToggleRight className="h-3 w-3" />}
+                            {secretaria.ativo ? (
+                              <>
+                                <ToggleLeft className="h-4 w-4 mr-1" />
+                                Desativar
+                              </>
+                            ) : (
+                              <>
+                                <ToggleRight className="h-4 w-4 mr-1" />
+                                Reativar
+                              </>
+                            )}
                           </Button>
                         </div>
                       </td>

@@ -187,10 +187,12 @@ def criar_secretaria(
             detail=f"Cliente ID {secretaria_data.cliente_id} não encontrado"
         )
     
-    # Verificar se já existe secretaria com esse nome no mesmo cliente
+    # Verificar se já existe secretaria ATIVA com esse nome no mesmo cliente
+    # Permitir criar secretaria com mesmo nome se a anterior estiver inativa
     existe = db.query(Secretaria).filter(
         Secretaria.cliente_id == secretaria_data.cliente_id,
-        Secretaria.nome.ilike(secretaria_data.nome)
+        Secretaria.nome.ilike(secretaria_data.nome),
+        Secretaria.ativo == True  # Apenas verificar secretarias ativas
     ).first()
     
     if existe:
@@ -239,11 +241,13 @@ def atualizar_secretaria(
         )
     
     # Verificar nome duplicado (se estiver atualizando nome)
+    # Apenas verificar secretarias ATIVAS
     if secretaria_data.nome and secretaria_data.nome != secretaria.nome:
         existe = db.query(Secretaria).filter(
             Secretaria.cliente_id == secretaria.cliente_id,
             Secretaria.nome.ilike(secretaria_data.nome),
-            Secretaria.id != secretaria_id
+            Secretaria.id != secretaria_id,
+            Secretaria.ativo == True  # Apenas verificar secretarias ativas
         ).first()
         
         if existe:
