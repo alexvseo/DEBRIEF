@@ -13,7 +13,7 @@ services:
       # Banco de Dados - Conectar via túnel SSH (localhost:5432)
       # IMPORTANTE: O túnel SSH deve estar ativo antes de iniciar o backend
       # Execute: ./scripts/dev/iniciar-tunel-ssh.sh
-      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5432/dbrief
+      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief
       
       # JWT
       - SECRET_KEY=dev-secret-key-local-change-me
