@@ -56,7 +56,18 @@ def listar_clientes(
     # Ordenação e paginação
     clientes = query.order_by(Cliente.nome).offset(skip).limit(limit).all()
     
-    return clientes
+    # Contar demandas para cada cliente usando query explícita
+    from app.models import Demanda
+    clientes_resposta = []
+    for cliente in clientes:
+        total_demandas = db.query(Demanda).filter(Demanda.cliente_id == cliente.id).count()
+        # Criar resposta usando to_dict e adicionar total_demandas
+        cliente_data = cliente.to_dict()
+        cliente_data['total_demandas'] = total_demandas
+        # Criar objeto ClienteResponse com os dados
+        clientes_resposta.append(ClienteResponse(**cliente_data))
+    
+    return clientes_resposta
 
 
 @router.get("/{cliente_id}", response_model=ClienteResponseComplete)
@@ -201,6 +212,68 @@ def atualizar_cliente(
     db.refresh(cliente)
     
     return cliente
+
+
+@router.delete("/{cliente_id}/permanente", status_code=status.HTTP_204_NO_CONTENT)
+def deletar_cliente_permanente(
+    cliente_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_master)
+):
+    """
+    Deleta um cliente permanentemente do banco (hard delete)
+    
+    **Permissão:** Master apenas
+    
+    **Atenção:**
+    - Esta ação é IRREVERSÍVEL
+    - Cliente será removido permanentemente do banco
+    - Se houver demandas vinculadas, o campo cliente_id será definido como NULL
+    - Se houver secretarias vinculadas, elas serão deletadas em cascata (CASCADE)
+    - Se houver usuários vinculados, o campo cliente_id será definido como NULL
+    - Use com cuidado!
+    """
+    # Buscar cliente
+    cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
+    
+    if not cliente:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Cliente ID {cliente_id} não encontrado"
+        )
+    
+    # Verificar se tem demandas vinculadas
+    from app.models import Demanda
+    total_demandas = db.query(Demanda).filter(Demanda.cliente_id == cliente_id).count()
+    
+    # Se houver demandas vinculadas, definir cliente_id como NULL antes de deletar
+    if total_demandas > 0:
+        # Atualizar todas as demandas vinculadas para ter cliente_id = NULL
+        db.query(Demanda).filter(Demanda.cliente_id == cliente_id).update(
+            {Demanda.cliente_id: None},
+            synchronize_session=False
+        )
+        db.flush()  # Aplicar mudanças sem commit
+    
+    # Verificar se tem usuários vinculados
+    from app.models.user import User
+    usuarios_vinculados = db.query(User).filter(User.cliente_id == cliente_id).count()
+    
+    # Se houver usuários vinculados, definir cliente_id como NULL antes de deletar
+    if usuarios_vinculados > 0:
+        # Atualizar todos os usuários vinculados para ter cliente_id = NULL
+        db.query(User).filter(User.cliente_id == cliente_id).update(
+            {User.cliente_id: None},
+            synchronize_session=False
+        )
+        db.flush()  # Aplicar mudanças sem commit
+    
+    # Deletar permanentemente
+    # Secretarias serão deletadas em cascata devido ao CASCADE na FK
+    db.delete(cliente)
+    db.commit()
+    
+    return None
 
 
 @router.delete("/{cliente_id}", status_code=status.HTTP_204_NO_CONTENT)

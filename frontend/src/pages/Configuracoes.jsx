@@ -400,20 +400,30 @@ const Configuracoes = () => {
   }
 
   const deletarCliente = async (cliente) => {
-    if (!window.confirm(`Tem certeza que deseja deletar permanentemente o cliente "${cliente.nome}"?\n\nEsta ação não pode ser desfeita!`)) {
+    // Verificar se há demandas vinculadas
+    const temDemandas = cliente.total_demandas > 0
+    
+    const mensagemConfirmacao = temDemandas
+      ? `Tem certeza que deseja deletar PERMANENTEMENTE o cliente "${cliente.nome}"?\n\n` +
+        `Esta ação é IRREVERSÍVEL!\n\n` +
+        `⚠️ ATENÇÃO: Este cliente possui ${cliente.total_demandas} demanda(s) vinculada(s).\n` +
+        `As demandas serão preservadas, mas o vínculo com o cliente será removido.`
+      : `Tem certeza que deseja deletar PERMANENTEMENTE o cliente "${cliente.nome}"?\n\n` +
+        `Esta ação é IRREVERSÍVEL!`
+    
+    if (!window.confirm(mensagemConfirmacao)) {
       return
     }
 
     try {
-      // Primeiro desativar, depois deletar permanentemente (se o endpoint existir)
-      // Por enquanto, apenas desativar
-      await api.delete(`/clientes/${cliente.id}`)
-      setSuccessMessage('✅ Cliente deletado com sucesso!')
+      // Deletar permanentemente usando endpoint /permanente
+      await api.delete(`/clientes/${cliente.id}/permanente`)
+      setSuccessMessage('✅ Cliente deletado permanentemente!')
       await carregarClientes()
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
       console.error('Erro ao deletar cliente:', error)
-      const errorMsg = error.response?.data?.detail || 'Erro ao deletar cliente'
+      const errorMsg = error.response?.data?.detail || error.message || 'Erro ao deletar cliente'
       alert(`Erro ao deletar cliente:\n\n${errorMsg}`)
     }
   }
