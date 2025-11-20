@@ -87,7 +87,7 @@ const GerenciarUsuarios = () => {
   
   const carregarUsuarios = async () => {
     try {
-      const response = await api.get('/api/usuarios/', {
+      const response = await api.get('/usuarios/', {
         params: { apenas_ativos: false }
       })
       setUsuarios(response.data)
@@ -98,7 +98,7 @@ const GerenciarUsuarios = () => {
   
   const carregarClientes = async () => {
     try {
-      const response = await api.get('/api/clientes/', {
+      const response = await api.get('/clientes/', {
         params: { apenas_ativos: true }
       })
       setClientes(response.data)
@@ -109,7 +109,7 @@ const GerenciarUsuarios = () => {
   
   const carregarEstatisticas = async () => {
     try {
-      const response = await api.get('/api/usuarios/estatisticas/geral')
+      const response = await api.get('/usuarios/estatisticas/geral')
       setEstatisticas(response.data)
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error)

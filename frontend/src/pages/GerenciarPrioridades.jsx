@@ -76,7 +76,7 @@ const GerenciarPrioridades = () => {
   const carregarPrioridades = async () => {
     setLoading(true)
     try {
-      const response = await api.get('/api/prioridades/')
+      const response = await api.get('/prioridades/')
       // Ordenar por nível
       const sorted = response.data.sort((a, b) => a.nivel - b.nivel)
       setPrioridades(sorted)
@@ -123,7 +123,7 @@ const GerenciarPrioridades = () => {
         setSuccessMessage("Prioridade atualizada com sucesso!")
       } else {
         // Criar prioridade
-        await api.post('/api/prioridades/', data)
+        await api.post('/prioridades/', data)
         toast.success("Prioridade criada com sucesso!")
         setSuccessMessage("Prioridade criada com sucesso!")
       }
@@ -139,7 +139,7 @@ const GerenciarPrioridades = () => {
 
   const handleSeedDefault = async () => {
     try {
-      await api.post('/api/prioridades/seed')
+      await api.post('/prioridades/seed')
       toast.success("Prioridades padrões criadas com sucesso!")
       setSuccessMessage("Prioridades padrões criadas com sucesso!")
       carregarPrioridades()

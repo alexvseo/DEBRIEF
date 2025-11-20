@@ -79,11 +79,11 @@ const Relatorios = () => {
     try {
       setLoading(true)
       const [demandasRes, clientesRes, secretariasRes, tiposRes, prioridadesRes] = await Promise.all([
-        api.get('/api/demandas'),
-        api.get('/api/clientes/'),
-        api.get('/api/secretarias/'),
-        api.get('/api/tipos-demanda/'),
-        api.get('/api/prioridades/')
+        api.get('/demandas'),
+        api.get('/clientes/'),
+        api.get('/secretarias/'),
+        api.get('/tipos-demanda/'),
+        api.get('/prioridades/')
       ])
 
       setDemandas(demandasRes.data)

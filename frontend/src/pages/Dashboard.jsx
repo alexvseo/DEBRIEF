@@ -80,18 +80,18 @@ const Dashboard = () => {
       setLoading(true)
       
       const endpoints = [
-        api.get('/api/demandas'),
-        api.get('/api/tipos-demanda/'),
-        api.get('/api/prioridades/')
+        api.get('/demandas'),
+        api.get('/tipos-demanda/'),
+        api.get('/prioridades/')
       ]
 
       // Adiciona endpoints admin apenas se for master
       if (isMaster()) {
         endpoints.push(
-          api.get('/api/usuarios/'),
-          api.get('/api/usuarios/estatisticas/geral'),
-          api.get('/api/clientes/'),
-          api.get('/api/secretarias/')
+          api.get('/usuarios/'),
+          api.get('/usuarios/estatisticas/geral'),
+          api.get('/clientes/'),
+          api.get('/secretarias/')
         )
       }
 
