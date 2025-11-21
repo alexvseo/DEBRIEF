@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # Banco de Dados PostgreSQL
     # URL padrão aponta para o servidor remoto
     # Para desenvolvimento local, sobrescreva no .env
-    DATABASE_URL: str = "postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief"
+    DATABASE_URL: str = "postgresql://root:Mslestra%402025@82.25.92.217:5432/dbrief"
     DATABASE_ECHO: bool = False  # SQL logs
     
     # JWT

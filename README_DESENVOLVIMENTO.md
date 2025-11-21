@@ -7,7 +7,7 @@
 ```bash
 # Backend
 cp backend/.env.dev.example backend/.env.dev 2>/dev/null || cat > backend/.env.dev << 'EOF'
-DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+DATABASE_URL=postgresql://postgres:Mslestra%402025@82.25.92.217:5432/dbrief
 SECRET_KEY=dev-secret-key-local-change-me
 FRONTEND_URL=http://localhost:5173
 EOF
