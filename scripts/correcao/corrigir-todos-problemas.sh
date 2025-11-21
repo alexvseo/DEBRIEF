@@ -43,7 +43,7 @@ if [ -f "./corrigir-enum-usuario.sh" ]; then
 else
     print_warning "Script corrigir-enum-usuario.sh não encontrado"
     print_info "Corrigindo manualmente..."
-    export PGPASSWORD="Mslestrategia.2025@"
+    export PGPASSWORD="Mslestra@2025"
     psql -h localhost -p 5432 -U postgres -d dbrief -c "UPDATE users SET tipo = 'MASTER'::tipousuario WHERE tipo = 'master';" 2>&1
     unset PGPASSWORD
     print_success "Enum corrigido"

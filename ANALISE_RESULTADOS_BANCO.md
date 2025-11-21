@@ -72,7 +72,7 @@ with engine.connect() as conn:
 ### 2. Verificar Usuários no Banco
 
 ```bash
-export PGPASSWORD="Mslestrategia.2025@"
+export PGPASSWORD="Mslestra@2025"
 psql -h localhost -U postgres -d dbrief -c "SELECT id, username, email, tipo, ativo FROM users LIMIT 5;"
 ```
 

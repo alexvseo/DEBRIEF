@@ -152,7 +152,7 @@ echo ""
 
 # 8. Verificar se usuário admin existe
 print_info "8️⃣  Verificando se usuário admin existe no banco..."
-export PGPASSWORD="Mslestrategia.2025@"
+export PGPASSWORD="Mslestra@2025"
 USER_EXISTS=$(psql -h localhost -p 5432 -U postgres -d dbrief -tAc "SELECT COUNT(*) FROM users WHERE username = 'admin' OR email = 'admin@debrief.com';" 2>/dev/null || echo "0")
 unset PGPASSWORD
 

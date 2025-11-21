@@ -65,7 +65,7 @@ ENDSSH
 # 3. Testar conexão local
 print_info "3️⃣  Testando conexão local com PostgreSQL..."
 ssh ${SERVER_USER}@${SERVER_HOST} << 'ENDSSH'
-    export PGPASSWORD="Mslestrategia.2025@"
+    export PGPASSWORD="Mslestra@2025"
     if psql -h localhost -U postgres -d dbrief -c "SELECT 1;" &> /dev/null; then
         echo "✅ Conexão local funciona"
     else

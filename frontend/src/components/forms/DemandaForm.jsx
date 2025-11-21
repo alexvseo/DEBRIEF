@@ -27,25 +27,25 @@ const demandaSchema = z.object({
   secretaria_id: z.string()
     .min(1, 'Selecione uma secretaria')
     .uuid('ID de secretaria inválido'),
-  
+
   nome: z.string()
     .min(5, 'Nome deve ter pelo menos 5 caracteres')
     .max(200, 'Nome deve ter no máximo 200 caracteres')
     .trim(),
-  
+
   tipo_demanda_id: z.string()
     .min(1, 'Selecione um tipo de demanda')
     .uuid('ID de tipo inválido'),
-  
+
   prioridade_id: z.string()
     .min(1, 'Selecione uma prioridade')
     .uuid('ID de prioridade inválido'),
-  
+
   descricao: z.string()
     .min(10, 'Descrição deve ter pelo menos 10 caracteres')
     .max(2000, 'Descrição deve ter no máximo 2000 caracteres')
     .trim(),
-  
+
   prazo_final: z.string()
     .min(1, 'Selecione uma data')
     .refine(
@@ -68,19 +68,19 @@ const demandaSchema = z.object({
  */
 const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
   const { user } = useAuth()
-  
+
   // Estados
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [files, setFiles] = useState([])
   const [filePreviews, setFilePreviews] = useState([])
   const [isDragging, setIsDragging] = useState(false)
-  
+
   // Estados para carregar dados dos dropdowns
   const [secretarias, setSecretarias] = useState([])
   const [tiposDemanda, setTiposDemanda] = useState([])
   const [prioridades, setPrioridades] = useState([])
   const [isLoadingData, setIsLoadingData] = useState(true)
-  
+
   // Configurar React Hook Form com Zod
   const {
     register,
@@ -108,7 +108,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       prazo_final: '',
     },
   })
-  
+
   /**
    * Carregar dados dos dropdowns ao montar componente
    */
@@ -116,18 +116,23 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
     const loadFormData = async () => {
       try {
         setIsLoadingData(true)
-        
+
         // Carregar dados em paralelo
-        const [secretariasData, tiposData, prioridadesData] = await Promise.all([
-          demandaService.getSecretarias(),
-          demandaService.getTipos(),
-          demandaService.getPrioridades(),
+        const [secretariasRes, tiposRes, prioridadesRes] = await Promise.all([
+          demandaService.listarSecretarias(),
+          demandaService.listarTiposDemanda(),
+          demandaService.listarPrioridades(),
         ])
-        
-        setSecretarias(secretariasData)
-        setTiposDemanda(tiposData)
-        setPrioridades(prioridadesData)
-        
+
+        // Extrair dados da resposta (pode vir direto ou dentro de data)
+        const secretariasData = secretariasRes.data || secretariasRes
+        const tiposData = tiposRes.data || tiposRes
+        const prioridadesData = prioridadesRes.data || prioridadesRes
+
+        setSecretarias(Array.isArray(secretariasData) ? secretariasData : [])
+        setTiposDemanda(Array.isArray(tiposData) ? tiposData : [])
+        setPrioridades(Array.isArray(prioridadesData) ? prioridadesData : [])
+
       } catch (error) {
         console.error('Erro ao carregar dados do formulário:', error)
         toast.error('Erro ao carregar dados. Recarregue a página.')
@@ -135,10 +140,10 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
         setIsLoadingData(false)
       }
     }
-    
+
     loadFormData()
   }, [])
-  
+
   /**
    * Validar tipo e tamanho do arquivo
    */
@@ -146,13 +151,13 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
     const maxSize = 52428800 // 50MB
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
     const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png']
-    
+
     // Validar tamanho
     if (file.size > maxSize) {
       toast.error(`${file.name} é muito grande (máx 50MB)`)
       return false
     }
-    
+
     // Validar tipo MIME
     if (!allowedTypes.includes(file.type)) {
       // Validar também por extensão como fallback
@@ -162,10 +167,10 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
         return false
       }
     }
-    
+
     return true
   }
-  
+
   /**
    * Criar preview de imagem
    */
@@ -188,7 +193,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       }])
     }
   }
-  
+
   /**
    * Handler de upload de arquivos
    * Valida tamanho e tipo antes de adicionar
@@ -197,25 +202,25 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
     const selectedFiles = Array.from(e.target.files)
     processFiles(selectedFiles)
   }
-  
+
   /**
    * Processar arquivos selecionados
    */
   const processFiles = (selectedFiles) => {
     // Validar cada arquivo
     const validFiles = selectedFiles.filter(file => validateFile(file))
-    
+
     // Verificar limite de 5 arquivos
     const totalFiles = files.length + validFiles.length
     if (totalFiles > 5) {
       toast.error(`Máximo de 5 arquivos permitido. Você tentou adicionar ${validFiles.length} arquivo(s), mas só há espaço para ${5 - files.length}`)
       return
     }
-    
+
     // Verificar duplicatas
     const newFiles = validFiles.filter(newFile => {
-      const isDuplicate = files.some(existingFile => 
-        existingFile.name === newFile.name && 
+      const isDuplicate = files.some(existingFile =>
+        existingFile.name === newFile.name &&
         existingFile.size === newFile.size
       )
       if (isDuplicate) {
@@ -223,14 +228,14 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       }
       return !isDuplicate
     })
-    
+
     if (newFiles.length > 0) {
       setFiles(prev => [...prev, ...newFiles])
       newFiles.forEach(file => createPreview(file))
       toast.success(`${newFiles.length} arquivo(s) adicionado(s)`)
     }
   }
-  
+
   /**
    * Remover arquivo da lista
    */
@@ -239,7 +244,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
     setFilePreviews(prev => prev.filter((_, i) => i !== index))
     toast.info('Arquivo removido')
   }
-  
+
   /**
    * Handlers para Drag and Drop
    */
@@ -248,27 +253,27 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
     e.stopPropagation()
     setIsDragging(true)
   }
-  
+
   const handleDragLeave = (e) => {
     e.preventDefault()
     e.stopPropagation()
     setIsDragging(false)
   }
-  
+
   const handleDragOver = (e) => {
     e.preventDefault()
     e.stopPropagation()
   }
-  
+
   const handleDrop = (e) => {
     e.preventDefault()
     e.stopPropagation()
     setIsDragging(false)
-    
+
     const droppedFiles = Array.from(e.dataTransfer.files)
     processFiles(droppedFiles)
   }
-  
+
   /**
    * Formatar tamanho do arquivo
    */
@@ -279,17 +284,17 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
   }
-  
+
   /**
    * Submeter formulário
    */
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true)
-      
+
       // Criar FormData para enviar arquivos
       const formData = new FormData()
-      
+
       // Adicionar dados do formulário
       formData.append('secretaria_id', data.secretaria_id)
       formData.append('nome', data.nome)
@@ -297,17 +302,17 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       formData.append('prioridade_id', data.prioridade_id)
       formData.append('descricao', data.descricao)
       formData.append('prazo_final', data.prazo_final)
-      
+
       // Adicionar ID do usuário
       if (user?.id) {
         formData.append('usuario_id', user.id)
       }
-      
+
       // Adicionar arquivos
       files.forEach((file, index) => {
         formData.append('files', file)
       })
-      
+
       // Enviar para API
       let result
       if (demanda) {
@@ -319,22 +324,22 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
         result = await demandaService.create(formData)
         toast.success('✅ Demanda criada com sucesso! Card criado no Trello e notificação enviada no WhatsApp.')
       }
-      
+
       // Limpar formulário se for criação
       if (!demanda) {
         reset()
         setFiles([])
         setFilePreviews([])
       }
-      
+
       // Callback de sucesso
       if (onSuccess) {
         onSuccess(result)
       }
-      
+
     } catch (error) {
       console.error('Erro ao salvar demanda:', error)
-      
+
       // Tratamento de erros específicos
       if (error.response?.status === 400) {
         toast.error('Dados inválidos. Verifique os campos e tente novamente.')
@@ -344,7 +349,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
         toast.error('Arquivos muito grandes. Reduza o tamanho e tente novamente.')
       } else {
         toast.error(
-          error.response?.data?.detail || 
+          error.response?.data?.detail ||
           'Erro ao salvar demanda. Tente novamente.'
         )
       }
@@ -352,10 +357,10 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       setIsSubmitting(false)
     }
   }
-  
+
   // Observar valor da descrição para contador
   const descricaoValue = watch('descricao') || ''
-  
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
@@ -364,15 +369,15 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
             {demanda ? '✏️ Editar Demanda' : '📝 Nova Demanda'}
           </CardTitle>
           <CardDescription>
-            {demanda 
-              ? 'Atualize as informações da sua demanda' 
+            {demanda
+              ? 'Atualize as informações da sua demanda'
               : 'Preencha os campos abaixo para criar uma nova demanda'
             }
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
-          
+
           {/* Loading state */}
           {isLoadingData && (
             <Alert>
@@ -382,10 +387,10 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
               </AlertDescription>
             </Alert>
           )}
-          
+
           {/* Grid de 2 colunas em telas grandes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
+
             {/* Secretaria */}
             <div>
               <label htmlFor="secretaria_id" className="block text-sm font-medium text-gray-700 mb-1">
@@ -395,9 +400,8 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 id="secretaria_id"
                 {...register('secretaria_id')}
                 disabled={isLoadingData}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${
-                  errors.secretaria_id ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${errors.secretaria_id ? 'border-red-500' : 'border-gray-300'
+                  }`}
               >
                 <option value="">Selecione uma secretaria...</option>
                 {secretarias.map(sec => (
@@ -413,7 +417,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 </p>
               )}
             </div>
-            
+
             {/* Tipo de Demanda */}
             <div>
               <label htmlFor="tipo_demanda_id" className="block text-sm font-medium text-gray-700 mb-1">
@@ -423,9 +427,8 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 id="tipo_demanda_id"
                 {...register('tipo_demanda_id')}
                 disabled={isLoadingData}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${
-                  errors.tipo_demanda_id ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${errors.tipo_demanda_id ? 'border-red-500' : 'border-gray-300'
+                  }`}
               >
                 <option value="">Selecione um tipo...</option>
                 {tiposDemanda.map(tipo => (
@@ -441,7 +444,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 </p>
               )}
             </div>
-            
+
             {/* Prioridade */}
             <div>
               <label htmlFor="prioridade_id" className="block text-sm font-medium text-gray-700 mb-1">
@@ -451,9 +454,8 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 id="prioridade_id"
                 {...register('prioridade_id')}
                 disabled={isLoadingData}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${
-                  errors.prioridade_id ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${errors.prioridade_id ? 'border-red-500' : 'border-gray-300'
+                  }`}
               >
                 <option value="">Selecione uma prioridade...</option>
                 {prioridades.map(prioridade => (
@@ -469,7 +471,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 </p>
               )}
             </div>
-            
+
             {/* Prazo Final */}
             <div>
               <label htmlFor="prazo_final" className="block text-sm font-medium text-gray-700 mb-1">
@@ -480,9 +482,8 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 type="date"
                 {...register('prazo_final')}
                 min={format(new Date(), 'yyyy-MM-dd')}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.prazo_final ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.prazo_final ? 'border-red-500' : 'border-gray-300'
+                  }`}
               />
               {errors.prazo_final && (
                 <p className="mt-1 text-sm text-red-500 flex items-center">
@@ -492,7 +493,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
               )}
             </div>
           </div>
-          
+
           {/* Nome da Demanda (largura total) */}
           <div>
             <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-1">
@@ -503,9 +504,8 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
               type="text"
               {...register('nome')}
               placeholder="Ex: Criação de arte para campanha de vacinação"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.nome ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.nome ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
             {errors.nome && (
               <p className="mt-1 text-sm text-red-500 flex items-center">
@@ -517,7 +517,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
               {watch('nome')?.length || 0} / 200 caracteres
             </p>
           </div>
-          
+
           {/* Descrição (largura total) */}
           <div>
             <label htmlFor="descricao" className="block text-sm font-medium text-gray-700 mb-1">
@@ -528,9 +528,8 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
               {...register('descricao')}
               placeholder="Descreva detalhadamente sua demanda: objetivo, público-alvo, referências, informações importantes..."
               rows={6}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y ${
-                errors.descricao ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y ${errors.descricao ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
             {errors.descricao && (
               <p className="mt-1 text-sm text-red-500 flex items-center">
@@ -542,14 +541,13 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
               <p className="text-xs text-gray-500">
                 Quanto mais detalhes, melhor será o resultado
               </p>
-              <p className={`text-xs font-medium ${
-                descricaoValue.length > 1900 ? 'text-orange-500' : 'text-gray-500'
-              }`}>
+              <p className={`text-xs font-medium ${descricaoValue.length > 1900 ? 'text-orange-500' : 'text-gray-500'
+                }`}>
                 {descricaoValue.length} / 2000
               </p>
             </div>
           </div>
-          
+
           {/* Upload de Arquivos */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -558,7 +556,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
             <p className="text-xs text-gray-500 mb-3">
               Adicione arquivos de referência, briefings, imagens, etc. Máximo 5 arquivos de 50MB cada.
             </p>
-            
+
             {/* Input file oculto */}
             <input
               type="file"
@@ -569,37 +567,34 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
               className="hidden"
               disabled={files.length >= 5}
             />
-            
+
             {/* Área de Drop customizada */}
             <div
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
-              className={`relative border-2 border-dashed rounded-lg transition-all ${
-                isDragging 
-                  ? 'border-blue-500 bg-blue-50' 
+              className={`relative border-2 border-dashed rounded-lg transition-all ${isDragging
+                  ? 'border-blue-500 bg-blue-50'
                   : files.length >= 5
-                  ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
-                  : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50 cursor-pointer'
-              }`}
+                    ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
+                    : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50 cursor-pointer'
+                }`}
             >
               <label
                 htmlFor="file-upload"
-                className={`flex items-center justify-center w-full p-8 ${
-                  files.length >= 5 ? 'cursor-not-allowed' : 'cursor-pointer'
-                }`}
+                className={`flex items-center justify-center w-full p-8 ${files.length >= 5 ? 'cursor-not-allowed' : 'cursor-pointer'
+                  }`}
               >
                 <div className="text-center">
-                  <Upload className={`mx-auto h-12 w-12 mb-3 ${
-                    isDragging ? 'text-blue-500' : 'text-gray-400'
-                  }`} />
+                  <Upload className={`mx-auto h-12 w-12 mb-3 ${isDragging ? 'text-blue-500' : 'text-gray-400'
+                    }`} />
                   <p className="text-sm text-gray-600 font-medium mb-1">
-                    {files.length >= 5 
-                      ? 'Limite de 5 arquivos atingido' 
+                    {files.length >= 5
+                      ? 'Limite de 5 arquivos atingido'
                       : isDragging
-                      ? 'Solte os arquivos aqui'
-                      : 'Clique para selecionar ou arraste arquivos'
+                        ? 'Solte os arquivos aqui'
+                        : 'Clique para selecionar ou arraste arquivos'
                     }
                   </p>
                   <p className="text-xs text-gray-500">
@@ -608,14 +603,14 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 </div>
               </label>
             </div>
-            
+
             {/* Lista de arquivos selecionados com preview */}
             {files.length > 0 && (
               <div className="mt-4 space-y-3">
                 <p className="text-sm font-medium text-gray-700">
                   Arquivos selecionados ({files.length}/5):
                 </p>
-                
+
                 {files.map((file, index) => (
                   <div
                     key={index}
@@ -635,7 +630,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Info do arquivo */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
@@ -645,7 +640,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                         {formatFileSize(file.size)} • {file.type.split('/')[1].toUpperCase()}
                       </p>
                     </div>
-                    
+
                     {/* Botão remover */}
                     <button
                       type="button"
@@ -660,10 +655,10 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
               </div>
             )}
           </div>
-          
+
         </CardContent>
       </Card>
-      
+
       {/* Botões de ação */}
       <div className="flex flex-col sm:flex-row justify-end gap-3">
         {onCancel && (
@@ -677,7 +672,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
             Cancelar
           </Button>
         )}
-        
+
         <Button
           type="submit"
           disabled={isSubmitting || isLoadingData}
@@ -695,12 +690,12 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
           )}
         </Button>
       </div>
-      
+
       {/* Informações adicionais */}
       <Alert className="bg-blue-50 border-blue-200">
         <AlertCircle className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-800 text-sm">
-          <strong>Importante:</strong> Ao criar a demanda, um card será automaticamente criado no Trello 
+          <strong>Importante:</strong> Ao criar a demanda, um card será automaticamente criado no Trello
           e uma notificação será enviada no WhatsApp do seu grupo.
         </AlertDescription>
       </Alert>

@@ -34,7 +34,7 @@ print_error() {
 # Configurações
 DB_NAME="dbrief"
 DB_USER="postgres"
-DB_PASS="Mslestrategia.2025@"
+DB_PASS="Mslestra@2025"
 
 echo "Configurações:"
 echo "  Usuário: $DB_USER"

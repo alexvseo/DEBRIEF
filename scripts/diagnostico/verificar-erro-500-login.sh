@@ -60,7 +60,7 @@ echo ""
 
 # 3. Verificar se usuário admin existe e está correto
 print_info "3️⃣  Verificando usuário admin no banco..."
-export PGPASSWORD="Mslestrategia.2025@"
+export PGPASSWORD="Mslestra@2025"
 USER_INFO=$(psql -h localhost -p 5432 -U postgres -d dbrief -c "SELECT id, username, email, tipo, ativo FROM users WHERE username = 'admin' OR email = 'admin@debrief.com';" 2>&1)
 unset PGPASSWORD
 

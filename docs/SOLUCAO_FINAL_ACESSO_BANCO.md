@@ -154,7 +154,7 @@ sudo netstat -tlnp | grep postgres
 ### 3. Testar conexão local
 
 ```bash
-export PGPASSWORD="Mslestrategia.2025@"
+export PGPASSWORD="Mslestra@2025"
 psql -h localhost -p 5432 -U root -d dbrief -c "SELECT 1;"
 unset PGPASSWORD
 ```
@@ -170,7 +170,7 @@ conn = psycopg2.connect(
     port=5432,
     database="dbrief",
     user="root",
-    password="Mslestrategia.2025@"
+    password="Mslestra@2025"
 )
 print("✅ Conexão OK!")
 conn.close()
@@ -253,7 +253,7 @@ sudo systemctl status postgresql
 sudo -u postgres psql -c "CREATE DATABASE dbrief;"
 
 # Criar usuário
-sudo -u postgres psql -c "CREATE USER root WITH PASSWORD 'Mslestrategia.2025@';"
+sudo -u postgres psql -c "CREATE USER root WITH PASSWORD 'Mslestra@2025';"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE dbrief TO root;"
 ```
 
@@ -261,7 +261,7 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE dbrief TO root;"
 
 ```bash
 # Criar usuário
-sudo -u postgres psql -c "CREATE USER root WITH PASSWORD 'Mslestrategia.2025@';"
+sudo -u postgres psql -c "CREATE USER root WITH PASSWORD 'Mslestra@2025';"
 sudo -u postgres psql -c "ALTER USER root CREATEDB;"
 ```
 
@@ -280,7 +280,7 @@ try:
         port=5432,
         database="dbrief",
         user="root",
-        password="Mslestrategia.2025@",
+        password="Mslestra@2025",
         connect_timeout=5
     )
     print("✅ Conexão OK!")

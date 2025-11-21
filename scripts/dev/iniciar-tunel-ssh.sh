@@ -143,7 +143,7 @@ if timeout 5 bash -c "echo > /dev/tcp/localhost/$LOCAL_PORT" 2>/dev/null; then
     
     # Testar conexão com PostgreSQL
     if command -v psql &> /dev/null; then
-        export PGPASSWORD="Mslestrategia.2025@"
+        export PGPASSWORD="Mslestra@2025"
         if timeout 5 psql -h localhost -p $LOCAL_PORT -U postgres -d dbrief -c "SELECT 1;" -t > /dev/null 2>&1; then
             print_success "Conexão com PostgreSQL através do túnel funcionou!"
         else

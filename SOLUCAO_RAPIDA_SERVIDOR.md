@@ -51,7 +51,7 @@ import psycopg2
 try:
     conn = psycopg2.connect(
         host='localhost', port=5432,
-        user='postgres', password='Mslestrategia.2025@',
+        user='postgres', password='Mslestra@2025',
         database='dbrief'
     )
     print("✅ Conexão OK!")

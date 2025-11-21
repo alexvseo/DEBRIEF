@@ -32,7 +32,7 @@ docker exec debrief-backend env | grep DATABASE_URL
 systemctl status postgresql
 
 # 3. Testar conexão local
-export PGPASSWORD="Mslestrategia.2025@"
+export PGPASSWORD="Mslestra@2025"
 psql -h localhost -U postgres -d dbrief -c "SELECT 1;"
 
 # 4. Testar conexão do container

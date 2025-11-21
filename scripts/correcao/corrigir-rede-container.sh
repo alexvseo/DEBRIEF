@@ -102,7 +102,7 @@ try:
         host='localhost',
         port=5432,
         user='postgres',
-        password='Mslestrategia.2025@',
+        password='Mslestra@2025',
         database='dbrief',
         connect_timeout=5
     )

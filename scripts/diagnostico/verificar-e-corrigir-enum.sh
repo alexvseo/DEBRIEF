@@ -34,7 +34,7 @@ print_error() {
 # Configurações
 DB_NAME="dbrief"
 DB_USER="postgres"
-DB_PASS="Mslestrategia.2025@"
+DB_PASS="Mslestra@2025"
 
 # 1. Verificar valores do enum no banco
 print_info "1️⃣  Verificando valores do enum tipousuario no banco..."

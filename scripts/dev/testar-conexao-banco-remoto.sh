@@ -37,7 +37,7 @@ echo ""
 DB_HOST="82.25.92.217"
 DB_PORT="5432"
 DB_USER="postgres"
-DB_PASSWORD="Mslestrategia.2025@"
+DB_PASSWORD="Mslestra@2025"
 DB_NAME="dbrief"
 
 # 1. Verificar se psql está instalado

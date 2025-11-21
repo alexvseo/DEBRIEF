@@ -99,7 +99,7 @@ echo ""
 # 5. Testar conexão com psql diretamente
 print_info "5️⃣  Testando conexão direta com psql..."
 if command -v psql &> /dev/null; then
-    export PGPASSWORD="Mslestrategia.2025@"
+    export PGPASSWORD="Mslestra@2025"
     
     if timeout 10 psql -h "$DB_HOST" -p "$DB_PORT" -U postgres -d dbrief -c "SELECT 1;" -t 2>&1 | grep -q "1"; then
         print_success "Conexão com psql funcionou!"

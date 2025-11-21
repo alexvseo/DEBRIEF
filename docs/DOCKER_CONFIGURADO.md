@@ -41,7 +41,7 @@ Host:     82.25.92.217
 Port:     5432
 Database: dbrief
 User:     root
-Password: Mslestrategia.2025@
+Password: Mslestra@2025
 ```
 
 **SSH Access:**
