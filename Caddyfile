@@ -2,7 +2,7 @@
 # Proxy reverso para Frontend e Backend
 # Caddy escuta na porta 2022 diretamente (network_mode: host)
 
-:2022 {
+debrief.interce.com.br {
     # Compressão automática
     encode zstd gzip
 
@@ -11,11 +11,8 @@
         path /api/*
     }
     handle @api {
-        # Backend está em network_mode: host, então acessa via 127.0.0.1:8000 (IPv4)
-        # Usar 127.0.0.1 em vez de localhost para evitar tentativa de IPv6
-        # Backend tem rotas com prefixo /api, então fazer proxy direto
-        # IMPORTANTE: Não remover o prefixo /api porque o backend já espera receber com /api
-        reverse_proxy 127.0.0.1:8000 {
+        # Backend acessível via nome do serviço na rede bridge
+        reverse_proxy backend:8000 {
             # Headers para proxy
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
@@ -31,9 +28,9 @@
     }
 
     # Proxy para Frontend (tudo mais)
-    # Frontend está em network_mode: host, então escuta diretamente na porta 80
+    # Frontend acessível via nome do serviço na rede bridge
     handle {
-        reverse_proxy 127.0.0.1:80 {
+        reverse_proxy frontend:80 {
             # Headers para proxy
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}

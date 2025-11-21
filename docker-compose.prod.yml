@@ -13,7 +13,7 @@ services:
       - "2025:8000" # Porta externa 2025, interna 8000
     environment:
       # Banco de Dados Remoto
-      - DATABASE_URL=postgresql://root:Mslestra%402025@localhost:5432/dbrief
+      - DATABASE_URL=postgresql://root:Mslestra%402025@host.docker.internal:5432/dbrief
 
       # JWT
       - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}
@@ -21,7 +21,7 @@ services:
       - ACCESS_TOKEN_EXPIRE_MINUTES=30
 
       # CORS
-      - FRONTEND_URL=http://82.25.92.217:2022
+      - FRONTEND_URL=https://debrief.interce.com.br
 
       # Trello (opcional)
       - TRELLO_API_KEY=${TRELLO_API_KEY:-}
@@ -41,6 +41,8 @@ services:
       - ENVIRONMENT=production
       - MAX_UPLOAD_SIZE=52428800
       - ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       # Apenas uploads - código vem do build (produção)
       - ./backend/uploads:/app/uploads
@@ -86,7 +88,8 @@ services:
     container_name: debrief-caddy
     restart: unless-stopped
     ports:
-      - "2022:80" # Porta externa 2022
+      - "80:80"
+      - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
