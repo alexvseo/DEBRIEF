@@ -63,9 +63,8 @@ services:
     image: debrief-frontend:latest
     container_name: debrief-frontend
     restart: unless-stopped
-    # Não expor porta externa - Caddy faz proxy
-    expose:
-      - "80"
+    ports:
+      - "2022:80" # Expor frontend na porta 2022
     depends_on:
       backend:
         condition: service_healthy
@@ -78,37 +77,10 @@ services:
       retries: 3
       start_period: 5s
 
-  # Caddy - Proxy Reverso
-  caddy:
-    image: caddy:2
-    container_name: debrief-caddy
-    restart: unless-stopped
-    ports:
-      - "2022:80" # Frontend na porta 2022
-      - "443:443" # HTTPS
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - debrief-network
-    healthcheck:
-      test: [ "CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile" ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
 networks:
   debrief-network:
     driver: bridge
 
 volumes:
-  caddy_data:
-    driver: local
-  caddy_config:
-    driver: local
   uploads:
     driver: local
