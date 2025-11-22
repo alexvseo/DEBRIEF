@@ -44,10 +44,9 @@ services:
     volumes:
       # Apenas uploads - código vem do build (produção)
       - ./backend/uploads:/app/uploads
-    external_links:
-      - msl_db:msl_db
     networks:
       - debrief-network
+      - sigepre_internal
     healthcheck:
       test: [ "CMD", "curl", "-fsS", "http://localhost:8000/health" ]
       interval: 30s
@@ -82,6 +81,8 @@ services:
 networks:
   debrief-network:
     driver: bridge
+  sigepre_internal:
+    external: true
 
 volumes:
   uploads:
