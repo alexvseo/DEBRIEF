@@ -26,20 +26,8 @@ def create_test_users(db):
     admin.set_password("admin123")
     db.add(admin)
     
-    # Usuário Cliente
-    cliente = User(
-        username="cliente",
-        email="cliente@exemplo.com",
-        nome_completo="Cliente Exemplo",
-        tipo=TipoUsuario.CLIENTE,
-        cliente_id="100",
-        ativo=True
-    )
-    cliente.set_password("cliente123")
-    db.add(cliente)
-    
     db.commit()
-    print("   ✅ Usuários criados: admin e cliente")
+    print("   ✅ Usuário admin criado com sucesso!")
 
 def create_test_demandas(db):
     """Criar demandas de teste"""
@@ -127,9 +115,8 @@ def main():
         create_test_demandas(db)
         
         print("\n✅ Banco de dados inicializado com sucesso!")
-        print("\n📝 Credenciais de teste:")
-        print("   👑 Master:  admin / admin123")
-        print("   👤 Cliente: cliente / cliente123")
+        print("\n📝 Credenciais de acesso:")
+        print("   👑 Admin: admin / admin123")
         
     except Exception as e:
         print(f"\n❌ Erro ao inicializar banco: {e}")
