@@ -12,8 +12,8 @@ services:
     ports:
       - "2023:8000" # Porta externa 2023, interna 8000
     environment:
-      # Banco de Dados Remoto
-      - DATABASE_URL=postgresql://postgres:Mslestra%402025@msl_db:5432/dbrief
+      # Banco de Dados Local (container próprio)
+      - DATABASE_URL=postgresql://postgres:Mslestra%402025@debrief_db:5432/dbrief
 
       # JWT
       - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}
@@ -46,7 +46,9 @@ services:
       - ./backend/uploads:/app/uploads
     networks:
       - debrief-network
-      - sigepre_internal
+    depends_on:
+      debrief_db:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-fsS", "http://localhost:8000/health" ]
       interval: 30s
@@ -78,12 +80,31 @@ services:
       retries: 3
       start_period: 5s
 
+  # PostgreSQL Database
+  debrief_db:
+    image: postgres:15-alpine
+    container_name: debrief_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Mslestra@2025
+      - POSTGRES_DB=dbrief
+    volumes:
+      - debrief_db_data:/var/lib/postgresql/data
+    networks:
+      - debrief-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   debrief-network:
     driver: bridge
-  sigepre_internal:
-    external: true
 
 volumes:
+  debrief_db_data:
+    driver: local
   uploads:
     driver: local
