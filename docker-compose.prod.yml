@@ -44,6 +44,8 @@ services:
     volumes:
       # Apenas uploads - código vem do build (produção)
       - ./backend/uploads:/app/uploads
+    external_links:
+      - msl_db:msl_db
     networks:
       - debrief-network
     healthcheck:
