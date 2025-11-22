@@ -10,10 +10,10 @@ services:
     container_name: debrief-backend
     restart: unless-stopped
     ports:
-      - "2025:8000" # Porta externa 2025, interna 8000
+      - "2023:8000" # Porta externa 2023, interna 8000
     environment:
       # Banco de Dados Remoto
-      - DATABASE_URL=postgresql://root:Mslestra%402025@host.docker.internal:5432/dbrief
+      - DATABASE_URL=postgresql://postgres:Mslestra%402025@msl_db:5432/dbrief
 
       # JWT
       - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}
@@ -49,7 +49,15 @@ services:
       # NÃO montar código fonte em produção para evitar conflitos
       # - ./backend:/app
     networks:
-      - debrief-network
+      - default
+      - root_default
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.debrief-backend.rule=Host(`debrief.interce.com.br`) && PathPrefix(`/api`)"
+        - "traefik.http.routers.debrief-backend.entrypoints=websecure"
+        - "traefik.http.routers.debrief-backend.tls.certresolver=letsencrypt"
+        - "traefik.http.services.debrief-backend.loadbalancer.server.port=8000"
     healthcheck:
       test: [ "CMD", "curl", "-fsS", "http://localhost:8000/health" ]
       interval: 30s
@@ -67,14 +75,22 @@ services:
     image: debrief-frontend:latest
     container_name: debrief-frontend
     restart: unless-stopped
-    # Não expor porta externa - Caddy faz proxy
+    # Não expor porta externa - Traefik faz proxy
     expose:
       - "80"
     depends_on:
       backend:
         condition: service_healthy
     networks:
-      - debrief-network
+      - default
+      - root_default
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.debrief-frontend.rule=Host(`debrief.interce.com.br`)"
+        - "traefik.http.routers.debrief-frontend.entrypoints=websecure"
+        - "traefik.http.routers.debrief-frontend.tls.certresolver=letsencrypt"
+        - "traefik.http.services.debrief-frontend.loadbalancer.server.port=80"
     healthcheck:
       test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/" ]
       interval: 30s
@@ -82,37 +98,10 @@ services:
       retries: 3
       start_period: 5s
 
-  # Caddy - Proxy Reverso
-  caddy:
-    image: caddy:2
-    container_name: debrief-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - debrief-network
-    healthcheck:
-      test: [ "CMD", "caddy", "validate", "--config", "/etc/caddy/Caddyfile" ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
 networks:
-  debrief-network:
-    driver: bridge
+  root_default:
+    external: true
 
 volumes:
-  caddy_data:
-    driver: local
-  caddy_config:
-    driver: local
   uploads:
     driver: local
