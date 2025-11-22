@@ -13,7 +13,7 @@ services:
       - "2023:8000" # Porta externa 2023, interna 8000
     environment:
       # Banco de Dados Remoto
-      - DATABASE_URL=postgresql://root:Mslestra%402025@msl_db:5432/dbrief
+      - DATABASE_URL=postgresql://postgres:Mslestra%402025@msl_db:5432/dbrief
 
       # JWT
       - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}
