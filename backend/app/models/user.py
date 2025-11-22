@@ -64,11 +64,14 @@ class TipoUsuarioType(TypeDecorator):
         """Converter string do banco para enum Python"""
         if value is None:
             return None
-        # Buscar enum pelo valor
-        for tipo in TipoUsuario:
-            if tipo.value == value:
-                return tipo
-        return value  # Retornar string se não encontrar
+        # Se já for enum, retorna ele mesmo
+        if isinstance(value, TipoUsuario):
+            return value
+        # Tentar converter string para enum
+        try:
+            return TipoUsuario(value)
+        except ValueError:
+            return value  # Retornar string se não encontrar no enum
 
 
 class User(BaseModel):

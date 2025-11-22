@@ -70,6 +70,7 @@ class UserResponse(BaseModel):
     
     class Config:
         from_attributes = True  # Permite conversão de ORM
+        use_enum_values = True  # Usa os valores do enum na serialização
 
 
 class UserInDB(UserResponse):
