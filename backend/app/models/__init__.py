@@ -26,6 +26,8 @@ from app.models.anexo import Anexo
 from app.models.configuracao import Configuracao, TipoConfiguracao
 
 from app.models.notification_log import NotificationLog, TipoNotificacao, StatusNotificacao
+from app.models.configuracao_whatsapp import ConfiguracaoWhatsApp
+from app.models.template_mensagem import TemplateMensagem
 
 __all__ = [
     'Base',
@@ -44,5 +46,7 @@ __all__ = [
     'NotificationLog',
     'TipoNotificacao',
     'StatusNotificacao',
+    'ConfiguracaoWhatsApp',
+    'TemplateMensagem',
 ]
 

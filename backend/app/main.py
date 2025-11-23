@@ -16,7 +16,8 @@ from app.api.endpoints import (
     prioridades,
     configuracoes,
     usuarios,
-    relatorios
+    relatorios,
+    whatsapp
 )
 
 # Criar aplicação FastAPI
@@ -165,6 +166,13 @@ app.include_router(
     relatorios.router,
     prefix="/api/relatorios",
     tags=["Relatórios"]
+)
+
+# WhatsApp - Configurações e Templates
+app.include_router(
+    whatsapp.router,
+    prefix="/api/whatsapp",
+    tags=["WhatsApp - Notificações"]
 )
 
 

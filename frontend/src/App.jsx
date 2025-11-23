@@ -17,6 +17,11 @@ import GerenciarUsuarios from '@/pages/GerenciarUsuarios'
 import GerenciarPrioridades from '@/pages/GerenciarPrioridades'
 import Relatorios from '@/pages/Relatorios'
 
+// Páginas WhatsApp Admin
+import ConfiguracaoWhatsApp from '@/pages/admin/ConfiguracaoWhatsApp'
+import TemplatesWhatsApp from '@/pages/admin/TemplatesWhatsApp'
+import HistoricoNotificacoes from '@/pages/admin/HistoricoNotificacoes'
+
 // Página 404
 const NotFound = () => (
   <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -140,6 +145,34 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Relatorios />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rotas WhatsApp Admin */}
+            <Route
+              path="/admin/configuracao-whatsapp"
+              element={
+                <ProtectedRoute>
+                  <ConfiguracaoWhatsApp />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/templates-whatsapp"
+              element={
+                <ProtectedRoute>
+                  <TemplatesWhatsApp />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/historico-notificacoes"
+              element={
+                <ProtectedRoute>
+                  <HistoricoNotificacoes />
                 </ProtectedRoute>
               }
             />

@@ -163,6 +163,22 @@ class User(BaseModel):
         comment="Se o usuário está ativo no sistema"
     )
     
+    # ==================== NOTIFICAÇÕES WHATSAPP ====================
+    
+    whatsapp = Column(
+        String(20),
+        nullable=True,
+        comment="Número WhatsApp do usuário para notificações (formato: 5511999999999)"
+    )
+    
+    receber_notificacoes = Column(
+        Boolean,
+        default=True,
+        nullable=False,
+        index=True,
+        comment="Se o usuário deseja receber notificações WhatsApp"
+    )
+    
     # ==================== RELACIONAMENTOS INVERSOS ====================
     
     # Demandas criadas por este usuário

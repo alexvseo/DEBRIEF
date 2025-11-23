@@ -16,7 +16,9 @@ import {
   UserX,
   Crown,
   User as UserIcon,
-  RefreshCw
+  RefreshCw,
+  Phone,
+  MessageSquare
 } from 'lucide-react'
 import {
   Button,
@@ -353,6 +355,7 @@ const GerenciarUsuarios = () => {
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Usuário</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Email</th>
+                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">WhatsApp</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Tipo</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Status</th>
                     <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Ações</th>
@@ -368,6 +371,19 @@ const GerenciarUsuarios = () => {
                         </div>
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-600">{usuario.email}</td>
+                      <td className="py-3 px-4 text-center">
+                        {usuario.whatsapp ? (
+                          <div className="flex items-center justify-center gap-1">
+                            <Phone className="h-3 w-3 text-green-600" />
+                            <span className="text-xs text-gray-600">{usuario.whatsapp}</span>
+                            {usuario.receber_notificacoes && (
+                              <MessageSquare className="h-3 w-3 text-blue-600" title="Recebe notificações" />
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </td>
                       <td className="py-3 px-4 text-center">
                         <Badge variant={usuario.tipo === 'master' ? 'default' : 'secondary'}>
                           {usuario.tipo === 'master' ? (
@@ -477,7 +493,9 @@ const ModalUsuario = ({ open, item, clientes, onClose, onSave }) => {
     nome_completo: '',
     password: '',
     tipo: 'cliente',
-    cliente_id: ''
+    cliente_id: '',
+    whatsapp: '',
+    receber_notificacoes: false
   })
   
   useEffect(() => {
@@ -488,7 +506,9 @@ const ModalUsuario = ({ open, item, clientes, onClose, onSave }) => {
         nome_completo: item.nome_completo || '',
         password: '', // Não preencher senha em edição
         tipo: item.tipo || 'cliente',
-        cliente_id: item.cliente_id || ''
+        cliente_id: item.cliente_id || '',
+        whatsapp: item.whatsapp || '',
+        receber_notificacoes: item.receber_notificacoes || false
       })
     } else {
       setForm({
@@ -497,7 +517,9 @@ const ModalUsuario = ({ open, item, clientes, onClose, onSave }) => {
         nome_completo: '',
         password: '',
         tipo: 'cliente',
-        cliente_id: clientes[0]?.id || ''
+        cliente_id: clientes[0]?.id || '',
+        whatsapp: '',
+        receber_notificacoes: false
       })
     }
   }, [item, open, clientes])
@@ -620,6 +642,58 @@ const ModalUsuario = ({ open, item, clientes, onClose, onSave }) => {
                   </select>
                 </div>
               )}
+              
+              {/* Campos WhatsApp */}
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-green-600" />
+                  Notificações WhatsApp
+                </h3>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Número WhatsApp
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        value={form.whatsapp}
+                        onChange={(e) => {
+                          // Apenas números
+                          const valor = e.target.value.replace(/\D/g, '')
+                          setForm(prev => ({ ...prev, whatsapp: valor }))
+                        }}
+                        placeholder="5511999999999"
+                        className="pl-10"
+                        maxLength={15}
+                        helperText="Formato: código país + DDD + número (apenas números)"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="receber-notificacoes"
+                      checked={form.receber_notificacoes}
+                      onChange={(e) => setForm(prev => ({ ...prev, receber_notificacoes: e.target.checked }))}
+                      disabled={!form.whatsapp}
+                      className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                    />
+                    <label htmlFor="receber-notificacoes" className="text-sm text-gray-700">
+                      Receber notificações individuais via WhatsApp
+                    </label>
+                  </div>
+                  
+                  {!form.whatsapp && (
+                    <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                      ⚠️ Configure o número WhatsApp para habilitar notificações
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </DialogBody>
           

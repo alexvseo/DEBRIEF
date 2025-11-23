@@ -22,7 +22,8 @@ import {
   ToggleLeft,
   ToggleRight,
   Users,
-  Palette
+  Palette,
+  AlertTriangle
 } from 'lucide-react'
 import {
   Button,
@@ -336,7 +337,6 @@ const Configuracoes = () => {
       // Limpar campos vazios (enviar null em vez de string vazia)
       const dadosLimpos = {
         nome: dados.nome.trim(),
-        whatsapp_group_id: dados.whatsapp_group_id?.trim() || null,
         trello_member_id: dados.trello_member_id?.trim() || null,
         ativo: dados.ativo !== undefined ? dados.ativo : true
       }
@@ -737,6 +737,63 @@ const Configuracoes = () => {
           </Card>
         </div>
         
+        {/* ==================== CONFIGURAÇÕES WHATSAPP ==================== */}
+        <Card className="border-2 border-green-200">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                <MessageSquare className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <CardTitle>Notificações WhatsApp</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">
+                  Configure notificações individuais via WhatsApp
+                </p>
+              </div>
+            </div>
+          </CardHeader>
+          
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2"
+                onClick={() => navigate('/admin/configuracao-whatsapp')}
+              >
+                <Settings className="h-6 w-6 text-green-600" />
+                <div className="text-center">
+                  <div className="font-semibold">Configuração</div>
+                  <div className="text-xs text-gray-500">Número remetente</div>
+                </div>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2"
+                onClick={() => navigate('/admin/templates-whatsapp')}
+              >
+                <MessageSquare className="h-6 w-6 text-purple-600" />
+                <div className="text-center">
+                  <div className="font-semibold">Templates</div>
+                  <div className="text-xs text-gray-500">Mensagens personalizadas</div>
+                </div>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2"
+                onClick={() => navigate('/admin/historico-notificacoes')}
+              >
+                <RefreshCw className="h-6 w-6 text-blue-600" />
+                <div className="text-center">
+                  <div className="font-semibold">Histórico</div>
+                  <div className="text-xs text-gray-500">Notificações enviadas</div>
+                </div>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
         {/* ==================== GERENCIAMENTO DE CLIENTES ==================== */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -764,7 +821,7 @@ const Configuracoes = () => {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Nome</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">WhatsApp Group</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Trello Member ID</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Status</th>
                     <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Ações</th>
                   </tr>
@@ -773,7 +830,7 @@ const Configuracoes = () => {
                   {clientes.map(cliente => (
                     <tr key={cliente.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4">{cliente.nome}</td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{cliente.whatsapp_group_id || '-'}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{cliente.trello_member_id || '-'}</td>
                       <td className="py-3 px-4 text-center">
                         <Badge variant={cliente.ativo ? 'success' : 'error'}>
                           {cliente.ativo ? 'Ativo' : 'Inativo'}
@@ -1154,6 +1211,30 @@ const Configuracoes = () => {
           </CardHeader>
           
           <CardContent className="space-y-6">
+            {/* Aviso de Descontinuação */}
+            <Alert variant="warning">
+              <AlertTriangle className="h-4 w-4" />
+              <div>
+                <AlertTitle>⚠️ Configuração Obsoleta</AlertTitle>
+                <AlertDescription>
+                  Esta seção de configurações foi <strong>descontinuada</strong>. 
+                  O sistema agora usa notificações <strong>individuais</strong> por usuário.<br/>
+                  <strong>Nova configuração:</strong> Role até <strong>"Notificações WhatsApp"</strong> acima ou 
+                  clique no botão abaixo.
+                  <div className="mt-3">
+                    <Button
+                      size="sm"
+                      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Ir para Nova Configuração WhatsApp
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </div>
+            </Alert>
+            
             {configs.whatsapp.map(renderConfiguracao)}
             
             {testResult.whatsapp && (
@@ -1249,7 +1330,6 @@ const Configuracoes = () => {
 const ModalCliente = ({ open, item, onClose, onSave }) => {
   const [form, setForm] = useState({
     nome: '',
-    whatsapp_group_id: '',
     trello_member_id: ''
   })
   
@@ -1257,13 +1337,11 @@ const ModalCliente = ({ open, item, onClose, onSave }) => {
     if (item) {
       setForm({
         nome: item.nome || '',
-        whatsapp_group_id: item.whatsapp_group_id || '',
         trello_member_id: item.trello_member_id || ''
       })
     } else {
       setForm({
         nome: '',
-        whatsapp_group_id: '',
         trello_member_id: ''
       })
     }
@@ -1294,13 +1372,14 @@ const ModalCliente = ({ open, item, onClose, onSave }) => {
                 placeholder="Ex: Prefeitura Municipal"
               />
               
-              <Input
-                label="WhatsApp Group ID"
-                value={form.whatsapp_group_id}
-                onChange={(e) => setForm(prev => ({ ...prev, whatsapp_group_id: e.target.value }))}
-                placeholder="Ex: 5511999999999-1234567890@g.us"
-                helperText="ID do grupo no WhatsApp para notificações"
-              />
+              {/* Campo WhatsApp Group ID - OBSOLETO (removido sistema de grupos) */}
+              <Alert variant="info" className="text-sm">
+                <AlertDescription>
+                  ⚠️ <strong>Notificações via grupo WhatsApp foram descontinuadas.</strong><br/>
+                  O sistema agora envia notificações <strong>individuais</strong> para cada usuário.<br/>
+                  Configure em: <strong>Configurações → Notificações WhatsApp</strong>
+                </AlertDescription>
+              </Alert>
               
               <Input
                 label="Trello Member ID"

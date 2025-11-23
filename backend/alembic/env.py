@@ -30,7 +30,9 @@ from app.models import (
 config = context.config
 
 # Sobrescrever sqlalchemy.url com a URL do settings
-config.set_main_option('sqlalchemy.url', settings.DATABASE_URL)
+# Escapar % para evitar erro de interpolação do ConfigParser
+database_url = settings.DATABASE_URL.replace('%', '%%')
+config.set_main_option('sqlalchemy.url', database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

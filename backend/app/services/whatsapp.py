@@ -119,6 +119,64 @@ class WhatsAppService:
             logger.error(f"Exceção ao enviar WhatsApp: {e}")
             return False
     
+    def enviar_mensagem_individual(
+        self,
+        numero: str,
+        mensagem: str
+    ) -> bool:
+        """
+        Enviar mensagem individual para número WhatsApp
+        
+        Args:
+            numero: Número WhatsApp (formato: 5511999999999)
+            mensagem: Texto da mensagem (suporta markdown do WhatsApp)
+        
+        Returns:
+            True se enviado com sucesso, False caso contrário
+        
+        Exemplo:
+            ```python
+            success = whatsapp.enviar_mensagem_individual(
+                "5511999999999",
+                "*Notificação*: Nova demanda criada"
+            )
+            ```
+        """
+        url = f"{self.base_url}/api/{self.instance}/send-text"
+        
+        # Garantir que número tenha apenas dígitos
+        numero_limpo = ''.join(filter(str.isdigit, numero))
+        
+        payload = {
+            "phone": numero_limpo,
+            "message": mensagem,
+            "isGroup": False
+        }
+        
+        try:
+            logger.info(f"Enviando mensagem WhatsApp individual para {numero_limpo}")
+            
+            response = requests.post(
+                url,
+                json=payload,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                logger.info(f"Mensagem WhatsApp individual enviada com sucesso para {numero_limpo}")
+                return True
+            else:
+                logger.error(f"Erro WhatsApp individual (status {response.status_code}): {response.text}")
+                return False
+                
+        except requests.exceptions.Timeout:
+            logger.error("Timeout ao enviar mensagem WhatsApp individual")
+            return False
+        except Exception as e:
+            logger.error(f"Exceção ao enviar WhatsApp individual: {e}")
+            return False
+    
     async def enviar_nova_demanda(self, demanda: Demanda, db: Session) -> bool:
         """
         Enviar notificação de nova demanda
