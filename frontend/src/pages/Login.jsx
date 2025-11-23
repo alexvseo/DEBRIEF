@@ -223,23 +223,7 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Informações de Desenvolvimento (remover em produção) */}
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="pt-6">
-            <div className="text-sm text-green-800 space-y-2">
-              <p className="font-semibold">✅ Sistema Mock Ativo (Sem Backend)</p>
-              <div className="space-y-1 text-xs">
-                <p className="font-medium">Credenciais de teste:</p>
-                <p>👑 Master: <code className="bg-green-100 px-1 rounded font-mono">admin</code> / <code className="bg-green-100 px-1 rounded font-mono">admin123</code></p>
-                <p>👤 Cliente: <code className="bg-green-100 px-1 rounded font-mono">cliente</code> / <code className="bg-green-100 px-1 rounded font-mono">cliente123</code></p>
-              </div>
-              <div className="text-xs text-green-700 mt-3 p-2 bg-green-100 rounded">
-                <p className="font-medium">💡 Funcionando 100% no frontend!</p>
-                <p className="mt-1">O backend FastAPI será criado depois.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
 
       </div>
     </div>

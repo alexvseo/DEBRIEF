@@ -1,96 +1,52 @@
+version: '3.8'
+
 services:
-  # Backend FastAPI - Desenvolvimento Local
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: debrief-backend:dev
-    container_name: debrief-backend-dev
+    container_name: debrief-backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"  # Porta local 8000
+    networks:
+      - debrief-network
     environment:
-      # Banco de Dados - Conectar via túnel SSH (localhost:5432)
-      # IMPORTANTE: O túnel SSH deve estar ativo antes de iniciar o backend
-      # Execute: ./scripts/dev/iniciar-tunel-ssh.sh
-      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief
-      
-      # JWT
-      - SECRET_KEY=dev-secret-key-local-change-me
-      - ALGORITHM=HS256
-      - ACCESS_TOKEN_EXPIRE_MINUTES=60
-      
-      # CORS - Permitir frontend local (formato JSON array)
-      - FRONTEND_URL=http://localhost:5173
-      - CORS_ORIGINS=["http://localhost:5173","http://127.0.0.1:5173","http://localhost:3000"]
-      
-      # Ambiente
+      # Conectar ao túnel SSH (localhost:5433 mapeado para host.docker.internal:5433)
+      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5433/dbrief
+      - FRONTEND_URL=http://localhost:3000
       - ENVIRONMENT=development
-      - DEBUG=True
-      - DATABASE_ECHO=False
-      
-      # Upload
-      - MAX_UPLOAD_SIZE=52428800
+      # JWT
+      - SECRET_KEY=sua-chave-secreta-super-segura-aqui-change-me
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
       - ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png
-      
-      # Trello (opcional - usar variáveis do .env se necessário)
-      - TRELLO_API_KEY=${TRELLO_API_KEY:-}
-      - TRELLO_TOKEN=${TRELLO_TOKEN:-}
-      - TRELLO_BOARD_ID=${TRELLO_BOARD_ID:-}
-      - TRELLO_LIST_ID=${TRELLO_LIST_ID:-}
-      
-      # WhatsApp (opcional)
-      - WPP_URL=${WPP_URL:-}
-      - WPP_INSTANCE=${WPP_INSTANCE:-}
-      - WPP_TOKEN=${WPP_TOKEN:-}
-      
-      # reCAPTCHA (opcional)
-      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY:-}
-      
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8000:8000"
     volumes:
-      # Montar código para hot-reload
       - ./backend:/app
-      # Uploads
       - ./backend/uploads:/app/uploads
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
 
-  # Frontend React - Desenvolvimento Local
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev
-    image: debrief-frontend:dev
-    container_name: debrief-frontend-dev
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=/api
+    container_name: debrief-frontend
     restart: unless-stopped
+    networks:
+      - debrief-network
     ports:
-      - "5173:5173"  # Porta Vite padrão
-    environment:
-      - VITE_API_URL=http://localhost:8000/api
-      - VITE_ENV=development
-      - VITE_DEBUG_MODE=true
+      - "3000:80"
     volumes:
-      # Montar código para hot-reload
       - ./frontend:/app
-      - /app/node_modules  # Evitar sobrescrever node_modules
-    command: npm run dev -- --host 0.0.0.0 --port 5173
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
     depends_on:
-      backend:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173/"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
+      - backend
 
 networks:
-  default:
-    name: debrief-dev-network
+  debrief-network:
     driver: bridge
-

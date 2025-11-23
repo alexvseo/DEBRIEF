@@ -129,6 +129,56 @@ nano backend/.env
 
 ---
 
+## 🤖 Configuração Cursor AI (Novo!)
+
+O projeto está **100% configurado** para acesso automático ao VPS via Cursor AI!
+
+### 📋 Recursos Disponíveis
+- ✅ Acesso SSH automático ao servidor (82.25.92.217)
+- ✅ Túnel SSH para banco de dados PostgreSQL
+- ✅ Script de gestão interativo com 16 funcionalidades
+- ✅ Deploy automático no servidor
+- ✅ Backup e restore do banco
+- ✅ Documentação completa gerada
+
+### 🚀 Como Usar
+
+#### Opção 1: Script de Gestão (Recomendado)
+```bash
+./.cursor/debrief-config.sh
+```
+Menu interativo com:
+- Túnel SSH (iniciar/parar/status)
+- Gestão do servidor (SSH, logs, containers)
+- Deploy automático completo
+- Backup do banco de dados
+- Ambiente local (Docker)
+
+#### Opção 2: Comandos Diretos
+```bash
+# Acesso SSH direto (usa configuração ~/.ssh/config)
+ssh debrief
+
+# Iniciar túnel para banco de dados
+./scripts/dev/tunnel.sh
+
+# Ambiente local com banco remoto
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+### 📚 Documentação da Configuração
+- **Início Rápido:** [`LEIA-ME-PRIMEIRO.md`](LEIA-ME-PRIMEIRO.md)
+- **Setup Completo:** [`CURSOR_SETUP_COMPLETO.md`](CURSOR_SETUP_COMPLETO.md)
+- **Relatório Detalhado:** [`docs/RELATORIO_MEMORIA_PROJETO_DEBRIEF.md`](docs/RELATORIO_MEMORIA_PROJETO_DEBRIEF.md)
+- **Instruções do Script:** [`.cursor/README.md`](.cursor/README.md)
+
+### 🔐 Acesso Configurado
+- **VPS:** 82.25.92.217 (host alias: `debrief`)
+- **Banco via Túnel:** localhost:5433
+- **Conexão Persistente:** 4 horas (ControlMaster)
+
+---
+
 ## 💻 Desenvolvimento Local
 
 ### Backend

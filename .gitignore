@@ -1,11 +1,8 @@
-# ==================== PYTHON/BACKEND ====================
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -14,45 +11,40 @@ downloads/
 eggs/
 .eggs/
 lib/
-!frontend/src/lib/
 lib64/
 parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Virtual environments
 venv/
-env/
 ENV/
-env.bak/
-venv.bak/
+env/
 
-# IDEs
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.dev
+.env.production
+*.env
+
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -60,143 +52,46 @@ venv.bak/
 *~
 .DS_Store
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# Docker
+docker-compose.override.yml
 
-# pyenv
-.python-version
+# Database
+*.sql
+*.db
+*.sqlite
+*.sqlite3
 
-# Celery
-celerybeat-schedule
-celerybeat.pid
+# Uploads
+uploads/*
+!uploads/.gitkeep
 
-# SageMath parsed files
-*.sage.py
+# Backups
+backups/*.sql
+backups/*.tar.gz
+backups/*.zip
 
-# Environments
-.env
-.env.local
-.env.*.local
-*.env
-.env.dev
-backend/.env.dev
-frontend/.env.dev
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# Alembic
-# Descomentar se não quiser versionar migrations
-# backend/alembic/versions/*.py
-
-# Uploads e arquivos temporários
-backend/uploads/*
-!backend/uploads/.gitkeep
-
-# Logs
-*.log
-logs/
-
-# ==================== NODE/FRONTEND ====================
-# Dependencies
-node_modules/
-/.pnp
-.pnp.js
-
-# Testing
-/coverage
-
-# Production
-/build
-/dist
-frontend/dist/
-frontend/build/
-
-# Misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# ==================== DOCKER ====================
-# Não ignorar Dockerfiles
-# docker-compose.override.yml
-
-# ==================== OS ====================
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Windows
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-*.stackdump
-[Dd]esktop.ini
-$RECYCLE.BIN/
-
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-.nfs*
-
-# ==================== SECRETS & CREDENTIALS ====================
-# NUNCA versionar arquivos sensíveis!
+# Secrets
+secrets/
 *.pem
 *.key
-*.cert
-*.crt
-secrets.json
-credentials.json
+!*.pub
 
-# ==================== TEMPORÁRIOS ====================
+# Temporary
 tmp/
 temp/
 *.tmp
 *.bak
-*.swp
-*.swo
 
-# ==================== DOCUMENTAÇÃO ====================
-# Documentação é versionada no GitHub mas não vai para o servidor
-# (controlado via .dockerignore)
-# docs/ está no Git, mas não no Docker
+# OS
+.DS_Store
+Thumbs.db
 
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# React
+.vite/
