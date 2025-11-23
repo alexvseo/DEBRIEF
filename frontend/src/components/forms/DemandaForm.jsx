@@ -74,7 +74,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
   const [files, setFiles] = useState([])
   const [filePreviews, setFilePreviews] = useState([])
   const [isDragging, setIsDragging] = useState(false)
-  const [linksReferencia, setLinksReferencia] = useState([{ titulo: '', url: '' }])
+  const [linksReferencia, setLinksReferencia] = useState([{ url: '' }])
 
   // Estados para carregar dados dos dropdowns
   const [secretarias, setSecretarias] = useState([])
@@ -118,25 +118,38 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       try {
         setIsLoadingData(true)
 
-        // Carregar dados em paralelo
-        const [secretariasRes, tiposRes, prioridadesRes] = await Promise.all([
-          demandaService.listarSecretarias(),
-          demandaService.listarTiposDemanda(),
-          demandaService.listarPrioridades(),
+        // Carregar dados em paralelo com tratamento individual de erros
+        const [secretariasRes, tiposRes, prioridadesRes] = await Promise.allSettled([
+          demandaService.listarSecretarias().catch(err => ({ data: [], error: err })),
+          demandaService.listarTiposDemanda().catch(err => ({ data: [], error: err })),
+          demandaService.listarPrioridades().catch(err => ({ data: [], error: err })),
         ])
 
-        // Extrair dados da resposta (pode vir direto ou dentro de data)
-        const secretariasData = secretariasRes.data || secretariasRes
-        const tiposData = tiposRes.data || tiposRes
-        const prioridadesData = prioridadesRes.data || prioridadesRes
+        // Processar resultados
+        const secretariasData = secretariasRes.status === 'fulfilled' 
+          ? (secretariasRes.value?.data || secretariasRes.value || [])
+          : []
+        
+        const tiposData = tiposRes.status === 'fulfilled'
+          ? (tiposRes.value?.data || tiposRes.value || [])
+          : []
+        
+        const prioridadesData = prioridadesRes.status === 'fulfilled'
+          ? (prioridadesRes.value?.data || prioridadesRes.value || [])
+          : []
 
         setSecretarias(Array.isArray(secretariasData) ? secretariasData : [])
         setTiposDemanda(Array.isArray(tiposData) ? tiposData : [])
         setPrioridades(Array.isArray(prioridadesData) ? prioridadesData : [])
 
+        // Mostrar erro apenas uma vez se todos falharam
+        if (secretariasData.length === 0 && tiposData.length === 0 && prioridadesData.length === 0) {
+          toast.error('Erro ao carregar dados do formulário. Verifique sua conexão.')
+        }
+
       } catch (error) {
         console.error('Erro ao carregar dados do formulário:', error)
-        toast.error('Erro ao carregar dados. Recarregue a página.')
+        // Não mostrar toast aqui pois já foi mostrado acima
       } finally {
         setIsLoadingData(false)
       }
@@ -291,7 +304,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
    */
   const adicionarLink = () => {
     if (linksReferencia.length < 10) {
-      setLinksReferencia([...linksReferencia, { titulo: '', url: '' }])
+      setLinksReferencia([...linksReferencia, { url: '' }])
     } else {
       toast.warning('Máximo de 10 links permitidos')
     }
@@ -302,7 +315,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
    */
   const removerLink = (index) => {
     const novosLinks = linksReferencia.filter((_, i) => i !== index)
-    setLinksReferencia(novosLinks.length > 0 ? novosLinks : [{ titulo: '', url: '' }])
+    setLinksReferencia(novosLinks.length > 0 ? novosLinks : [{ url: '' }])
   }
 
   /**
@@ -608,13 +621,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
             <div className="space-y-3">
               {linksReferencia.map((link, index) => (
                 <div key={index} className="flex gap-2 items-start">
-                  <div className="flex-1 grid grid-cols-2 gap-2">
-                    <Input
-                      placeholder="Título do link (ex: Documentação)"
-                      value={link.titulo}
-                      onChange={(e) => atualizarLink(index, 'titulo', e.target.value)}
-                      className="text-sm"
-                    />
+                  <div className="flex-1">
                     <Input
                       placeholder="URL (ex: https://exemplo.com)"
                       value={link.url}
@@ -646,8 +653,9 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 </p>
                 <div className="space-y-1">
                   {linksReferencia.filter(link => link.url.trim() !== '').map((link, index) => (
-                    <div key={index} className="text-xs text-blue-800">
-                      • {link.titulo || 'Link'}: <a href={link.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">{link.url}</a>
+                    <div key={index} className="text-xs text-blue-800 flex items-center gap-1">
+                      <span>•</span>
+                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600 break-all">{link.url}</a>
                     </div>
                   ))}
                 </div>

@@ -128,12 +128,18 @@ api.interceptors.response.use(
       default:
         // Outros erros
         if (error.code === 'ECONNABORTED') {
-          toast.error('Tempo de espera excedido. Tente novamente.')
+          console.error('Timeout:', error)
+          // Não mostrar toast para timeout, deixar o componente decidir
         } else if (error.code === 'ERR_NETWORK') {
-          toast.error('Erro de conexão. Verifique sua internet.')
+          console.error('Erro de rede:', error)
+          // Não mostrar toast automático para erro de rede
+          // O componente pode decidir como tratar
         } else {
           console.error('Erro na requisição:', error)
-          toast.error(message)
+          // Mostrar toast apenas para erros não relacionados a rede
+          if (message && !message.includes('Network Error')) {
+            toast.error(message)
+          }
         }
     }
     

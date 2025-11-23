@@ -62,6 +62,7 @@ class ClienteResponse(ClienteBase):
     created_at: datetime
     updated_at: datetime
     total_demandas: Optional[int] = Field(None, description="Total de demandas vinculadas (opcional)")
+    etiqueta_trello: Optional[dict] = Field(None, description="Etiqueta Trello vinculada ao cliente")
     
     class Config:
         from_attributes = True
