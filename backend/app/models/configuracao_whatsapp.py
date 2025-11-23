@@ -16,6 +16,7 @@ class ConfiguracaoWhatsApp(BaseModel):
     Atributos:
         numero_remetente: Número WhatsApp Business (formato: 5511999999999)
         instancia_wpp: Nome da instância WPP Connect configurada
+        token_wpp: Token de autenticação da instância WPP Connect
         ativo: Se esta configuração está ativa (apenas uma por vez)
     
     Exemplo:
@@ -23,6 +24,7 @@ class ConfiguracaoWhatsApp(BaseModel):
         config = ConfiguracaoWhatsApp(
             numero_remetente="5511999999999",
             instancia_wpp="debrief-instance",
+            token_wpp="seu_token_aqui",
             ativo=True
         )
         ```
@@ -42,6 +44,13 @@ class ConfiguracaoWhatsApp(BaseModel):
         String(100),
         nullable=False,
         comment="Nome da instância WPP Connect"
+    )
+    
+    # Token de autenticação do WPP Connect
+    token_wpp = Column(
+        String(255),
+        nullable=False,
+        comment="Token de autenticação da instância WPP Connect"
     )
     
     # Flag para indicar se está ativa (apenas uma configuração ativa por vez)

@@ -20,6 +20,12 @@ class ConfiguracaoWhatsAppBase(BaseModel):
         max_length=100,
         description="Nome da instância WPP Connect"
     )
+    token_wpp: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Token de autenticação da instância WPP Connect"
+    )
     ativo: bool = Field(default=True, description="Se a configuração está ativa")
     
     @validator('numero_remetente')
@@ -43,6 +49,7 @@ class ConfiguracaoWhatsAppUpdate(BaseModel):
     """Schema para atualizar configuração WhatsApp"""
     numero_remetente: Optional[str] = Field(None, min_length=10, max_length=20)
     instancia_wpp: Optional[str] = Field(None, min_length=1, max_length=100)
+    token_wpp: Optional[str] = Field(None, min_length=1, max_length=255)
     ativo: Optional[bool] = None
     
     @validator('numero_remetente')

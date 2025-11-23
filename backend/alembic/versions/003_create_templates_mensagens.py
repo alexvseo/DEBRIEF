@@ -22,13 +22,15 @@ def upgrade() -> None:
     # Criar tabela de templates de mensagens
     op.create_table('templates_mensagens',
         sa.Column('id', sa.String(length=36), nullable=False, comment='Identificador único universal (UUID v4)'),
+        sa.Column('nome', sa.String(length=100), nullable=False, comment='Nome identificador do template'),
         sa.Column('tipo_evento', sa.String(length=50), nullable=False, comment='Tipo de evento: nova_demanda, demanda_alterada, demanda_deletada, etc'),
-        sa.Column('titulo', sa.String(length=100), nullable=False, comment='Título descritivo do template'),
-        sa.Column('template', sa.Text(), nullable=False, comment='Template da mensagem com variáveis: {cliente_nome}, {demanda_titulo}, etc'),
+        sa.Column('mensagem', sa.Text(), nullable=False, comment='Mensagem do template com variáveis: {cliente_nome}, {demanda_titulo}, etc'),
+        sa.Column('variaveis_disponiveis', sa.Text(), nullable=True, comment='JSON com lista de variáveis disponíveis'),
         sa.Column('ativo', sa.Boolean(), nullable=False, server_default='true', comment='Se este template está ativo'),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False, comment='Data e hora de criação do registro'),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False, comment='Data e hora da última atualização'),
-        sa.PrimaryKeyConstraint('id')
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('nome')
     )
     
     # Criar índices
@@ -38,11 +40,11 @@ def upgrade() -> None:
     
     # Inserir templates padrão
     op.execute("""
-        INSERT INTO templates_mensagens (id, tipo_evento, titulo, template, ativo) VALUES
+        INSERT INTO templates_mensagens (id, nome, tipo_evento, mensagem, ativo) VALUES
         (
             'tpl-nova-demanda-001',
-            'nova_demanda',
             'Nova Demanda Criada',
+            'nova_demanda',
             '🆕 *Nova Demanda Criada*
 
 📋 *Título*: {demanda_titulo}
@@ -57,8 +59,8 @@ _Sistema DeBrief_',
         ),
         (
             'tpl-demanda-alterada-001',
-            'demanda_alterada',
             'Demanda Atualizada',
+            'demanda_alterada',
             '✏️ *Demanda Atualizada*
 
 📋 *#{demanda_numero}* - {demanda_titulo}
@@ -72,8 +74,8 @@ _Atualizado em {data_atual} às {hora_atual}_',
         ),
         (
             'tpl-demanda-deletada-001',
-            'demanda_deletada',
             'Demanda Removida',
+            'demanda_deletada',
             '🗑️ *Demanda Removida*
 
 📋 *#{demanda_numero}* - {demanda_titulo}

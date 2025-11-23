@@ -24,6 +24,7 @@ def upgrade() -> None:
         sa.Column('id', sa.String(length=36), nullable=False, comment='Identificador único universal (UUID v4)'),
         sa.Column('numero_remetente', sa.String(length=20), nullable=False, comment='Número WhatsApp Business remetente (formato: 5511999999999)'),
         sa.Column('instancia_wpp', sa.String(length=100), nullable=False, comment='Nome da instância WPP Connect'),
+        sa.Column('token_wpp', sa.String(length=255), nullable=False, comment='Token de autenticação da instância WPP Connect'),
         sa.Column('ativo', sa.Boolean(), nullable=False, server_default='true', comment='Se esta configuração está ativa'),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False, comment='Data e hora de criação do registro'),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False, comment='Data e hora da última atualização'),
