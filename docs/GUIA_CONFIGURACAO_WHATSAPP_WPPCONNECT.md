@@ -96,7 +96,7 @@ nano /etc/caddy/Caddyfile
 
 Adicione:
 ```caddy
-wpp.debrief.interce.com.br.com.br {
+wpp.debrief.interce.com.br {
     reverse_proxy localhost:21465
 }
 ```
@@ -115,7 +115,7 @@ systemctl reload caddy
 Acesse no navegador (substitua com seus dados):
 
 ```
-https://wpp.debrief.interce.com.br.com.br/api/debrief-instance/start-session
+https://wpp.debrief.interce.com.br/api/debrief-instance/start-session
 ```
 
 Ou se estiver usando provedor cloud:
@@ -169,7 +169,7 @@ Adicione ou edite estas linhas:
 
 ```env
 # WhatsApp/WPPConnect Integration
-WPP_URL=https://wpp.debrief.interce.com.br.com.br
+WPP_URL=https://wpp.debrief.interce.com.br
 WPP_INSTANCE=debrief-instance
 WPP_TOKEN=seu-token-super-seguro-aqui
 ```
@@ -190,7 +190,7 @@ Crie ou edite o arquivo `.env`:
 
 ```env
 # WhatsApp/WPPConnect Integration
-WPP_URL=https://wpp.debrief.interce.com.br.com.br
+WPP_URL=https://wpp.debrief.interce.com.br
 WPP_INSTANCE=debrief-instance
 WPP_TOKEN=seu-token-super-seguro-aqui
 ```
@@ -214,7 +214,7 @@ http://localhost:3000/admin/configuracao-whatsapp
 
 **Produção:**
 ```
-https://debrief.interce.com.br.com.br/admin/configuracao-whatsapp
+https://debrief.interce.com.br/admin/configuracao-whatsapp
 ```
 
 ### Passo 2: Preencher Formulário
@@ -368,7 +368,7 @@ http://localhost:3000/admin/templates-whatsapp
 
 **Produção:**
 ```
-https://debrief.interce.com.br.com.br/admin/templates-whatsapp
+https://debrief.interce.com.br/admin/templates-whatsapp
 ```
 
 ### Templates Padrão Já Criados

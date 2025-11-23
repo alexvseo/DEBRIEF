@@ -163,7 +163,7 @@ cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.backup.$(date +%Y%m%d_%H%M%S)
 cat >> /etc/caddy/Caddyfile << 'CADDY_EOF'
 
 # WPPConnect Server - Multi Application
-wpp.interce.com.br.com.br {
+wpp.interce.com.br {
     reverse_proxy localhost:21465
     
     # Logs
@@ -217,7 +217,7 @@ cat > README.md << 'README_EOF'
 
 ## 🌐 Acesso
 ```
-URL Externa: https://wpp.interce.com.br.com.br
+URL Externa: https://wpp.interce.com.br
 URL Interna: http://localhost:21465
 ```
 
@@ -289,7 +289,7 @@ chmod 600 /var/wppconnect/tokens/app2.token
 cat /var/wppconnect/tokens/app2.token
 
 # 3. Configurar na aplicação
-# WPP_URL=https://wpp.interce.com.br.com.br
+# WPP_URL=https://wpp.interce.com.br
 # WPP_INSTANCE=app2-instance
 # WPP_TOKEN=(token gerado acima)
 ```
@@ -314,7 +314,7 @@ tail -f /var/wppconnect/logs/*.log
 curl http://localhost:21465/api/health
 
 # Externo
-curl https://wpp.interce.com.br.com.br/api/health
+curl https://wpp.interce.com.br/api/health
 ```
 
 ## 🚨 Troubleshooting
@@ -397,7 +397,7 @@ IP: $(hostname -I | awk '{print $1}')
 
 ACESSOS:
 ========
-URL Externa: https://wpp.interce.com.br.com.br
+URL Externa: https://wpp.interce.com.br
 URL Interna: http://localhost:21465
 
 CREDENCIAIS DEBRIEF:
@@ -422,12 +422,12 @@ Health: curl http://localhost:21465/api/health
 
 PRÓXIMOS PASSOS:
 ================
-1. Configurar DNS no Cloudflare: wpp.interce.com.br.com.br → 82.25.92.217
+1. Configurar DNS no Cloudflare: wpp.interce.com.br → 82.25.92.217
 2. Aguardar propagação DNS (5-10 minutos)
-3. Acessar: https://wpp.interce.com.br.com.br/api/health
-4. Conectar WhatsApp: https://wpp.interce.com.br.com.br/api/debrief-instance/start-session
+3. Acessar: https://wpp.interce.com.br/api/health
+4. Conectar WhatsApp: https://wpp.interce.com.br/api/debrief-instance/start-session
 5. Configurar no DeBrief backend (.env):
-   WPP_URL=https://wpp.interce.com.br.com.br
+   WPP_URL=https://wpp.interce.com.br
    WPP_INSTANCE=debrief-instance
    WPP_TOKEN=${DEBRIEF_TOKEN}
 
@@ -444,7 +444,7 @@ echo -e "${GREEN}============================================${NC}"
 echo ""
 echo -e "${YELLOW}📍 INFORMAÇÕES IMPORTANTES:${NC}"
 echo ""
-echo "🌐 URL Externa: https://wpp.interce.com.br.com.br"
+echo "🌐 URL Externa: https://wpp.interce.com.br"
 echo "🏠 URL Interna: http://localhost:21465"
 echo ""
 echo "🔑 Instância DeBrief: debrief-instance"
@@ -461,10 +461,10 @@ echo ""
 echo "2. Aguarde propagação DNS (5-10 minutos)"
 echo ""
 echo "3. Teste o acesso:"
-echo "   curl https://wpp.interce.com.br.com.br/api/health"
+echo "   curl https://wpp.interce.com.br/api/health"
 echo ""
 echo "4. Configure no DeBrief (.env):"
-echo "   WPP_URL=https://wpp.interce.com.br.com.br"
+echo "   WPP_URL=https://wpp.interce.com.br"
 echo "   WPP_INSTANCE=debrief-instance"
 echo "   WPP_TOKEN=${DEBRIEF_TOKEN}"
 echo ""
