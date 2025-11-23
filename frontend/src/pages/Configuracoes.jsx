@@ -1116,8 +1116,8 @@ const Configuracoes = () => {
         </Card>
         
         {/* ==================== CONFIGURAÇÕES TRELLO ==================== */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <Card className="border-2 border-blue-200">
+          <CardHeader>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                 <Trello className="h-5 w-5 text-blue-600" />
@@ -1129,49 +1129,33 @@ const Configuracoes = () => {
                 </p>
               </div>
             </div>
-            
-            <Button
-              onClick={testarTrello}
-              disabled={testando.trello || !valores.trello_api_key || !valores.trello_token}
-              variant="outline"
-            >
-              {testando.trello ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Testando...
-                </>
-              ) : (
-                <>
-                  <TestTube className="h-4 w-4 mr-2" />
-                  Testar Conexão
-                </>
-              )}
-            </Button>
           </CardHeader>
           
-          <CardContent className="space-y-6">
-            {configs.trello.map(renderConfiguracao)}
-            
-            {testResult.trello && (
-              <Alert variant={testResult.trello.sucesso ? 'success' : 'error'}>
-                <div className="flex items-center gap-2">
-                  {testResult.trello.sucesso ? (
-                    <CheckCircle className="h-4 w-4" />
-                  ) : (
-                    <XCircle className="h-4 w-4" />
-                  )}
-                  <AlertTitle>{testResult.trello.mensagem}</AlertTitle>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2"
+                onClick={() => navigate('/admin/trello-config')}
+              >
+                <Settings className="h-6 w-6 text-blue-600" />
+                <div className="text-center">
+                  <div className="font-medium">Configuração Geral</div>
+                  <div className="text-xs text-gray-500">Board, Lista e Credenciais</div>
                 </div>
-              </Alert>
-            )}
-            
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <strong>💡 Como obter credenciais:</strong><br />
-                1. Acesse <a href="https://trello.com/app-key" target="_blank" rel="noopener noreferrer" className="underline">https://trello.com/app-key</a><br />
-                2. Copie a "API Key" e o "Token"<br />
-                3. Cole nos campos acima e teste a conexão
-              </p>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto py-4 flex flex-col items-center gap-2"
+                onClick={() => navigate('/admin/trello-etiquetas')}
+              >
+                <Tag className="h-6 w-6 text-purple-600" />
+                <div className="text-center">
+                  <div className="font-medium">Etiquetas por Cliente</div>
+                  <div className="text-xs text-gray-500">Organização automática</div>
+                </div>
+              </Button>
             </div>
           </CardContent>
         </Card>

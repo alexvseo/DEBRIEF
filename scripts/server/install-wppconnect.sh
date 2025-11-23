@@ -63,7 +63,7 @@ version: '3.8'
 
 services:
   wppconnect:
-    image: wppconnect/wppconnect-server:latest
+    image: wppconnect-team/wppconnect-server:latest
     container_name: wppconnect-server
     hostname: wppconnect
     restart: always
@@ -123,7 +123,7 @@ EOF
 
 # 6. Baixar imagem Docker
 echo -e "${YELLOW}📦 Baixando imagem Docker do WPPConnect...${NC}"
-docker pull wppconnect/wppconnect-server:latest
+docker pull wppconnect-team/wppconnect-server:latest
 
 # 7. Iniciar WPPConnect
 echo -e "${YELLOW}🚀 Iniciando WPPConnect Server...${NC}"

@@ -37,33 +37,51 @@ class TrelloService:
     
     Exemplo de uso:
         ```python
-        trello_service = TrelloService()
-        card = await trello_service.criar_card(demanda, db)
+        trello_service = TrelloService(db)
+        card = await trello_service.criar_card(demanda)
         print(f"Card criado: {card['url']}")
         ```
     """
     
-    def __init__(self):
+    def __init__(self, db: Session = None):
         """
         Inicializar cliente Trello
         
-        Conecta com a API do Trello usando credenciais do .env
-        e carrega o board e lista configurados.
+        Conecta com a API do Trello usando credenciais do banco de dados
+        (tabela configuracoes_trello) e carrega o board e lista configurados.
+        
+        Args:
+            db: Sessão do banco (obrigatório para carregar configuração)
         
         Raises:
-            Exception: Se credenciais inválidas ou board não encontrado
+            Exception: Se credenciais inválidas, board não encontrado ou config não existe
         """
+        if db is None:
+            raise Exception("TrelloService requer sessão do banco (db)")
+        
         try:
+            # Carregar configuração ativa do banco
+            from app.models.configuracao_trello import ConfiguracaoTrello
+            
+            config = ConfiguracaoTrello.get_ativa(db)
+            
+            if not config:
+                raise Exception("Trello não configurado. Configure em Configurações Master.")
+            
+            # Inicializar cliente Trello
             self.client = TrelloClient(
-                api_key=settings.TRELLO_API_KEY,
-                api_secret=settings.TRELLO_TOKEN
+                api_key=config.api_key,
+                api_secret=config.token
             )
             
-            # Obter board e list
-            self.board = self.client.get_board(settings.TRELLO_BOARD_ID)
-            self.list = self.board.get_list(settings.TRELLO_LIST_ID)
+            # Obter board e lista
+            self.board = self.client.get_board(config.board_id)
+            self.list = self.board.get_list(config.lista_id)
             
-            logger.info("TrelloService inicializado com sucesso")
+            # Armazenar sessão do banco
+            self.db = db
+            
+            logger.info(f"TrelloService inicializado - Board: {config.board_nome}, Lista: {config.lista_nome}")
             
         except Exception as e:
             logger.error(f"Erro ao inicializar TrelloService: {e}")
@@ -89,8 +107,8 @@ class TrelloService:
         
         Exemplo:
             ```python
-            trello_service = TrelloService()
-            card_info = await trello_service.criar_card(demanda, db)
+            trello_service = TrelloService(db)
+            card_info = await trello_service.criar_card(demanda)
             demanda.trello_card_id = card_info['id']
             demanda.trello_card_url = card_info['url']
             db.commit()
@@ -98,52 +116,99 @@ class TrelloService:
         """
         try:
             # Carregar relacionamentos necessários
-            db.refresh(demanda)
+            self.db.refresh(demanda)
             
-            # Construir nome do card
-            card_name = f"{demanda.nome} - {demanda.cliente.nome}"
+            # ========== CONSTRUIR TÍTULO DO CARD ==========
+            # Formato: "Nome do Cliente - TIPO DE DEMANDA - Título da Demanda"
+            card_name = f"{demanda.cliente.nome} - {demanda.tipo_demanda.nome.upper()} - {demanda.nome}"
             
-            # Construir descrição formatada
-            card_desc = f"""
-**Secretaria:** {demanda.secretaria.nome}
-**Tipo:** {demanda.tipo_demanda.nome}
-**Prioridade:** {demanda.prioridade.nome}
-**Prazo:** {demanda.prazo_final.strftime('%d/%m/%Y')}
-
-**Descrição:**
-{demanda.descricao}
-
-**Solicitante:** {demanda.usuario.nome_completo}
-**Email:** {demanda.usuario.email}
-
----
-**ID da Demanda:** {demanda.id}
-**Status:** {demanda.status.value}
-            """.strip()
+            # ========== CONSTRUIR DESCRIÇÃO DO CARD ==========
+            card_desc_parts = []
+            
+            # Informações principais
+            card_desc_parts.append(f"**Secretaria:** {demanda.secretaria.nome}")
+            card_desc_parts.append(f"**Tipo:** {demanda.tipo_demanda.nome}")
+            card_desc_parts.append(f"**Prioridade:** {demanda.prioridade.nome}")
+            
+            if demanda.prazo_final:
+                card_desc_parts.append(f"**Prazo:** {demanda.prazo_final.strftime('%d/%m/%Y')}")
+            
+            card_desc_parts.append("")  # Linha em branco
+            
+            # Descrição detalhada
+            card_desc_parts.append("**Descrição:**")
+            card_desc_parts.append(demanda.descricao)
+            card_desc_parts.append("")  # Linha em branco
+            
+            # Links de referência (se houver)
+            if demanda.links_referencia:
+                import json
+                try:
+                    links = json.loads(demanda.links_referencia) if isinstance(demanda.links_referencia, str) else demanda.links_referencia
+                    if links and len(links) > 0:
+                        card_desc_parts.append("**Links de Referência:**")
+                        for link in links:
+                            if isinstance(link, dict) and 'url' in link:
+                                titulo = link.get('titulo', 'Link')
+                                card_desc_parts.append(f"- [{titulo}]({link['url']})")
+                            elif isinstance(link, str):
+                                card_desc_parts.append(f"- {link}")
+                        card_desc_parts.append("")  # Linha em branco
+                except Exception as e:
+                    logger.warning(f"Erro ao processar links de referência: {e}")
+            
+            # Informações do solicitante
+            card_desc_parts.append(f"**Solicitante:** {demanda.usuario.nome_completo}")
+            card_desc_parts.append(f"**Email:** {demanda.usuario.email}")
+            card_desc_parts.append("")  # Linha em branco
+            
+            # Metadados
+            card_desc_parts.append("---")
+            card_desc_parts.append(f"**ID da Demanda:** {demanda.id}")
+            card_desc_parts.append(f"**Status:** {demanda.status.value}")
+            
+            # Juntar tudo
+            card_desc = "\n".join(card_desc_parts)
             
             logger.info(f"Criando card no Trello para demanda {demanda.id}")
             
-            # Criar card
+            # ========== CRIAR CARD ==========
             card = self.list.add_card(
                 name=card_name,
                 desc=card_desc,
                 position='top'  # Adicionar no topo da lista
             )
             
-            # Adicionar label da prioridade
-            # (Assumindo que labels já existem no board)
+            # ========== APLICAR ETIQUETA DO CLIENTE ==========
+            from app.models.etiqueta_trello_cliente import EtiquetaTrelloCliente
+            
+            etiqueta_cliente = EtiquetaTrelloCliente.get_by_cliente(self.db, demanda.cliente_id)
+            
+            if etiqueta_cliente and etiqueta_cliente.ativo:
+                try:
+                    # Buscar label no board pelo ID
+                    for label in self.board.get_labels():
+                        if label.id == etiqueta_cliente.etiqueta_trello_id:
+                            card.add_label(label)
+                            logger.info(f"Etiqueta '{etiqueta_cliente.etiqueta_nome}' aplicada ao card")
+                            break
+                except Exception as e:
+                    logger.warning(f"Erro ao aplicar etiqueta do cliente: {e}")
+            else:
+                logger.warning(f"Cliente {demanda.cliente.nome} sem etiqueta configurada")
+            
+            # ========== LABEL DE PRIORIDADE (OPCIONAL) ==========
             try:
-                # Buscar label por nome
                 prioridade_nome = demanda.prioridade.nome
                 for label in self.board.get_labels():
-                    if label.name.lower() == prioridade_nome.lower():
+                    if label.name and label.name.lower() == prioridade_nome.lower():
                         card.add_label(label)
                         logger.info(f"Label '{prioridade_nome}' adicionado ao card")
                         break
             except Exception as e:
-                logger.warning(f"Não foi possível adicionar label: {e}")
+                logger.warning(f"Não foi possível adicionar label de prioridade: {e}")
             
-            # Adicionar member (cliente)
+            # ========== MEMBER (CLIENTE - OPCIONAL) ==========
             if demanda.cliente.trello_member_id:
                 try:
                     card.add_member(demanda.cliente.trello_member_id)
@@ -151,24 +216,24 @@ class TrelloService:
                 except Exception as e:
                     logger.warning(f"Não foi possível adicionar membro: {e}")
             
-            # Adicionar anexos
+            # ========== ANEXAR IMAGENS ==========
             if demanda.anexos:
                 for anexo in demanda.anexos:
                     try:
                         # Construir URL pública do anexo
-                        # Nota: Ajustar conforme configuração do servidor
                         anexo_url = f"{settings.FRONTEND_URL}/uploads/{anexo.caminho}"
                         card.attach(url=anexo_url, name=anexo.nome_arquivo)
                         logger.info(f"Anexo '{anexo.nome_arquivo}' adicionado ao card")
                     except Exception as e:
                         logger.warning(f"Erro ao anexar arquivo '{anexo.nome_arquivo}': {e}")
             
-            # Definir due date (prazo)
-            try:
-                card.set_due(demanda.prazo_final)
-                logger.info(f"Due date definido: {demanda.prazo_final}")
-            except Exception as e:
-                logger.warning(f"Erro ao definir due date: {e}")
+            # ========== DEFINIR DUE DATE (PRAZO) ==========
+            if demanda.prazo_final:
+                try:
+                    card.set_due(demanda.prazo_final)
+                    logger.info(f"Due date definido: {demanda.prazo_final}")
+                except Exception as e:
+                    logger.warning(f"Erro ao definir due date: {e}")
             
             logger.info(f"Card criado com sucesso: {card.url}")
             

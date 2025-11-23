@@ -21,6 +21,8 @@ import Relatorios from '@/pages/Relatorios'
 import ConfiguracaoWhatsApp from '@/pages/admin/ConfiguracaoWhatsApp'
 import TemplatesWhatsApp from '@/pages/admin/TemplatesWhatsApp'
 import HistoricoNotificacoes from '@/pages/admin/HistoricoNotificacoes'
+import ConfiguracaoTrello from '@/pages/admin/ConfiguracaoTrello'
+import EtiquetasTrelloClientes from '@/pages/admin/EtiquetasTrelloClientes'
 
 // Página 404
 const NotFound = () => (
@@ -173,6 +175,25 @@ function App() {
               element={
                 <ProtectedRoute>
                   <HistoricoNotificacoes />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rotas Admin - Trello */}
+            <Route
+              path="/admin/trello-config"
+              element={
+                <ProtectedRoute>
+                  <ConfiguracaoTrello />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/trello-etiquetas"
+              element={
+                <ProtectedRoute>
+                  <EtiquetasTrelloClientes />
                 </ProtectedRoute>
               }
             />

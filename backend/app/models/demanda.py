@@ -87,6 +87,7 @@ class Demanda(BaseModel):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
     nome = Column(String(200), nullable=False)
     descricao = Column(Text, nullable=False)
+    links_referencia = Column(Text, nullable=True, comment="Links de referência (JSON array)")
     
     # Status
     # Usar TypeDecorator customizado para converter entre enum Python e string do banco

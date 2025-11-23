@@ -17,7 +17,9 @@ from app.api.endpoints import (
     configuracoes,
     usuarios,
     relatorios,
-    whatsapp
+    whatsapp,
+    trello_config,
+    trello_etiquetas
 )
 
 # Criar aplicação FastAPI
@@ -173,6 +175,18 @@ app.include_router(
     whatsapp.router,
     prefix="/api/whatsapp",
     tags=["WhatsApp - Notificações"]
+)
+
+# Trello - Configuração
+app.include_router(
+    trello_config.router
+    # Já contém prefix="/api/trello-config" e tags=["Configuração Trello"]
+)
+
+# Trello - Etiquetas por Cliente
+app.include_router(
+    trello_etiquetas.router
+    # Já contém prefix="/api/trello-etiquetas" e tags=["Etiquetas Trello"]
 )
 
 

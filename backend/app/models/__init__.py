@@ -28,6 +28,8 @@ from app.models.configuracao import Configuracao, TipoConfiguracao
 from app.models.notification_log import NotificationLog, TipoNotificacao, StatusNotificacao
 from app.models.configuracao_whatsapp import ConfiguracaoWhatsApp
 from app.models.template_mensagem import TemplateMensagem
+from app.models.configuracao_trello import ConfiguracaoTrello
+from app.models.etiqueta_trello_cliente import EtiquetaTrelloCliente
 
 __all__ = [
     'Base',
@@ -48,5 +50,7 @@ __all__ = [
     'StatusNotificacao',
     'ConfiguracaoWhatsApp',
     'TemplateMensagem',
+    'ConfiguracaoTrello',
+    'EtiquetaTrelloCliente',
 ]
 

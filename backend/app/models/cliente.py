@@ -87,6 +87,14 @@ class Cliente(BaseModel):
         lazy="noload"  # Nunca carregar automaticamente
     )
     
+    # Relacionamento com etiqueta Trello
+    etiqueta_trello = relationship(
+        "EtiquetaTrelloCliente",
+        back_populates="cliente",
+        uselist=False,  # Um cliente = uma etiqueta
+        cascade="all, delete-orphan"
+    )
+    
     # ==================== MÉTODOS ====================
     
     def __repr__(self):

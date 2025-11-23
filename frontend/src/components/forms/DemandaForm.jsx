@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
-import { Calendar, Upload, X, FileText, Image as ImageIcon, Loader2, AlertCircle } from 'lucide-react'
+import { Calendar, Upload, X, FileText, Image as ImageIcon, Loader2, AlertCircle, Link as LinkIcon, Plus, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -74,6 +74,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
   const [files, setFiles] = useState([])
   const [filePreviews, setFilePreviews] = useState([])
   const [isDragging, setIsDragging] = useState(false)
+  const [linksReferencia, setLinksReferencia] = useState([{ titulo: '', url: '' }])
 
   // Estados para carregar dados dos dropdowns
   const [secretarias, setSecretarias] = useState([])
@@ -286,6 +287,34 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
   }
 
   /**
+   * Adicionar novo link de referência
+   */
+  const adicionarLink = () => {
+    if (linksReferencia.length < 10) {
+      setLinksReferencia([...linksReferencia, { titulo: '', url: '' }])
+    } else {
+      toast.warning('Máximo de 10 links permitidos')
+    }
+  }
+
+  /**
+   * Remover link de referência
+   */
+  const removerLink = (index) => {
+    const novosLinks = linksReferencia.filter((_, i) => i !== index)
+    setLinksReferencia(novosLinks.length > 0 ? novosLinks : [{ titulo: '', url: '' }])
+  }
+
+  /**
+   * Atualizar link de referência
+   */
+  const atualizarLink = (index, campo, valor) => {
+    const novosLinks = [...linksReferencia]
+    novosLinks[index][campo] = valor
+    setLinksReferencia(novosLinks)
+  }
+
+  /**
    * Submeter formulário
    */
   const onSubmit = async (data) => {
@@ -306,6 +335,12 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       // Adicionar ID do usuário
       if (user?.id) {
         formData.append('usuario_id', user.id)
+      }
+
+      // Adicionar links de referência (filtrar links vazios)
+      const linksValidos = linksReferencia.filter(link => link.url.trim() !== '')
+      if (linksValidos.length > 0) {
+        formData.append('links_referencia', JSON.stringify(linksValidos))
       }
 
       // Adicionar arquivos
@@ -546,6 +581,78 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 {descricaoValue.length} / 2000
               </p>
             </div>
+          </div>
+
+          {/* Links de Referência */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Links de Referência (Opcional)
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={adicionarLink}
+                disabled={linksReferencia.length >= 10}
+                className="text-xs"
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Adicionar Link
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">
+              Adicione links de documentos, referências visuais, inspirações, etc.
+            </p>
+
+            <div className="space-y-3">
+              {linksReferencia.map((link, index) => (
+                <div key={index} className="flex gap-2 items-start">
+                  <div className="flex-1 grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="Título do link (ex: Documentação)"
+                      value={link.titulo}
+                      onChange={(e) => atualizarLink(index, 'titulo', e.target.value)}
+                      className="text-sm"
+                    />
+                    <Input
+                      placeholder="URL (ex: https://exemplo.com)"
+                      value={link.url}
+                      onChange={(e) => atualizarLink(index, 'url', e.target.value)}
+                      className="text-sm"
+                      type="url"
+                    />
+                  </div>
+                  {linksReferencia.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removerLink(index)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {linksReferencia.length > 0 && linksReferencia.some(link => link.url) && (
+              <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-xs font-medium text-blue-900 mb-2 flex items-center">
+                  <LinkIcon className="h-3 w-3 mr-1" />
+                  Preview dos links:
+                </p>
+                <div className="space-y-1">
+                  {linksReferencia.filter(link => link.url.trim() !== '').map((link, index) => (
+                    <div key={index} className="text-xs text-blue-800">
+                      • {link.titulo || 'Link'}: <a href={link.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-600">{link.url}</a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Upload de Arquivos */}
