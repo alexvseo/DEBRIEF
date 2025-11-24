@@ -96,8 +96,7 @@ class EtiquetaTrelloCliente(BaseModel):
         """
         return db.query(cls).filter(
             cls.cliente_id == cliente_id,
-            cls.ativo == True,
-            cls.deleted_at == None
+            cls.ativo == True
         ).first()
     
     @classmethod
@@ -112,8 +111,7 @@ class EtiquetaTrelloCliente(BaseModel):
             List[EtiquetaTrelloCliente]
         """
         return db.query(cls).filter(
-            cls.ativo == True,
-            cls.deleted_at == None
+            cls.ativo == True
         ).all()
     
     def desativar(self, db):
