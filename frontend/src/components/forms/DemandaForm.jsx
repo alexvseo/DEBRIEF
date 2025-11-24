@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/Alert'
 
 // Services
 import { demandaService } from '@/services/demandaService'
+import api from '@/services/api'
 
 // Hooks
 import { useAuth } from '@/hooks/useAuth'
@@ -24,6 +25,8 @@ import { useAuth } from '@/hooks/useAuth'
  * Define todas as regras de validação do formulário de demanda
  */
 const demandaSchema = z.object({
+  cliente_id: z.string().optional(), // Apenas para usuário master
+  
   secretaria_id: z.string()
     .min(1, 'Selecione uma secretaria')
     .uuid('ID de secretaria inválido'),
@@ -68,6 +71,7 @@ const demandaSchema = z.object({
  */
 const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
   const { user } = useAuth()
+  const isMaster = user?.tipo === 'master'
 
   // Estados
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -77,10 +81,13 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
   const [linksReferencia, setLinksReferencia] = useState([{ url: '' }])
 
   // Estados para carregar dados dos dropdowns
-  const [secretarias, setSecretarias] = useState([])
+  const [clientes, setClientes] = useState([])
+  const [todasSecretarias, setTodasSecretarias] = useState([]) // Todas as secretarias (para filtrar)
+  const [secretarias, setSecretarias] = useState([]) // Secretarias filtradas
   const [tiposDemanda, setTiposDemanda] = useState([])
   const [prioridades, setPrioridades] = useState([])
   const [isLoadingData, setIsLoadingData] = useState(true)
+  const [clienteSelecionado, setClienteSelecionado] = useState('')
 
   // Configurar React Hook Form com Zod
   const {
@@ -94,6 +101,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
   } = useForm({
     resolver: zodResolver(demandaSchema),
     defaultValues: demanda ? {
+      cliente_id: demanda.cliente_id || '',
       secretaria_id: demanda.secretaria_id || '',
       nome: demanda.nome || '',
       tipo_demanda_id: demanda.tipo_demanda_id || '',
@@ -101,6 +109,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       descricao: demanda.descricao || '',
       prazo_final: demanda.prazo_final || '',
     } : {
+      cliente_id: '',
       secretaria_id: '',
       nome: '',
       tipo_demanda_id: '',
@@ -118,29 +127,46 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       try {
         setIsLoadingData(true)
 
-        // Carregar dados em paralelo com tratamento individual de erros
-        const [secretariasRes, tiposRes, prioridadesRes] = await Promise.allSettled([
+        // Se for master, carregar também clientes
+        const promises = [
           demandaService.listarSecretarias().catch(err => ({ data: [], error: err })),
           demandaService.listarTiposDemanda().catch(err => ({ data: [], error: err })),
           demandaService.listarPrioridades().catch(err => ({ data: [], error: err })),
-        ])
+        ]
+
+        if (isMaster) {
+          promises.push(
+            api.get('/clientes/', { params: { apenas_ativos: true } }).catch(err => ({ data: [], error: err }))
+          )
+        }
+
+        // Carregar dados em paralelo com tratamento individual de erros
+        const results = await Promise.allSettled(promises)
 
         // Processar resultados
-        const secretariasData = secretariasRes.status === 'fulfilled' 
-          ? (secretariasRes.value?.data || secretariasRes.value || [])
+        const secretariasData = results[0].status === 'fulfilled' 
+          ? (results[0].value?.data || results[0].value || [])
           : []
         
-        const tiposData = tiposRes.status === 'fulfilled'
-          ? (tiposRes.value?.data || tiposRes.value || [])
+        const tiposData = results[1].status === 'fulfilled'
+          ? (results[1].value?.data || results[1].value || [])
           : []
         
-        const prioridadesData = prioridadesRes.status === 'fulfilled'
-          ? (prioridadesRes.value?.data || prioridadesRes.value || [])
+        const prioridadesData = results[2].status === 'fulfilled'
+          ? (results[2].value?.data || results[2].value || [])
           : []
 
-        setSecretarias(Array.isArray(secretariasData) ? secretariasData : [])
+        const clientesData = isMaster && results[3]?.status === 'fulfilled'
+          ? (results[3].value?.data || results[3].value || [])
+          : []
+
+        setTodasSecretarias(Array.isArray(secretariasData) ? secretariasData : [])
+        setSecretarias(Array.isArray(secretariasData) ? secretariasData : []) // Inicialmente mostra todas
         setTiposDemanda(Array.isArray(tiposData) ? tiposData : [])
         setPrioridades(Array.isArray(prioridadesData) ? prioridadesData : [])
+        if (isMaster) {
+          setClientes(Array.isArray(clientesData) ? clientesData : [])
+        }
 
         // Mostrar erro apenas uma vez se todos falharam
         if (secretariasData.length === 0 && tiposData.length === 0 && prioridadesData.length === 0) {
@@ -156,7 +182,29 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
     }
 
     loadFormData()
-  }, [])
+  }, [isMaster])
+
+  /**
+   * Filtrar secretarias quando cliente for selecionado
+   */
+  useEffect(() => {
+    if (isMaster && clienteSelecionado) {
+      // Filtrar secretarias do cliente selecionado
+      const secretariasFiltradas = todasSecretarias.filter(
+        sec => sec.cliente_id === clienteSelecionado
+      )
+      setSecretarias(secretariasFiltradas)
+      
+      // Limpar secretaria selecionada se não estiver na lista filtrada
+      const secretariaAtual = watch('secretaria_id')
+      if (secretariaAtual && !secretariasFiltradas.find(s => s.id === secretariaAtual)) {
+        setValue('secretaria_id', '')
+      }
+    } else if (isMaster && !clienteSelecionado) {
+      // Se nenhum cliente selecionado, mostrar todas
+      setSecretarias(todasSecretarias)
+    }
+  }, [clienteSelecionado, todasSecretarias, isMaster, setValue, watch])
 
   /**
    * Validar tipo e tamanho do arquivo
@@ -350,6 +398,14 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
         formData.append('usuario_id', user.id)
       }
 
+      // Adicionar cliente_id
+      if (isMaster && data.cliente_id) {
+        formData.append('cliente_id', data.cliente_id)
+      } else if (!isMaster && user?.cliente_id) {
+        // Se não for master, pegar cliente_id do usuário
+        formData.append('cliente_id', user.cliente_id)
+      }
+
       // Adicionar links de referência (filtrar links vazios)
       const linksValidos = linksReferencia.filter(link => link.url.trim() !== '')
       if (linksValidos.length > 0) {
@@ -439,6 +495,39 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
           {/* Grid de 2 colunas em telas grandes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+            {/* Cliente (apenas para master) */}
+            {isMaster && (
+              <div>
+                <label htmlFor="cliente_id" className="block text-sm font-medium text-gray-700 mb-1">
+                  Cliente <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="cliente_id"
+                  {...register('cliente_id')}
+                  onChange={(e) => {
+                    setValue('cliente_id', e.target.value)
+                    setClienteSelecionado(e.target.value)
+                  }}
+                  disabled={isLoadingData}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${errors.cliente_id ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                >
+                  <option value="">Selecione um cliente...</option>
+                  {clientes.map(cliente => (
+                    <option key={cliente.id} value={cliente.id}>
+                      {cliente.nome}
+                    </option>
+                  ))}
+                </select>
+                {errors.cliente_id && (
+                  <p className="mt-1 text-sm text-red-500 flex items-center">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {errors.cliente_id.message}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Secretaria */}
             <div>
               <label htmlFor="secretaria_id" className="block text-sm font-medium text-gray-700 mb-1">
@@ -447,11 +536,15 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
               <select
                 id="secretaria_id"
                 {...register('secretaria_id')}
-                disabled={isLoadingData}
+                disabled={isLoadingData || (isMaster && !clienteSelecionado)}
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${errors.secretaria_id ? 'border-red-500' : 'border-gray-300'
                   }`}
               >
-                <option value="">Selecione uma secretaria...</option>
+                <option value="">
+                  {isMaster && !clienteSelecionado 
+                    ? 'Primeiro selecione um cliente...' 
+                    : 'Selecione uma secretaria...'}
+                </option>
                 {secretarias.map(sec => (
                   <option key={sec.id} value={sec.id}>
                     {sec.nome}
@@ -623,11 +716,11 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
                 <div key={index} className="flex gap-2 items-start">
                   <div className="flex-1">
                     <Input
-                      placeholder="URL (ex: https://exemplo.com)"
+                      placeholder="URL ou texto de referência (ex: https://exemplo.com)"
                       value={link.url}
                       onChange={(e) => atualizarLink(index, 'url', e.target.value)}
                       className="text-sm"
-                      type="url"
+                      type="text"
                     />
                   </div>
                   {linksReferencia.length > 1 && (
