@@ -357,7 +357,7 @@ const demandaService = {
     }
 
     try {
-      const response = await api.get('/secretarias')
+      const response = await api.get('/secretarias/')
       return response
     } catch (error) {
       console.error('Erro ao listar secretarias:', error)
@@ -377,7 +377,7 @@ const demandaService = {
     }
 
     try {
-      const response = await api.get('/tipos-demanda')
+      const response = await api.get('/tipos-demanda/')
       return response
     } catch (error) {
       console.error('Erro ao listar tipos de demanda:', error)
@@ -397,7 +397,7 @@ const demandaService = {
     }
 
     try {
-      const response = await api.get('/prioridades')
+      const response = await api.get('/prioridades/')
       return response
     } catch (error) {
       console.error('Erro ao listar prioridades:', error)
