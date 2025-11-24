@@ -119,26 +119,43 @@ class TrelloService:
             self.db.refresh(demanda)
             
             # ========== CONSTRUIR TÍTULO DO CARD ==========
-            # Formato: "Nome do Cliente - TIPO DE DEMANDA - Título da Demanda"
-            card_name = f"{demanda.cliente.nome} - {demanda.tipo_demanda.nome.upper()} - {demanda.nome}"
+            # Formato: NOME DO CLIENTE - SECRETARIA - NOME DA DEMANDA
+            card_name = f"{demanda.cliente.nome} - {demanda.secretaria.nome} - {demanda.nome}"
             
             # ========== CONSTRUIR DESCRIÇÃO DO CARD ==========
             card_desc_parts = []
             
-            # Informações principais
-            card_desc_parts.append(f"**Secretaria:** {demanda.secretaria.nome}")
-            card_desc_parts.append(f"**Tipo:** {demanda.tipo_demanda.nome}")
-            card_desc_parts.append(f"**Prioridade:** {demanda.prioridade.nome}")
+            # Nome do Cliente
+            card_desc_parts.append(f"**NOME DO CLIENTE:** {demanda.cliente.nome}")
+            card_desc_parts.append("")
             
+            # Secretaria
+            card_desc_parts.append(f"**SECRETARIA:** {demanda.secretaria.nome}")
+            card_desc_parts.append("")
+            
+            # Tipo da Demanda
+            card_desc_parts.append(f"**TIPO DA DEMANDA:** {demanda.tipo_demanda.nome}")
+            card_desc_parts.append("")
+            
+            # Título da Demanda
+            card_desc_parts.append(f"**TÍTULO DA DEMANDA:** {demanda.nome}")
+            card_desc_parts.append("")
+            
+            # Prioridade
+            card_desc_parts.append(f"**PRIORIDADE:** {demanda.prioridade.nome}")
+            card_desc_parts.append("")
+            
+            # Prazo Final
             if demanda.prazo_final:
-                card_desc_parts.append(f"**Prazo:** {demanda.prazo_final.strftime('%d/%m/%Y')}")
+                card_desc_parts.append(f"**PRAZO FINAL:** {demanda.prazo_final.strftime('%d/%m/%Y')}")
+            else:
+                card_desc_parts.append("**PRAZO FINAL:** Não definido")
+            card_desc_parts.append("")
             
-            card_desc_parts.append("")  # Linha em branco
-            
-            # Descrição detalhada
-            card_desc_parts.append("**Descrição:**")
+            # Descrição da Demanda
+            card_desc_parts.append("**DESCRIÇÃO DA DEMANDA:**")
             card_desc_parts.append(demanda.descricao)
-            card_desc_parts.append("")  # Linha em branco
+            card_desc_parts.append("")
             
             # Links de referência (se houver)
             if demanda.links_referencia:
@@ -146,24 +163,24 @@ class TrelloService:
                 try:
                     links = json.loads(demanda.links_referencia) if isinstance(demanda.links_referencia, str) else demanda.links_referencia
                     if links and len(links) > 0:
-                        card_desc_parts.append("**Links de Referência:**")
+                        card_desc_parts.append("**LINKS DE REFERÊNCIA:**")
                         for link in links:
                             if isinstance(link, dict) and 'url' in link:
                                 titulo = link.get('titulo', 'Link')
-                                card_desc_parts.append(f"- [{titulo}]({link['url']})")
+                                url = link.get('url', '')
+                                if url:
+                                    card_desc_parts.append(f"- {titulo}: {url}")
+                                else:
+                                    card_desc_parts.append(f"- {titulo}")
                             elif isinstance(link, str):
                                 card_desc_parts.append(f"- {link}")
-                        card_desc_parts.append("")  # Linha em branco
+                        card_desc_parts.append("")
                 except Exception as e:
                     logger.warning(f"Erro ao processar links de referência: {e}")
             
-            # Informações do solicitante
-            card_desc_parts.append(f"**Solicitante:** {demanda.usuario.nome_completo}")
-            card_desc_parts.append(f"**Email:** {demanda.usuario.email}")
-            card_desc_parts.append("")  # Linha em branco
-            
-            # Metadados
+            # Informações complementares
             card_desc_parts.append("---")
+            card_desc_parts.append(f"**Solicitante:** {demanda.usuario.nome_completo} ({demanda.usuario.email})")
             card_desc_parts.append(f"**ID da Demanda:** {demanda.id}")
             card_desc_parts.append(f"**Status:** {demanda.status.value}")
             
