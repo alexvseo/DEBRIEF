@@ -13,7 +13,7 @@ services:
       - "2023:8000" # Porta externa 2023, interna 8000
     environment:
       # Banco de Dados Local (container próprio)
-      - DATABASE_URL=postgresql://postgres:Mslestra%402025@debrief_db:5432/dbrief
+      - DATABASE_URL=postgresql://postgres:Mslestra%402025db@debrief_db:5432/dbrief
 
       # JWT
       - SECRET_KEY=${SECRET_KEY:-sua-chave-secreta-super-segura-aqui-change-me}
@@ -87,7 +87,7 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Mslestra@2025
+      - POSTGRES_PASSWORD=Mslestra@2025db
       - POSTGRES_DB=dbrief
     volumes:
       - debrief_db_data:/var/lib/postgresql/data
