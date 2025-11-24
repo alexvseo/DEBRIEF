@@ -379,15 +379,19 @@ async def atualizar_demanda(
 @router.delete("/{demanda_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def deletar_demanda(
     demanda_id: str,
-    current_user: User = Depends(get_current_master_user),  # Apenas master pode deletar
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Deletar uma demanda
     
+    **Permissões:**
+    - Master pode deletar qualquer demanda
+    - Usuário comum pode deletar APENAS suas próprias demandas
+    
     Args:
         demanda_id: ID da demanda
-        current_user: Usuário master autenticado
+        current_user: Usuário autenticado
         db: Sessão do banco
     """
     demanda = db.query(Demanda).filter(Demanda.id == demanda_id).first()
@@ -396,6 +400,14 @@ async def deletar_demanda(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Demanda não encontrada"
+        )
+    
+    # Verificar permissão: Master pode deletar qualquer demanda
+    # Usuário comum pode deletar apenas suas próprias demandas
+    if not current_user.is_master() and demanda.usuario_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você não tem permissão para excluir esta demanda"
         )
     
     db.delete(demanda)
