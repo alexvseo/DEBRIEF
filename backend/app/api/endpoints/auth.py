@@ -84,7 +84,7 @@ async def login(
     access_token = create_access_token(data={
         "sub": user.id,
         "username": user.username,
-        "tipo": user.tipo.value
+        "tipo": user.tipo  # tipo agora já é string
     })
     
     # Retornar token e dados do usuário
