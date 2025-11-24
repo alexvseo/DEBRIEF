@@ -821,7 +821,6 @@ const Configuracoes = () => {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Nome</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Etiqueta Trello</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Status</th>
                     <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Ações</th>
                   </tr>
@@ -830,20 +829,6 @@ const Configuracoes = () => {
                   {clientes.map(cliente => (
                     <tr key={cliente.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4">{cliente.nome}</td>
-                      <td className="py-3 px-4 text-sm">
-                        {cliente.etiqueta_trello ? (
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-3 h-3 rounded"
-                              style={{ backgroundColor: cliente.etiqueta_trello.cor || '#gray' }}
-                              title={cliente.etiqueta_trello.cor}
-                            />
-                            <span className="text-gray-700">{cliente.etiqueta_trello.nome}</span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 italic">Sem etiqueta</span>
-                        )}
-                      </td>
                       <td className="py-3 px-4 text-center">
                         <Badge variant={cliente.ativo ? 'success' : 'error'}>
                           {cliente.ativo ? 'Ativo' : 'Inativo'}
