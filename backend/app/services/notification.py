@@ -1,257 +1,375 @@
 """
-Serviço de gerenciamento de notificações
+Serviço de Notificações via WhatsApp
+Gerencia envio de notificações individuais para usuários baseado em regras de negócio
 
-Este serviço centraliza o envio de notificações através de diferentes canais
-(WhatsApp, Email, etc) e mantém logs de notificações enviadas.
+Regras:
+1. Usuários Master recebem notificações de TODAS as demandas
+2. Usuários comuns recebem notificações APENAS de demandas do seu cliente
+3. Apenas notificações individuais (sem grupos)
+4. Usuários podem desabilitar notificações (campo receber_notificacoes)
 
-Funcionalidades:
-- Enviar notificações multi-canal
-- Log de notificações enviadas
-- Retry automático em caso de falha (3 tentativas com backoff exponencial)
-- Agrupamento de notificações
-
-Autor: DeBrief Sistema
+Eventos que disparam notificações:
+- Nova demanda criada
+- Demanda atualizada
+- Demanda excluída
+- Status mudou para "em desenvolvimento"
+- Status mudou para "concluída"
 """
-from typing import Optional, List
-from sqlalchemy.orm import Session
-from app.services.whatsapp import WhatsAppService
-from app.models.demanda import Demanda
-from app.models.notification_log import NotificationLog, TipoNotificacao, StatusNotificacao
 import logging
-import asyncio
+from typing import List, Optional
+from sqlalchemy.orm import Session
+from app.models.user import User
+from app.models.demanda import Demanda, StatusDemanda
+from app.models.notification_log import NotificationLog, TipoNotificacao, StatusNotificacao
+from app.services.whatsapp import WhatsAppService
 import json
 
-# Configurar logger
 logger = logging.getLogger(__name__)
-
-# Configurações de retry
-MAX_RETRIES = 3
-INITIAL_RETRY_DELAY = 1  # segundos
-RETRY_BACKOFF_MULTIPLIER = 2  # Multiplicador para backoff exponencial
 
 
 class NotificationService:
     """
-    Serviço centralizado para notificações
+    Serviço de Notificações
     
-    Gerencia o envio de notificações através de diferentes canais
-    e mantém histórico de notificações enviadas.
+    Gerencia o envio de notificações via WhatsApp para usuários,
+    respeitando as regras de segmentação por cliente.
     
-    Exemplo de uso:
+    Exemplo:
         ```python
-        notification_service = NotificationService()
-        await notification_service.notificar_nova_demanda(demanda, db)
+        notification_service = NotificationService(db)
+        notification_service.notificar_nova_demanda(demanda)
         ```
     """
     
-    def __init__(self):
+    def __init__(self, db: Session):
         """
         Inicializar serviço de notificações
-        """
-        self.whatsapp = WhatsAppService()
-        logger.info("NotificationService inicializado")
-    
-    async def _enviar_com_retry(
-        self,
-        func,
-        demanda: Demanda,
-        db: Session,
-        tipo: TipoNotificacao,
-        *args,
-        **kwargs
-    ) -> dict:
-        """
-        Enviar notificação com retry automático (3 tentativas com backoff exponencial)
         
         Args:
-            func: Função async para enviar notificação
-            demanda: Objeto Demanda
-            db: Sessão do banco
-            tipo: Tipo de notificação
-            *args: Argumentos adicionais para func
-            **kwargs: Argumentos nomeados para func
+            db: Sessão do banco de dados
+        """
+        self.db = db
+        self.whatsapp_service = WhatsAppService()
+    
+    def _obter_usuarios_para_notificar(self, demanda: Demanda) -> List[User]:
+        """
+        Obter lista de usuários que devem receber notificação sobre uma demanda
+        
+        Regras:
+        - Usuários Master: recebem TODAS as notificações
+        - Usuários comuns: recebem apenas notificações do seu cliente
+        - Apenas usuários ativos com WhatsApp cadastrado e notificações ativadas
+        
+        Args:
+            demanda: Demanda relacionada à notificação
         
         Returns:
-            dict: Resultado do envio
+            Lista de usuários que devem receber notificação
         """
-        tentativas = 0
-        delay = INITIAL_RETRY_DELAY
-        ultimo_erro = None
-        
-        while tentativas < MAX_RETRIES:
-            tentativas += 1
-            
-            try:
-                # Tentar enviar
-                success = await func(demanda, db, *args, **kwargs)
-                
-                if success:
-                    # Sucesso - criar log
-                    log = NotificationLog(
-                        demanda_id=demanda.id,
-                        tipo=tipo,
-                        status=StatusNotificacao.ENVIADO,
-                        tentativas=str(tentativas),
-                        dados_enviados=json.dumps({
-                            "demanda_id": demanda.id,
-                            "demanda_nome": demanda.nome
-                        })
-                    )
-                    db.add(log)
-                    db.commit()
-                    
-                    logger.info(f"Notificação {tipo.value} enviada com sucesso (tentativa {tentativas})")
-                    return {
-                        'success': True,
-                        'message': 'Enviado com sucesso',
-                        'tentativas': tentativas
-                    }
-                else:
-                    # Falha mas sem exceção
-                    ultimo_erro = "Falha no envio (retornou False)"
-                    
-            except Exception as e:
-                ultimo_erro = str(e)
-                logger.warning(f"Tentativa {tentativas}/{MAX_RETRIES} falhou: {e}")
-            
-            # Se não foi a última tentativa, aguardar antes de tentar novamente
-            if tentativas < MAX_RETRIES:
-                logger.info(f"Aguardando {delay}s antes da próxima tentativa...")
-                await asyncio.sleep(delay)
-                delay *= RETRY_BACKOFF_MULTIPLIER  # Backoff exponencial
-        
-        # Todas as tentativas falharam - criar log de erro
-        log = NotificationLog(
-            demanda_id=demanda.id,
-            tipo=tipo,
-            status=StatusNotificacao.ERRO,
-            mensagem_erro=ultimo_erro or "Falha após múltiplas tentativas",
-            tentativas=str(tentativas),
-            dados_enviados=json.dumps({
-                "demanda_id": demanda.id,
-                "demanda_nome": demanda.nome
-            })
+        # Query base: usuários ativos, com WhatsApp e notificações habilitadas
+        query = self.db.query(User).filter(
+            User.ativo == True,
+            User.whatsapp.isnot(None),
+            User.whatsapp != "",
+            User.receber_notificacoes == True
         )
-        db.add(log)
-        db.commit()
         
-        logger.error(f"Falha ao enviar notificação {tipo.value} após {tentativas} tentativas: {ultimo_erro}")
-        return {
-            'success': False,
-            'message': ultimo_erro or 'Falha após múltiplas tentativas',
-            'tentativas': tentativas
-        }
+        # Buscar usuários Master (recebem tudo) + usuários do mesmo cliente
+        usuarios = query.filter(
+            (User.tipo == "master") | (User.cliente_id == demanda.cliente_id)
+        ).all()
+        
+        logger.info(
+            f"Notificação demanda {demanda.id}: "
+            f"{len(usuarios)} usuários para notificar "
+            f"(cliente: {demanda.cliente_id})"
+        )
+        
+        return usuarios
     
-    async def notificar_nova_demanda(
+    def _enviar_notificacao_usuario(
         self,
+        usuario: User,
+        mensagem: str,
         demanda: Demanda,
-        db: Session,
-        canais: Optional[List[str]] = None
-    ) -> dict:
+        evento: str
+    ) -> bool:
         """
-        Enviar notificações sobre nova demanda com retry automático
+        Enviar notificação individual para um usuário
         
         Args:
-            demanda: Objeto Demanda
-            db: Sessão do banco
-            canais: Lista de canais (default: ['whatsapp'])
+            usuario: Usuário destinatário
+            mensagem: Texto da mensagem
+            demanda: Demanda relacionada
+            evento: Tipo de evento (criar, atualizar, excluir, etc)
         
         Returns:
-            Dicionário com resultado de cada canal
+            True se enviado com sucesso
         """
-        if canais is None:
-            canais = ['whatsapp']
-        
-        resultados = {}
-        
-        # WhatsApp com retry
-        if 'whatsapp' in canais:
-            resultado = await self._enviar_com_retry(
-                self.whatsapp.enviar_nova_demanda,
-                demanda,
-                db,
-                TipoNotificacao.WHATSAPP
+        try:
+            # Enviar mensagem individual
+            sucesso = self.whatsapp_service.enviar_mensagem_individual(
+                numero=usuario.whatsapp,
+                mensagem=mensagem
             )
-            resultados['whatsapp'] = resultado
-        
-        # Email (futuro)
-        if 'email' in canais:
-            resultados['email'] = {
-                'success': False,
-                'message': 'Email não implementado ainda'
-            }
-        
-        return resultados
+            
+            # Registrar log
+            log_status = StatusNotificacao.ENVIADO if sucesso else StatusNotificacao.ERRO
+            log = NotificationLog(
+                demanda_id=demanda.id,
+                tipo=TipoNotificacao.WHATSAPP,
+                status=log_status,
+                mensagem_erro=None if sucesso else "Falha ao enviar mensagem",
+                tentativas="1",
+                dados_enviados=json.dumps({
+                    "usuario_id": usuario.id,
+                    "usuario_nome": usuario.nome_completo,
+                    "whatsapp": usuario.whatsapp,
+                    "evento": evento
+                })
+            )
+            self.db.add(log)
+            self.db.commit()
+            
+            if sucesso:
+                logger.info(f"Notificação enviada para {usuario.nome_completo} ({usuario.whatsapp})")
+            else:
+                logger.warning(f"Falha ao enviar notificação para {usuario.nome_completo}")
+            
+            return sucesso
+            
+        except Exception as e:
+            logger.error(f"Erro ao notificar {usuario.nome_completo}: {e}")
+            
+            # Registrar erro no log
+            log = NotificationLog(
+                demanda_id=demanda.id,
+                tipo=TipoNotificacao.WHATSAPP,
+                status=StatusNotificacao.ERRO,
+                mensagem_erro=str(e),
+                tentativas="1",
+                dados_enviados=json.dumps({
+                    "usuario_id": usuario.id,
+                    "whatsapp": usuario.whatsapp,
+                    "evento": evento
+                })
+            )
+            self.db.add(log)
+            self.db.commit()
+            
+            return False
     
-    async def notificar_atualizacao_status(
-        self,
-        demanda: Demanda,
-        db: Session,
-        status_antigo: str,
-        canais: Optional[List[str]] = None
-    ) -> dict:
+    def notificar_nova_demanda(self, demanda: Demanda) -> int:
         """
-        Enviar notificações sobre mudança de status com retry automático
+        Notificar sobre nova demanda criada
         
         Args:
-            demanda: Objeto Demanda
-            db: Sessão do banco
-            status_antigo: Status anterior
-            canais: Lista de canais
+            demanda: Demanda criada
         
         Returns:
-            Dicionário com resultado de cada canal
+            Número de notificações enviadas com sucesso
         """
-        if canais is None:
-            canais = ['whatsapp']
+        logger.info(f"Iniciando notificações para nova demanda: {demanda.nome}")
         
-        resultados = {}
+        # Recarregar relacionamentos
+        self.db.refresh(demanda)
         
-        if 'whatsapp' in canais:
-            resultado = await self._enviar_com_retry(
-                self.whatsapp.enviar_atualizacao_status,
-                demanda,
-                db,
-                TipoNotificacao.WHATSAPP,
-                status_antigo
-            )
-            resultados['whatsapp'] = resultado
+        # Obter usuários para notificar
+        usuarios = self._obter_usuarios_para_notificar(demanda)
         
-        return resultados
-    
-    async def notificar_lembrete_prazo(
-        self,
-        demanda: Demanda,
-        db: Session,
-        dias_faltando: int,
-        canais: Optional[List[str]] = None
-    ) -> dict:
-        """
-        Enviar lembretes de prazo próximo com retry automático
+        if not usuarios:
+            logger.info("Nenhum usuário para notificar")
+            return 0
         
-        Args:
-            demanda: Objeto Demanda
-            db: Sessão do banco
-            dias_faltando: Dias até o prazo
-            canais: Lista de canais
+        # Emoji de prioridade
+        emoji_prioridade = {
+            "Baixa": "🟢",
+            "Média": "🟡",
+            "Alta": "🟠",
+            "Urgente": "🔴"
+        }.get(demanda.prioridade.nome, "📌")
         
-        Returns:
-            Dicionário com resultado de cada canal
-        """
-        if canais is None:
-            canais = ['whatsapp']
-        
-        resultados = {}
-        
-        if 'whatsapp' in canais:
-            resultado = await self._enviar_com_retry(
-                self.whatsapp.enviar_lembrete_prazo,
-                demanda,
-                db,
-                TipoNotificacao.WHATSAPP,
-                dias_faltando
-            )
-            resultados['whatsapp'] = resultado
-        
-        return resultados
+        # Construir mensagem
+        mensagem = f"""
+🔔 *Nova Demanda Criada!*
 
+📋 *Demanda:* {demanda.nome}
+🏢 *Cliente:* {demanda.cliente.nome}
+🏛️ *Secretaria:* {demanda.secretaria.nome}
+📌 *Tipo:* {demanda.tipo_demanda.nome}
+{emoji_prioridade} *Prioridade:* {demanda.prioridade.nome}
+📅 *Prazo:* {demanda.prazo_final.strftime('%d/%m/%Y')}
+
+👤 *Solicitante:* {demanda.usuario.nome_completo}
+
+🔗 *Ver no Sistema:* {demanda.trello_card_url or 'Processando...'}
+
+_ID: {demanda.id}_
+        """.strip()
+        
+        # Enviar para cada usuário
+        enviados = 0
+        for usuario in usuarios:
+            if self._enviar_notificacao_usuario(usuario, mensagem, demanda, "criar"):
+                enviados += 1
+        
+        logger.info(f"Nova demanda: {enviados}/{len(usuarios)} notificações enviadas")
+        return enviados
+    
+    def notificar_atualizacao_demanda(
+        self,
+        demanda: Demanda,
+        campos_alterados: Optional[dict] = None
+    ) -> int:
+        """
+        Notificar sobre atualização de demanda
+        
+        Args:
+            demanda: Demanda atualizada
+            campos_alterados: Dicionário com campos alterados (opcional)
+        
+        Returns:
+            Número de notificações enviadas com sucesso
+        """
+        logger.info(f"Iniciando notificações para atualização da demanda: {demanda.nome}")
+        
+        # Recarregar relacionamentos
+        self.db.refresh(demanda)
+        
+        # Obter usuários para notificar
+        usuarios = self._obter_usuarios_para_notificar(demanda)
+        
+        if not usuarios:
+            return 0
+        
+        # Construir mensagem
+        mensagem = f"""
+🔄 *Demanda Atualizada*
+
+📋 *Demanda:* {demanda.nome}
+🏢 *Cliente:* {demanda.cliente.nome}
+🏛️ *Secretaria:* {demanda.secretaria.nome}
+📊 *Status:* {demanda.status.value.replace('_', ' ').title()}
+
+🔗 *Ver detalhes:* {demanda.trello_card_url}
+
+_ID: {demanda.id}_
+        """.strip()
+        
+        # Enviar para cada usuário
+        enviados = 0
+        for usuario in usuarios:
+            if self._enviar_notificacao_usuario(usuario, mensagem, demanda, "atualizar"):
+                enviados += 1
+        
+        logger.info(f"Atualização: {enviados}/{len(usuarios)} notificações enviadas")
+        return enviados
+    
+    def notificar_mudanca_status(
+        self,
+        demanda: Demanda,
+        status_antigo: str,
+        status_novo: str
+    ) -> int:
+        """
+        Notificar sobre mudança de status
+        
+        Args:
+            demanda: Demanda com status atualizado
+            status_antigo: Status anterior
+            status_novo: Novo status
+        
+        Returns:
+            Número de notificações enviadas com sucesso
+        """
+        logger.info(f"Notificando mudança de status: {status_antigo} → {status_novo}")
+        
+        # Recarregar relacionamentos
+        self.db.refresh(demanda)
+        
+        # Obter usuários para notificar
+        usuarios = self._obter_usuarios_para_notificar(demanda)
+        
+        if not usuarios:
+            return 0
+        
+        # Emoji de status
+        emoji_status = {
+            "aberta": "📂",
+            "em_andamento": "⚙️",
+            "em_desenvolvimento": "💻",
+            "concluida": "✅",
+            "cancelada": "❌"
+        }.get(status_novo, "📊")
+        
+        # Mensagem especial para status importantes
+        titulo = "🔄 *Status Atualizado*"
+        if status_novo == "em_desenvolvimento":
+            titulo = "💻 *Demanda em Desenvolvimento!*"
+        elif status_novo == "concluida":
+            titulo = "✅ *Demanda Concluída!*"
+        
+        mensagem = f"""
+{titulo}
+
+📋 *Demanda:* {demanda.nome}
+🏢 *Cliente:* {demanda.cliente.nome}
+
+{emoji_status} *Status:* {status_antigo.replace('_', ' ').title()} → *{status_novo.replace('_', ' ').title()}*
+
+🔗 *Ver no Sistema:* {demanda.trello_card_url}
+
+_ID: {demanda.id}_
+        """.strip()
+        
+        # Enviar para cada usuário
+        enviados = 0
+        for usuario in usuarios:
+            if self._enviar_notificacao_usuario(usuario, mensagem, demanda, f"status_{status_novo}"):
+                enviados += 1
+        
+        logger.info(f"Mudança status: {enviados}/{len(usuarios)} notificações enviadas")
+        return enviados
+    
+    def notificar_exclusao_demanda(self, demanda: Demanda) -> int:
+        """
+        Notificar sobre exclusão de demanda
+        
+        Args:
+            demanda: Demanda a ser excluída
+        
+        Returns:
+            Número de notificações enviadas com sucesso
+        """
+        logger.info(f"Iniciando notificações para exclusão da demanda: {demanda.nome}")
+        
+        # Recarregar relacionamentos
+        self.db.refresh(demanda)
+        
+        # Obter usuários para notificar
+        usuarios = self._obter_usuarios_para_notificar(demanda)
+        
+        if not usuarios:
+            return 0
+        
+        # Construir mensagem
+        mensagem = f"""
+🗑️ *Demanda Excluída*
+
+📋 *Demanda:* {demanda.nome}
+🏢 *Cliente:* {demanda.cliente.nome}
+🏛️ *Secretaria:* {demanda.secretaria.nome}
+
+⚠️ Esta demanda foi removida do sistema.
+
+_ID: {demanda.id}_
+        """.strip()
+        
+        # Enviar para cada usuário
+        enviados = 0
+        for usuario in usuarios:
+            if self._enviar_notificacao_usuario(usuario, mensagem, demanda, "excluir"):
+                enviados += 1
+        
+        logger.info(f"Exclusão: {enviados}/{len(usuarios)} notificações enviadas")
+        return enviados

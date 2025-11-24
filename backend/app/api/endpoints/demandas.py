@@ -26,6 +26,7 @@ from app.schemas.demanda import (
 )
 from app.services.trello import TrelloService
 from app.services.whatsapp import WhatsAppService
+from app.services.notification import NotificationService
 from app.services.upload import UploadService
 import logging
 
@@ -184,14 +185,14 @@ async def criar_demanda(
             logger.error(f"Erro ao criar card no Trello: {e}")
             # Não falhar a criação da demanda se Trello falhar
         
-        # Enviar notificação WhatsApp (async, não bloqueia)
+        # Enviar notificações individuais via WhatsApp (não bloqueia)
         try:
-            whatsapp_service = WhatsAppService()
-            await whatsapp_service.enviar_nova_demanda(nova_demanda, db)
-            logger.info("Notificação WhatsApp enviada")
+            notification_service = NotificationService(db)
+            enviados = notification_service.notificar_nova_demanda(nova_demanda)
+            logger.info(f"Notificações WhatsApp enviadas: {enviados} usuários")
         except Exception as e:
-            logger.error(f"Erro ao enviar WhatsApp: {e}")
-            # Não falhar a criação da demanda se WhatsApp falhar
+            logger.error(f"Erro ao enviar notificações WhatsApp: {e}")
+            # Não falhar a criação da demanda se notificações falharem
         
         # Retornar demanda criada
         return {
@@ -343,8 +344,13 @@ async def atualizar_demanda(
     # Guardar status antigo para notificações
     status_antigo = demanda.status.value if hasattr(demanda, 'status') else None
     
+    # Verificar se status vai mudar
+    dados_atualizacao = demanda_data.dict(exclude_unset=True)
+    status_vai_mudar = 'status' in dados_atualizacao
+    status_novo = dados_atualizacao.get('status') if status_vai_mudar else None
+    
     # Atualizar campos
-    for field, value in demanda_data.dict(exclude_unset=True).items():
+    for field, value in dados_atualizacao.items():
         setattr(demanda, field, value)
     
     db.commit()
@@ -359,19 +365,28 @@ async def atualizar_demanda(
         logger.error(f"Erro ao atualizar card Trello: {e}")
         # Não falhar a atualização se Trello falhar
     
-    # Enviar notificação WhatsApp se status mudou
-    if status_antigo and 'status' in demanda_data.dict(exclude_unset=True):
-        try:
-            whatsapp_service = WhatsAppService()
-            await whatsapp_service.enviar_atualizacao_status(
+    # Enviar notificações individuais via WhatsApp
+    try:
+        notification_service = NotificationService(db)
+        
+        # Se status mudou, notificar mudança específica de status
+        if status_vai_mudar and status_antigo and status_novo:
+            enviados = notification_service.notificar_mudanca_status(
                 demanda=demanda,
-                db=db,
-                status_antigo=status_antigo
+                status_antigo=status_antigo,
+                status_novo=status_novo
             )
-            logger.info("Notificação WhatsApp enviada para mudança de status")
-        except Exception as e:
-            logger.error(f"Erro ao enviar notificação WhatsApp: {e}")
-            # Não falhar a atualização se WhatsApp falhar
+            logger.info(f"Notificações de mudança de status enviadas: {enviados} usuários")
+        else:
+            # Senão, notificar atualização genérica
+            enviados = notification_service.notificar_atualizacao_demanda(
+                demanda=demanda,
+                campos_alterados=dados_atualizacao
+            )
+            logger.info(f"Notificações de atualização enviadas: {enviados} usuários")
+    except Exception as e:
+        logger.error(f"Erro ao enviar notificações WhatsApp: {e}")
+        # Não falhar a atualização se notificações falharem
     
     return DemandaResponse.from_orm(demanda)
 
@@ -379,15 +394,22 @@ async def atualizar_demanda(
 @router.delete("/{demanda_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def deletar_demanda(
     demanda_id: str,
-    current_user: User = Depends(get_current_master_user),  # Apenas master pode deletar
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Deletar uma demanda
     
+    **Permissões:**
+    - Master pode deletar qualquer demanda
+    - Usuário comum pode deletar APENAS suas próprias demandas
+    
+    **Integração Trello:**
+    - Card do Trello é deletado automaticamente (se existir)
+    
     Args:
         demanda_id: ID da demanda
-        current_user: Usuário master autenticado
+        current_user: Usuário autenticado
         db: Sessão do banco
     """
     demanda = db.query(Demanda).filter(Demanda.id == demanda_id).first()
@@ -398,7 +420,37 @@ async def deletar_demanda(
             detail="Demanda não encontrada"
         )
     
+    # Verificar permissão: Master pode deletar qualquer demanda
+    # Usuário comum pode deletar apenas suas próprias demandas
+    if not current_user.is_master() and demanda.usuario_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você não tem permissão para excluir esta demanda"
+        )
+    
+    # Enviar notificações de exclusão ANTES de deletar (para ter acesso aos dados)
+    try:
+        notification_service = NotificationService(db)
+        enviados = notification_service.notificar_exclusao_demanda(demanda)
+        logger.info(f"Notificações de exclusão enviadas: {enviados} usuários")
+    except Exception as e:
+        logger.error(f"Erro ao enviar notificações de exclusão: {e}")
+        # Não falhar a exclusão se notificações falharem
+    
+    # Deletar card do Trello (se existir)
+    if demanda.trello_card_id:
+        try:
+            trello_service = TrelloService(db)
+            await trello_service.deletar_card(demanda)
+            logger.info(f"Card Trello {demanda.trello_card_id} deletado para demanda {demanda_id}")
+        except Exception as e:
+            logger.error(f"Erro ao deletar card Trello: {e}")
+            # Não falhar a exclusão da demanda se o Trello falhar
+            # O card pode não existir mais ou API pode estar indisponível
+    
+    # Deletar demanda do banco
     db.delete(demanda)
     db.commit()
     
+    logger.info(f"Demanda {demanda_id} deletada com sucesso")
     return None

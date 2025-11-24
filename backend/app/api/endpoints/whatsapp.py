@@ -440,3 +440,95 @@ def preview_template(
         "variaveis_nao_substituidas": list(set(variaveis_nao_substituidas))
     }
 
+
+# ==================== NOVOS ENDPOINTS - NOTIFICAÇÕES ====================
+
+@router.get("/status")
+async def verificar_status_whatsapp(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Verificar status da conexão Evolution API WhatsApp
+    
+    Requer: Usuário autenticado
+    """
+    try:
+        whatsapp = WhatsAppService()
+        status_info = await whatsapp.verificar_status_instancia()
+        
+        return {
+            "connected": status_info.get("connected", False),
+            "state": status_info.get("state", "unknown"),
+            "instance": "debrief",
+            "numero_remetente": "5585991042626",
+            "details": status_info
+        }
+    except Exception as e:
+        logger.error(f"Erro ao verificar status WhatsApp: {str(e)}")
+        return {
+            "connected": False,
+            "state": "error",
+            "instance": "debrief",
+            "numero_remetente": "5585991042626",
+            "error": str(e)
+        }
+
+
+@router.post("/testar")
+def testar_notificacao_whatsapp(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Enviar notificação de teste via WhatsApp
+    
+    Body:
+    {
+        "numero": "5585991042626",
+        "mensagem": "Mensagem de teste"
+    }
+    
+    Requer: Usuário autenticado
+    """
+    numero = request.get("numero")
+    mensagem = request.get("mensagem")
+    
+    if not numero:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Número é obrigatório"
+        )
+    
+    if not mensagem:
+        mensagem = "✅ Teste de notificação WhatsApp - DeBrief\n\nSeu número está configurado corretamente!"
+    
+    try:
+        # Inicializar serviço WhatsApp
+        whatsapp = WhatsAppService()
+        
+        # Enviar mensagem de teste
+        sucesso = whatsapp.enviar_mensagem_individual(
+            numero=numero,
+            mensagem=mensagem
+        )
+        
+        if sucesso:
+            logger.info(f"Teste de notificação enviado para {numero} por {current_user.username}")
+            return {
+                "success": True,
+                "message": f"Notificação de teste enviada para {numero}",
+                "numero_destino": numero
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Falha ao enviar notificação de teste"
+            )
+    
+    except Exception as e:
+        logger.error(f"Erro ao testar notificação WhatsApp: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao testar notificação: {str(e)}"
+        )
+
