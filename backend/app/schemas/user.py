@@ -44,6 +44,7 @@ class UserUpdate(BaseModel):
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     email: Optional[EmailStr] = None
     nome_completo: Optional[str] = Field(None, min_length=3, max_length=200)
+    password: Optional[str] = Field(None, min_length=6, description="Nova senha (deixe vazio para não alterar)")
     tipo: Optional[TipoUsuario] = None
     cliente_id: Optional[str] = None
     ativo: Optional[bool] = None
