@@ -101,8 +101,7 @@ class ConfiguracaoTrello(BaseModel):
             ConfiguracaoTrello ou None
         """
         return db.query(cls).filter(
-            cls.ativo == True,
-            cls.deleted_at == None
+            cls.ativo == True
         ).first()
     
     @classmethod
@@ -114,9 +113,7 @@ class ConfiguracaoTrello(BaseModel):
         Args:
             db: Sessão do banco
         """
-        db.query(cls).filter(
-            cls.deleted_at == None
-        ).update({"ativo": False})
+        db.query(cls).update({"ativo": False})
         db.commit()
     
     def pode_conectar(self) -> bool:
