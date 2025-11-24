@@ -61,17 +61,14 @@ class TipoUsuarioType(TypeDecorator):
         return str(value)
     
     def process_result_value(self, value, dialect):
-        """Converter string do banco para enum Python"""
+        """Converter string do banco para string Python (não enum)"""
         if value is None:
             return None
-        # Se já for enum, retorna ele mesmo
+        # Se já for enum, retorna o valor da string
         if isinstance(value, TipoUsuario):
-            return value
-        # Tentar converter string para enum
-        try:
-            return TipoUsuario(value)
-        except ValueError:
-            return value  # Retornar string se não encontrar no enum
+            return value.value
+        # Retornar a string diretamente para compatibilidade com Pydantic
+        return str(value)
 
 
 class User(BaseModel):
@@ -130,7 +127,7 @@ class User(BaseModel):
     tipo = Column(
         TipoUsuarioType(),
         nullable=False,
-        default=TipoUsuario.CLIENTE,
+        default="cliente",
         index=True,
         comment="Tipo de usuário: master (admin) ou cliente"
     )
@@ -296,10 +293,10 @@ class User(BaseModel):
             return cliente_id
         
         # Validar apenas se tipo já foi definido
-        if self.tipo == TipoUsuario.CLIENTE and not cliente_id:
+        if self.tipo == "cliente" and not cliente_id:
             raise ValueError("cliente_id é obrigatório para usuários do tipo CLIENTE")
         
-        if self.tipo == TipoUsuario.MASTER and cliente_id:
+        if self.tipo == "master" and cliente_id:
             raise ValueError("Usuários MASTER não devem ter cliente_id")
         
         return cliente_id
@@ -376,7 +373,7 @@ class User(BaseModel):
             if user.is_master():
                 # Permitir acesso a área admin
         """
-        return self.tipo == TipoUsuario.MASTER
+        return self.tipo == "master"
     
     def is_cliente(self) -> bool:
         """
@@ -385,7 +382,7 @@ class User(BaseModel):
         Returns:
             bool: True se for cliente
         """
-        return self.tipo == TipoUsuario.CLIENTE
+        return self.tipo == "cliente"
     
     def can_access_cliente(self, cliente_id: str) -> bool:
         """
@@ -561,7 +558,7 @@ class User(BaseModel):
             'username': self.username,
             'email': self.email,
             'nome_completo': self.nome_completo,
-            'tipo': self.tipo.value,
+            'tipo': self.tipo,  # Agora tipo já é string
             'ativo': self.ativo,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }
@@ -575,7 +572,7 @@ class User(BaseModel):
         Returns:
             str: Representação do usuário
         """
-        return f"<User(id='{self.id}', username='{self.username}', tipo='{self.tipo.value}', ativo={self.ativo})>"
+        return f"<User(id='{self.id}', username='{self.username}', tipo='{self.tipo}', ativo={self.ativo})>"
     
     def __str__(self) -> str:
         """
