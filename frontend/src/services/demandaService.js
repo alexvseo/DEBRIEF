@@ -443,6 +443,13 @@ const demandaService = {
   }
 }
 
+// Adicionar aliases em inglês para compatibilidade
+demandaService.create = demandaService.criar
+demandaService.list = demandaService.listar
+demandaService.getById = demandaService.buscarPorId
+demandaService.update = demandaService.atualizar
+demandaService.delete = demandaService.deletar
+
 export { demandaService }
 export default demandaService
 
