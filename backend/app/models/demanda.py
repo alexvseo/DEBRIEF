@@ -89,6 +89,10 @@ class Demanda(BaseModel):
     descricao = Column(Text, nullable=False)
     links_referencia = Column(Text, nullable=True, comment="Links de referência (JSON array)")
     
+    # Integração Trello
+    trello_card_id = Column(String(100), nullable=True, comment="ID do card no Trello")
+    trello_card_url = Column(String(500), nullable=True, comment="URL do card no Trello")
+    
     # Status
     # Usar TypeDecorator customizado para converter entre enum Python e string do banco
     # Isso resolve problemas com enum nativo do PostgreSQL que tem valores em minúsculo
