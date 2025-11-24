@@ -127,17 +127,30 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       try {
         setIsLoadingData(true)
 
-        // Se for master, carregar também clientes
+        // Preparar promises baseado no tipo de usuário
         const promises = [
-          demandaService.listarSecretarias().catch(err => ({ data: [], error: err })),
           demandaService.listarTiposDemanda().catch(err => ({ data: [], error: err })),
           demandaService.listarPrioridades().catch(err => ({ data: [], error: err })),
         ]
 
+        // Se for master, carregar todas as secretarias e clientes
         if (isMaster) {
+          promises.unshift(
+            demandaService.listarSecretarias().catch(err => ({ data: [], error: err }))
+          )
           promises.push(
             api.get('/clientes/', { params: { apenas_ativos: true } }).catch(err => ({ data: [], error: err }))
           )
+        } else if (user?.cliente_id) {
+          // Se for cliente, carregar apenas secretarias do seu cliente
+          promises.unshift(
+            api.get(`/secretarias/cliente/${user.cliente_id}`, { 
+              params: { apenas_ativas: true } 
+            }).catch(err => ({ data: [], error: err }))
+          )
+        } else {
+          // Se não tiver cliente_id, não carregar secretarias
+          promises.unshift(Promise.resolve({ data: [] }))
         }
 
         // Carregar dados em paralelo com tratamento individual de erros
@@ -161,7 +174,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
           : []
 
         setTodasSecretarias(Array.isArray(secretariasData) ? secretariasData : [])
-        setSecretarias(Array.isArray(secretariasData) ? secretariasData : []) // Inicialmente mostra todas
+        setSecretarias(Array.isArray(secretariasData) ? secretariasData : [])
         setTiposDemanda(Array.isArray(tiposData) ? tiposData : [])
         setPrioridades(Array.isArray(prioridadesData) ? prioridadesData : [])
         if (isMaster) {
@@ -173,6 +186,11 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
           toast.error('Erro ao carregar dados do formulário. Verifique sua conexão.')
         }
 
+        // Aviso específico para clientes sem secretarias
+        if (!isMaster && secretariasData.length === 0 && user?.cliente_id) {
+          toast.warning('Nenhuma secretaria encontrada para seu cliente. Entre em contato com o administrador.')
+        }
+
       } catch (error) {
         console.error('Erro ao carregar dados do formulário:', error)
         // Não mostrar toast aqui pois já foi mostrado acima
@@ -182,7 +200,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
     }
 
     loadFormData()
-  }, [isMaster])
+  }, [isMaster, user?.cliente_id])
 
   /**
    * Filtrar secretarias quando cliente for selecionado
