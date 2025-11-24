@@ -11,6 +11,8 @@ import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
 import NovaDemanda from '@/pages/NovaDemanda'
 import MinhasDemandas from '@/pages/MinhasDemandas'
+import DemandaDetalhes from '@/pages/DemandaDetalhes'
+import EditarDemanda from '@/pages/EditarDemanda'
 import MeuPerfil from '@/pages/MeuPerfil'
 import Configuracoes from '@/pages/Configuracoes'
 import GerenciarUsuarios from '@/pages/GerenciarUsuarios'
@@ -102,6 +104,24 @@ function App() {
         element={
           <ProtectedRoute>
             <MinhasDemandas />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/demanda/:id"
+        element={
+          <ProtectedRoute>
+            <DemandaDetalhes />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/editar-demanda/:id"
+        element={
+          <ProtectedRoute>
+            <EditarDemanda />
           </ProtectedRoute>
         }
       />
