@@ -19,7 +19,9 @@ import {
   RefreshCw,
   Phone,
   MessageSquare,
-  Trash2
+  Trash2,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import {
   Button,
@@ -538,6 +540,8 @@ const ModalUsuario = ({ open, item, clientes, onClose, onSave }) => {
     receber_notificacoes: false
   })
   
+  const [showPassword, setShowPassword] = useState(false)
+  
   useEffect(() => {
     if (item) {
       setForm({
@@ -629,15 +633,36 @@ const ModalUsuario = ({ open, item, clientes, onClose, onSave }) => {
                 placeholder="Ex: João da Silva"
               />
               
-              <Input
-                label={item ? "Senha (deixe vazio para não alterar)" : "Senha"}
-                type="password"
-                required={!item}
-                value={form.password}
-                onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
-                placeholder="Mínimo 6 caracteres"
-                helperText={item ? "Deixe em branco para manter a senha atual" : "Mínimo 6 caracteres"}
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {item ? "Senha (deixe vazio para não alterar)" : "Senha"} {!item && <span className="text-red-500">*</span>}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required={!item}
+                    value={form.password}
+                    onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Mínimo 6 caracteres"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                    title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  {item ? "Deixe em branco para manter a senha atual" : "Mínimo 6 caracteres"}
+                </p>
+              </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
