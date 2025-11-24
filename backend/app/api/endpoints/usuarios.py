@@ -117,30 +117,65 @@ def criar_usuario(
     - tipo: Tipo (master/cliente)
     - cliente_id: ID do cliente (obrigatório se tipo=cliente)
     """
-    # Verificar se username já existe (apenas usuários ativos)
+    # Verificar se username já existe
     existing_user_username = db.query(User).filter(
-        User.username == user_data.username,
-        User.ativo == True
+        User.username == user_data.username
     ).first()
     
-    if existing_user_username:
+    # Se usuário existe e está ATIVO, retornar erro
+    if existing_user_username and existing_user_username.ativo:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username já cadastrado"
         )
     
-    # Verificar se email já existe (apenas usuários ativos)
+    # Verificar se email já existe
     existing_user_email = db.query(User).filter(
-        User.email == user_data.email,
-        User.ativo == True
+        User.email == user_data.email
     ).first()
     
-    if existing_user_email:
+    # Se usuário com email existe e está ATIVO, retornar erro
+    if existing_user_email and existing_user_email.ativo:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email já cadastrado"
         )
     
+    # Se encontrou usuário INATIVO com mesmo username ou email, reativar e atualizar
+    inactive_user = existing_user_username or existing_user_email
+    
+    if inactive_user and not inactive_user.ativo:
+        # Reativar e atualizar usuário existente
+        inactive_user.username = user_data.username
+        inactive_user.email = user_data.email
+        inactive_user.nome_completo = user_data.nome_completo
+        inactive_user.tipo = user_data.tipo
+        inactive_user.set_password(user_data.password)
+        inactive_user.ativo = True
+        
+        # Atualizar WhatsApp se fornecido
+        if hasattr(user_data, 'whatsapp') and user_data.whatsapp:
+            inactive_user.whatsapp = user_data.whatsapp
+        if hasattr(user_data, 'receber_notificacoes'):
+            inactive_user.receber_notificacoes = user_data.receber_notificacoes
+        
+        # Atualizar cliente_id
+        if user_data.tipo == TipoUsuario.MASTER:
+            inactive_user.cliente_id = None
+        elif user_data.tipo == TipoUsuario.CLIENTE:
+            if not user_data.cliente_id or user_data.cliente_id == '':
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="cliente_id é obrigatório para usuários do tipo 'cliente'"
+                )
+            inactive_user.cliente_id = user_data.cliente_id
+        
+        db.commit()
+        db.refresh(inactive_user)
+        
+        return UserResponse.from_orm(inactive_user)
+    
+    # Se não existe ou não está inativo, criar novo usuário
     # Validar cliente_id se tipo for cliente
     if user_data.tipo == TipoUsuario.CLIENTE and not user_data.cliente_id:
         raise HTTPException(
@@ -149,7 +184,6 @@ def criar_usuario(
         )
     
     # Preparar dados para criação do usuário
-    # Se tipo for master, garantir que cliente_id seja None (não string vazia)
     user_kwargs = {
         'username': user_data.username,
         'email': user_data.email,
@@ -157,11 +191,15 @@ def criar_usuario(
         'tipo': user_data.tipo
     }
     
+    # Adicionar WhatsApp se fornecido
+    if hasattr(user_data, 'whatsapp') and user_data.whatsapp:
+        user_kwargs['whatsapp'] = user_data.whatsapp
+    if hasattr(user_data, 'receber_notificacoes'):
+        user_kwargs['receber_notificacoes'] = user_data.receber_notificacoes
+    
     if user_data.tipo == TipoUsuario.MASTER:
-        # Master não deve ter cliente_id
         user_kwargs['cliente_id'] = None
     elif user_data.tipo == TipoUsuario.CLIENTE:
-        # Cliente deve ter cliente_id
         if not user_data.cliente_id or user_data.cliente_id == '':
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

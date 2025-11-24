@@ -192,31 +192,49 @@ async def register(
     Raises:
         HTTPException: Se username ou email já existe
     """
-    # Verificar se username já existe (apenas usuários ativos)
+    # Verificar se username já existe
     existing_user_username = db.query(User).filter(
-        User.username == user_data.username,
-        User.ativo == True
+        User.username == user_data.username
     ).first()
     
-    if existing_user_username:
+    # Se usuário existe e está ATIVO, retornar erro
+    if existing_user_username and existing_user_username.ativo:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username já cadastrado"
         )
     
-    # Verificar se email já existe (apenas usuários ativos)
+    # Verificar se email já existe
     existing_user_email = db.query(User).filter(
-        User.email == user_data.email,
-        User.ativo == True
+        User.email == user_data.email
     ).first()
     
-    if existing_user_email:
+    # Se usuário com email existe e está ATIVO, retornar erro
+    if existing_user_email and existing_user_email.ativo:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email já cadastrado"
         )
     
-    # Criar novo usuário
+    # Se encontrou usuário INATIVO com mesmo username ou email, reativar e atualizar
+    inactive_user = existing_user_username or existing_user_email
+    
+    if inactive_user and not inactive_user.ativo:
+        # Reativar e atualizar usuário existente
+        inactive_user.username = user_data.username
+        inactive_user.email = user_data.email
+        inactive_user.nome_completo = user_data.nome_completo
+        inactive_user.tipo = user_data.tipo
+        inactive_user.cliente_id = user_data.cliente_id
+        inactive_user.set_password(user_data.password)
+        inactive_user.ativo = True
+        
+        db.commit()
+        db.refresh(inactive_user)
+        
+        return UserResponse.from_orm(inactive_user)
+    
+    # Se não existe ou não está inativo, criar novo usuário
     new_user = User(
         username=user_data.username,
         email=user_data.email,
