@@ -389,6 +389,9 @@ async def deletar_demanda(
     - Master pode deletar qualquer demanda
     - Usuário comum pode deletar APENAS suas próprias demandas
     
+    **Integração Trello:**
+    - Card do Trello é deletado automaticamente (se existir)
+    
     Args:
         demanda_id: ID da demanda
         current_user: Usuário autenticado
@@ -410,7 +413,20 @@ async def deletar_demanda(
             detail="Você não tem permissão para excluir esta demanda"
         )
     
+    # Deletar card do Trello (se existir)
+    if demanda.trello_card_id:
+        try:
+            trello_service = TrelloService(db)
+            await trello_service.deletar_card(demanda)
+            logger.info(f"Card Trello {demanda.trello_card_id} deletado para demanda {demanda_id}")
+        except Exception as e:
+            logger.error(f"Erro ao deletar card Trello: {e}")
+            # Não falhar a exclusão da demanda se o Trello falhar
+            # O card pode não existir mais ou API pode estar indisponível
+    
+    # Deletar demanda do banco
     db.delete(demanda)
     db.commit()
     
+    logger.info(f"Demanda {demanda_id} deletada com sucesso")
     return None
