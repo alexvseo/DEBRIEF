@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: debrief-backend
+    restart: unless-stopped
+    networks:
+      - debrief-network
+    environment:
+      # Conectar ao túnel SSH (localhost:5433 mapeado para host.docker.internal:5433)
+      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5433/dbrief
+      - FRONTEND_URL=http://localhost:3000
+      - ENVIRONMENT=development
+      # JWT
+      - SECRET_KEY=sua-chave-secreta-super-segura-aqui-change-me
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ALLOWED_EXTENSIONS=pdf,jpg,jpeg,png
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./backend/uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=/api
+    container_name: debrief-frontend
+    restart: unless-stopped
+    networks:
+      - debrief-network
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+networks:
+  debrief-network:
+    driver: bridge
