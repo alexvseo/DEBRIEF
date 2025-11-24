@@ -296,4 +296,100 @@ class NotificationWhatsAppService:
             Estatísticas de envio
         """
         return self.notificar_evento(demanda, "demanda_cancelada")
+    
+    async def notificar_mudanca_status(
+        self,
+        demanda: Demanda,
+        status_antigo: str,
+        db: Session
+    ) -> dict:
+        """
+        Notificar sobre mudança de status da demanda (vinda do Trello ou edição manual)
+        
+        Args:
+            demanda: Demanda atualizada
+            status_antigo: Status anterior da demanda
+            db: Sessão do banco de dados
+            
+        Returns:
+            Estatísticas de envio
+        """
+        # Verificar se o status realmente mudou
+        if not hasattr(demanda, 'status') or demanda.status.value == status_antigo:
+            logger.info("Status não mudou, notificação não enviada")
+            return {
+                "sucesso": True,
+                "mensagem": "Status não mudou",
+                "enviados": 0,
+                "falhas": 0
+            }
+        
+        # Emoji de status
+        emoji_status = {
+            "aberta": "📂",
+            "em_andamento": "⚙️",
+            "aguardando_cliente": "⏳",
+            "concluida": "✅",
+            "cancelada": "❌"
+        }
+        
+        # Formatar nomes dos status
+        status_antigo_formatado = status_antigo.replace('_', ' ').title()
+        status_novo_formatado = demanda.status.value.replace('_', ' ').title()
+        
+        # Emoji do novo status
+        emoji_novo = emoji_status.get(demanda.status.value, "📊")
+        
+        # Obter usuários para notificar
+        usuarios = self._obter_usuarios_para_notificar(demanda)
+        if not usuarios:
+            logger.info("Nenhum usuário para notificar sobre mudança de status")
+            return {
+                "sucesso": True,
+                "mensagem": "Nenhum usuário configurado para receber notificações",
+                "enviados": 0,
+                "falhas": 0
+            }
+        
+        # Criar mensagem personalizada para mudança de status
+        mensagem = f"""🔄 *Atualização de Status - Demanda*
+
+📋 *Demanda:* {demanda.nome}
+🏢 *Cliente:* {demanda.cliente.nome if demanda.cliente else 'N/A'}
+
+{emoji_novo} *Status:* {status_antigo_formatado} → *{status_novo_formatado}*
+
+🔗 *Ver no Trello:* {demanda.trello_card_url or 'Aguardando sincronização...'}
+
+_ID: {demanda.id}_
+        """.strip()
+        
+        # Enviar para cada usuário
+        enviados = 0
+        falhas = 0
+        
+        for usuario in usuarios:
+            sucesso = self._enviar_notificacao(
+                usuario=usuario,
+                mensagem=mensagem,
+                demanda=demanda,
+                tipo_evento="mudanca_status"
+            )
+            
+            if sucesso:
+                enviados += 1
+            else:
+                falhas += 1
+        
+        logger.info(f"Notificações de mudança de status enviadas: {enviados} sucesso, {falhas} falhas")
+        
+        return {
+            "sucesso": True,
+            "mensagem": f"Notificações processadas: {enviados} enviadas, {falhas} falhas",
+            "enviados": enviados,
+            "falhas": falhas,
+            "total_usuarios": len(usuarios),
+            "status_antigo": status_antigo_formatado,
+            "status_novo": status_novo_formatado
+        }
 

@@ -19,7 +19,8 @@ from app.api.endpoints import (
     relatorios,
     whatsapp,
     trello_config,
-    trello_etiquetas
+    trello_etiquetas,
+    trello_webhook
 )
 
 # Criar aplicação FastAPI
@@ -187,6 +188,12 @@ app.include_router(
 app.include_router(
     trello_etiquetas.router
     # Já contém prefix="/api/trello-etiquetas" e tags=["Etiquetas Trello"]
+)
+
+# Trello - Webhook (Sincronização Bidirecional)
+app.include_router(
+    trello_webhook.router
+    # Já contém prefix="/api/trello" e tags=["Webhook Trello"]
 )
 
 

@@ -314,7 +314,7 @@ async def atualizar_demanda(
     db: Session = Depends(get_db)
 ):
     """
-    Atualizar uma demanda existente
+    Atualizar uma demanda existente e sincronizar com Trello
     
     Args:
         demanda_id: ID da demanda
@@ -340,12 +340,38 @@ async def atualizar_demanda(
             detail="Você não tem permissão para editar esta demanda"
         )
     
+    # Guardar status antigo para notificações
+    status_antigo = demanda.status.value if hasattr(demanda, 'status') else None
+    
     # Atualizar campos
     for field, value in demanda_data.dict(exclude_unset=True).items():
         setattr(demanda, field, value)
     
     db.commit()
     db.refresh(demanda)
+    
+    # Sincronizar com Trello (não bloqueia se falhar)
+    try:
+        trello_service = TrelloService(db)
+        await trello_service.atualizar_card(demanda, db)
+        logger.info(f"Card Trello atualizado para demanda {demanda_id}")
+    except Exception as e:
+        logger.error(f"Erro ao atualizar card Trello: {e}")
+        # Não falhar a atualização se Trello falhar
+    
+    # Enviar notificação WhatsApp se status mudou
+    if status_antigo and 'status' in demanda_data.dict(exclude_unset=True):
+        try:
+            whatsapp_service = WhatsAppService()
+            await whatsapp_service.enviar_atualizacao_status(
+                demanda=demanda,
+                db=db,
+                status_antigo=status_antigo
+            )
+            logger.info("Notificação WhatsApp enviada para mudança de status")
+        except Exception as e:
+            logger.error(f"Erro ao enviar notificação WhatsApp: {e}")
+            # Não falhar a atualização se WhatsApp falhar
     
     return DemandaResponse.from_orm(demanda)
 

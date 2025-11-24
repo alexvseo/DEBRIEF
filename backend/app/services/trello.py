@@ -440,12 +440,13 @@ class TrelloService:
         """
         try:
             # Mapeamento de status para nomes de listas
-            # Ajustar conforme seu board do Trello
+            # Configurado para as listas específicas do board DeBrief
             mapeamento = {
-                'aberta': 'Backlog',
-                'em_andamento': 'Em Andamento',
-                'concluida': 'Concluído',
-                'cancelada': 'Cancelado'
+                'aberta': 'ENVIOS DOS CLIENTES VIA DEBRIEF',
+                'em_andamento': 'EM DESENVOLVIMENTO',
+                'aguardando_cliente': 'EM DESENVOLVIMENTO',  # Manter em desenvolvimento
+                'concluida': 'EM ESPERA',
+                # Nota: status 'cancelada' não tem lista no Trello (card será arquivado)
             }
             
             lista_nome = mapeamento.get(status)
