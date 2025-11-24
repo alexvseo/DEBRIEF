@@ -41,10 +41,44 @@ class UserCreate(BaseModel):
 
 class UserUpdate(BaseModel):
     """Schema para atualizar usuário"""
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
     email: Optional[EmailStr] = None
     nome_completo: Optional[str] = Field(None, min_length=3, max_length=200)
+    tipo: Optional[TipoUsuario] = None
     cliente_id: Optional[str] = None
     ativo: Optional[bool] = None
+    whatsapp: Optional[str] = Field(None, max_length=20)
+    receber_notificacoes: Optional[bool] = None
+    
+    @validator('username')
+    def username_alphanumeric(cls, v):
+        if v is None:
+            return v
+        if not v.replace('_', '').replace('.', '').replace('-', '').isalnum():
+            raise ValueError('Username deve conter apenas letras, números, _, . e -')
+        return v.lower()
+
+
+class UserNotificationSettings(BaseModel):
+    """Schema para atualizar configurações de notificação"""
+    whatsapp: Optional[str] = Field(None, min_length=10, max_length=20, description="Número WhatsApp com código do país (ex: 5511999999999)")
+    receber_notificacoes: Optional[bool] = Field(None, description="Se deseja receber notificações via WhatsApp")
+    
+    @validator('whatsapp')
+    def validar_whatsapp(cls, v):
+        """Validar formato do número WhatsApp"""
+        if v is None:
+            return v
+        
+        # Remover espaços, parênteses, hífens, etc
+        numero_limpo = ''.join(filter(str.isdigit, v))
+        
+        # Deve ter entre 10 e 15 dígitos
+        if len(numero_limpo) < 10 or len(numero_limpo) > 15:
+            raise ValueError('Número WhatsApp deve ter entre 10 e 15 dígitos')
+        
+        # Retornar apenas dígitos
+        return numero_limpo
 
 
 class UserChangePassword(BaseModel):
@@ -65,6 +99,8 @@ class UserResponse(BaseModel):
     tipo: TipoUsuario
     cliente_id: Optional[str]
     ativo: bool
+    whatsapp: Optional[str] = None
+    receber_notificacoes: bool = True
     created_at: datetime
     updated_at: datetime
     

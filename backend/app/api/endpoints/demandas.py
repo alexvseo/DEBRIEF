@@ -379,22 +379,15 @@ async def atualizar_demanda(
 @router.delete("/{demanda_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def deletar_demanda(
     demanda_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_master_user),  # Apenas master pode deletar
     db: Session = Depends(get_db)
 ):
     """
     Deletar uma demanda
     
-    **Permissões:**
-    - Master pode deletar qualquer demanda
-    - Usuário comum pode deletar APENAS suas próprias demandas
-    
-    **Integração Trello:**
-    - Card do Trello é deletado automaticamente (se existir)
-    
     Args:
         demanda_id: ID da demanda
-        current_user: Usuário autenticado
+        current_user: Usuário master autenticado
         db: Sessão do banco
     """
     demanda = db.query(Demanda).filter(Demanda.id == demanda_id).first()
@@ -405,28 +398,7 @@ async def deletar_demanda(
             detail="Demanda não encontrada"
         )
     
-    # Verificar permissão: Master pode deletar qualquer demanda
-    # Usuário comum pode deletar apenas suas próprias demandas
-    if not current_user.is_master() and demanda.usuario_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Você não tem permissão para excluir esta demanda"
-        )
-    
-    # Deletar card do Trello (se existir)
-    if demanda.trello_card_id:
-        try:
-            trello_service = TrelloService(db)
-            await trello_service.deletar_card(demanda)
-            logger.info(f"Card Trello {demanda.trello_card_id} deletado para demanda {demanda_id}")
-        except Exception as e:
-            logger.error(f"Erro ao deletar card Trello: {e}")
-            # Não falhar a exclusão da demanda se o Trello falhar
-            # O card pode não existir mais ou API pode estar indisponível
-    
-    # Deletar demanda do banco
     db.delete(demanda)
     db.commit()
     
-    logger.info(f"Demanda {demanda_id} deletada com sucesso")
     return None

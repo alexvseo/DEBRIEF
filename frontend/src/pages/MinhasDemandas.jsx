@@ -361,8 +361,7 @@ const MinhasDemandas = () => {
                         <Eye className="h-4 w-4 mr-1" />
                         Ver Detalhes
                       </Button>
-                      {/* Mostrar botões Editar e Excluir para demandas abertas ou em andamento */}
-                      {(demanda.status === 'aberta' || demanda.status === 'em_andamento') && (
+                      {demanda.status === 'aberta' && (
                         <>
                           <Button 
                             variant="outline" 
