@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus, Search, Filter, FileText, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight, Trash2, Eye, Edit } from 'lucide-react'
+import { toast } from 'sonner'
 import { 
   Button, 
   Card, 
@@ -30,6 +31,7 @@ const MinhasDemandas = () => {
   const [paginaAtual, setPaginaAtual] = useState(1)
   const [demandaParaExcluir, setDemandaParaExcluir] = useState(null)
   const [excluindo, setExcluindo] = useState(false)
+  const [demandaExcluindo, setDemandaExcluindo] = useState(null)
   const ITENS_POR_PAGINA = 5
 
   // Carregar demandas ao montar componente
@@ -49,25 +51,46 @@ const MinhasDemandas = () => {
     }
   }
 
-  // Função para excluir demanda
+  // Função para excluir demanda com animação suave
   const handleExcluirDemanda = async () => {
     if (!demandaParaExcluir) return
 
     try {
       setExcluindo(true)
-      await demandaService.deletar(demandaParaExcluir.id)
       
-      // Atualizar lista de demandas
-      await carregarDemandas()
+      // Iniciar animação de exclusão
+      setDemandaExcluindo(demandaParaExcluir.id)
+      
+      // Aguardar um pouco para a animação começar
+      await new Promise(resolve => setTimeout(resolve, 100))
       
       // Fechar modal
       setDemandaParaExcluir(null)
       
-      // Mostrar feedback
-      console.log('✅ Demanda excluída com sucesso!')
+      // Executar a exclusão no backend
+      await demandaService.deletar(demandaParaExcluir.id)
+      
+      // Aguardar a animação completar (800ms)
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
+      // Atualizar lista de demandas
+      await carregarDemandas()
+      
+      // Limpar estado de animação
+      setDemandaExcluindo(null)
+      
+      // Mostrar feedback com toast
+      toast.success('Demanda excluída com sucesso!', {
+        description: 'A demanda foi removida permanentemente.',
+        duration: 3000,
+      })
     } catch (error) {
       console.error('Erro ao excluir demanda:', error)
-      alert('Erro ao excluir demanda. Tente novamente.')
+      toast.error('Erro ao excluir demanda', {
+        description: 'Não foi possível excluir a demanda. Tente novamente.',
+        duration: 4000,
+      })
+      setDemandaExcluindo(null)
     } finally {
       setExcluindo(false)
     }
@@ -281,7 +304,17 @@ const MinhasDemandas = () => {
           <>
             <div className="space-y-4">
               {demandasPaginadas.map((demanda) => (
-                <Card key={demanda.id} className="hover:shadow-lg transition-shadow">
+                <Card 
+                  key={demanda.id} 
+                  className={`hover:shadow-lg transition-all duration-700 ease-in-out ${
+                    demandaExcluindo === demanda.id 
+                      ? 'opacity-0 scale-95 -translate-x-8 bg-red-50 border-red-200' 
+                      : 'opacity-100 scale-100 translate-x-0'
+                  }`}
+                  style={{
+                    transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -410,8 +443,15 @@ const MinhasDemandas = () => {
 
       {/* Modal de Confirmação de Exclusão */}
       {demandaParaExcluir && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !excluindo) {
+              setDemandaParaExcluir(null)
+            }
+          }}
+        >
+          <Card className="max-w-md w-full animate-in zoom-in-95 duration-300">
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2 text-red-600">
                 <Trash2 className="h-6 w-6" />
@@ -446,12 +486,14 @@ const MinhasDemandas = () => {
                 <Button
                   onClick={handleExcluirDemanda}
                   disabled={excluindo}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className={`bg-red-600 hover:bg-red-700 text-white transition-all duration-300 ${
+                    excluindo ? 'scale-95 opacity-90' : 'scale-100 opacity-100'
+                  }`}
                 >
                   {excluindo ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Excluindo...
+                      <span className="animate-pulse">Excluindo...</span>
                     </>
                   ) : (
                     <>

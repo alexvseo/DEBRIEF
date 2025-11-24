@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 import { AuthProvider } from '@/contexts/AuthContext'
 import App from './App.jsx'
 import './index.css'
+import './styles/animations.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
