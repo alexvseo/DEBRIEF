@@ -120,6 +120,46 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
   })
 
   /**
+   * Preencher formulário quando demanda for carregada (modo edição)
+   */
+  useEffect(() => {
+    if (demanda) {
+      // Resetar formulário com valores da demanda
+      reset({
+        cliente_id: demanda.cliente_id || '',
+        secretaria_id: demanda.secretaria_id || '',
+        nome: demanda.nome || '',
+        tipo_demanda_id: demanda.tipo_demanda_id || '',
+        prioridade_id: demanda.prioridade_id || '',
+        descricao: demanda.descricao || '',
+        prazo_final: demanda.prazo_final || '',
+      })
+
+      // Definir cliente selecionado (para filtrar secretarias)
+      if (isMaster && demanda.cliente_id) {
+        setClienteSelecionado(demanda.cliente_id)
+      }
+
+      // Carregar links de referência existentes
+      if (demanda.links_referencia) {
+        try {
+          // links_referencia vem como string JSON do backend
+          const links = typeof demanda.links_referencia === 'string' 
+            ? JSON.parse(demanda.links_referencia)
+            : demanda.links_referencia
+
+          if (Array.isArray(links) && links.length > 0) {
+            setLinksReferencia(links)
+          }
+        } catch (error) {
+          console.error('Erro ao parsear links de referência:', error)
+          // Se houver erro no parse, manter estado inicial
+        }
+      }
+    }
+  }, [demanda, reset, isMaster])
+
+  /**
    * Carregar dados dos dropdowns ao montar componente
    */
   useEffect(() => {

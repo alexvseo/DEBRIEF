@@ -88,6 +88,9 @@ class DemandaResponse(BaseModel):
     cliente_id: str
     tipo_demanda_id: str
     secretaria_id: Optional[str]
+    links_referencia: Optional[str] = None  # JSON string com lista de links
+    trello_card_id: Optional[str] = None
+    trello_card_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     
