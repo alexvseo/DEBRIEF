@@ -52,6 +52,7 @@ const Dashboard = () => {
   const { user, logout, isMaster } = useAuth()
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [showAlert, setShowAlert] = useState(true)
   
   // Estados para métricas
   const [metricas, setMetricas] = useState({
@@ -103,10 +104,10 @@ const Dashboard = () => {
       const metricasProcessadas = {
         demandas: {
           total: demandas.data.length,
-          abertas: demandas.data.filter(d => d.status === 'ABERTA').length,
-          em_andamento: demandas.data.filter(d => d.status === 'EM_ANDAMENTO').length,
-          concluidas: demandas.data.filter(d => d.status === 'CONCLUIDA').length,
-          canceladas: demandas.data.filter(d => d.status === 'CANCELADA').length
+          abertas: demandas.data.filter(d => d.status === 'aberta').length,
+          em_andamento: demandas.data.filter(d => d.status === 'em_andamento').length,
+          concluidas: demandas.data.filter(d => d.status === 'concluida').length,
+          canceladas: demandas.data.filter(d => d.status === 'cancelada').length
         },
         tipos: { total: tipos.data.length },
         prioridades: { total: prioridades.data.length }
@@ -136,10 +137,10 @@ const Dashboard = () => {
   const processarDadosGraficos = (demandas, tipos, prioridades) => {
     // Demandas por Status
     const porStatus = [
-      { name: 'Abertas', value: demandas.filter(d => d.status === 'ABERTA').length, color: '#3B82F6' },
-      { name: 'Em Andamento', value: demandas.filter(d => d.status === 'EM_ANDAMENTO').length, color: '#F59E0B' },
-      { name: 'Concluídas', value: demandas.filter(d => d.status === 'CONCLUIDA').length, color: '#10B981' },
-      { name: 'Canceladas', value: demandas.filter(d => d.status === 'CANCELADA').length, color: '#EF4444' }
+      { name: 'Abertas', value: demandas.filter(d => d.status === 'aberta').length, color: '#3B82F6' },
+      { name: 'Em Andamento', value: demandas.filter(d => d.status === 'em_andamento').length, color: '#F59E0B' },
+      { name: 'Concluídas', value: demandas.filter(d => d.status === 'concluida').length, color: '#10B981' },
+      { name: 'Canceladas', value: demandas.filter(d => d.status === 'cancelada').length, color: '#EF4444' }
     ]
 
     // Demandas por Tipo
@@ -234,12 +235,21 @@ const Dashboard = () => {
         </div>
 
         {/* Alert de Boas-Vindas */}
-        <Alert variant="success">
-          <AlertTitle>✅ Sistema Operacional!</AlertTitle>
-          <AlertDescription>
-            Todos os módulos estão funcionando. Dashboard com métricas em tempo real!
-          </AlertDescription>
-        </Alert>
+        {showAlert && (
+          <Alert variant="success" className="relative">
+            <button
+              onClick={() => setShowAlert(false)}
+              className="absolute top-2 right-2 p-1 rounded-md hover:bg-green-200 transition-colors"
+              aria-label="Fechar"
+            >
+              <XCircle className="h-4 w-4 text-green-700" />
+            </button>
+            <AlertTitle>✅ Sistema Operacional!</AlertTitle>
+            <AlertDescription>
+              Todos os módulos estão funcionando. Dashboard com métricas em tempo real!
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Cards de Estatísticas Principais */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
