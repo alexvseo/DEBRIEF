@@ -373,6 +373,7 @@ const GerenciarUsuarios = () => {
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Usuário</th>
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Email</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">WhatsApp</th>
+                    <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Cliente</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Tipo</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Status</th>
                     <th className="text-right py-3 px-4 text-sm font-medium text-gray-700">Ações</th>
@@ -404,6 +405,15 @@ const GerenciarUsuarios = () => {
                               <MessageSquare className="h-3 w-3 text-blue-600" title="Recebe notificações" />
                             )}
                           </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {usuario.cliente_id ? (
+                          <Badge variant="info" className="bg-purple-100 text-purple-700 border-purple-200">
+                            {clientes.find(c => c.id === usuario.cliente_id)?.nome || 'Cliente não encontrado'}
+                          </Badge>
                         ) : (
                           <span className="text-xs text-gray-400">-</span>
                         )}
