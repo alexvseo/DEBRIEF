@@ -1,0 +1,96 @@
+═══════════════════════════════════════════════════════════════
+  🎉 BANCO CORRETO CONFIGURADO - CONECTE NO DBEAVER!
+═══════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────┐
+│  ✅ TÚNEL SSH: RODANDO (BANCO CORRETO)                      │
+│  ✅ BANCO: debrief_db (container - dados reais)             │
+│  ✅ DADOS: 12 demandas (igual ao site) ← CORRETO!           │
+└─────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+  📝 CONFIGURAÇÃO DBEAVER - ATUALIZADA (COPIE E COLE)
+═══════════════════════════════════════════════════════════════
+
+Host:       localhost
+Port:       5433
+Database:   dbrief
+Username:   postgres
+Password:   Mslestra@2025db
+
+⚠️  IMPORTANTE: 
+- Use porta 5433 (não 5432)
+- Senha: Mslestra@2025db (COM 'db' no final)
+
+═══════════════════════════════════════════════════════════════
+  🎯 PASSO A PASSO NO DBEAVER
+═══════════════════════════════════════════════════════════════
+
+1. Abra o DBeaver
+
+2. Menu → Database → New Database Connection
+
+3. Selecione PostgreSQL → Next
+
+4. Preencha os campos acima
+
+5. Test Connection (se pedir driver, baixe)
+
+6. Deve aparecer: "✅ Connected"
+
+7. Finish
+
+8. Pronto! Veja suas 14 tabelas
+
+═══════════════════════════════════════════════════════════════
+  🛠️ GERENCIAR TÚNEL
+═══════════════════════════════════════════════════════════════
+
+Ver status:     ./gerenciar-tunel.sh status
+Parar túnel:    ./gerenciar-tunel.sh stop
+Iniciar túnel:  ./gerenciar-tunel.sh start
+Testar conexão: ./gerenciar-tunel.sh test
+
+═══════════════════════════════════════════════════════════════
+  📊 TABELAS DISPONÍVEIS (14 tabelas) - BANCO CORRETO
+═══════════════════════════════════════════════════════════════
+
+✓ demandas            - 12 registros ✅ (campo "nome")
+✓ users               - Usuários do sistema
+✓ secretarias         - Órgãos/secretarias
+✓ clientes            - Clientes cadastrados
+✓ configuracoes       - Configurações gerais
+✓ anexos              - Arquivos anexados
+✓ notification_logs   - Logs de notificações
+✓ prioridades         - Níveis de prioridade
+✓ tipos_demanda       - Tipos de demandas
+✓ templates_mensagens - Templates de mensagens
+✓ configuracoes_trello - Config Trello
+✓ configuracoes_whatsapp - Config WhatsApp
+✓ etiquetas_trello_cliente - Etiquetas Trello
+✓ alembic_version     - Controle de migrations
+
+═══════════════════════════════════════════════════════════════
+  🚀 ESTÁ TUDO PRONTO - BANCO CORRETO!
+═══════════════════════════════════════════════════════════════
+
+→ Túnel SSH RODANDO (porta 5433 → container debrief_db)
+→ Dados CORRETOS acessíveis (12 demandas, igual ao site)
+→ Basta ATUALIZAR/CONFIGURAR o DBeaver e usar!
+
+═══════════════════════════════════════════════════════════════
+
+📚 Novo guia: BANCO-CORRETO-CONFIGURADO.md ← LEIA ESTE!
+🔧 Documentação completa: CONEXAO-ESTABELECIDA.md
+📖 Config DBeaver: CONFIG-DBEAVER.md
+🔍 Guia troubleshooting: GUIA-ACESSO-BANCO-DADOS.md
+
+═══════════════════════════════════════════════════════════════
+
+⚠️  SE VOCÊ JÁ CONFIGUROU O DBEAVER ANTES:
+    Edite a conexão e certifique-se:
+    - Porta: 5433
+    - Senha: Mslestra@2025db
+
+═══════════════════════════════════════════════════════════════
+
