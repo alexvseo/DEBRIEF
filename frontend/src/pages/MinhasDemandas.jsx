@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Search, Filter, FileText, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Plus, Search, Filter, FileText, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight, Trash2, Eye, Edit } from 'lucide-react'
 import { 
   Button, 
   Card, 
@@ -28,6 +28,8 @@ const MinhasDemandas = () => {
   const [filtroStatus, setFiltroStatus] = useState('todas')
   const [busca, setBusca] = useState('')
   const [paginaAtual, setPaginaAtual] = useState(1)
+  const [demandaParaExcluir, setDemandaParaExcluir] = useState(null)
+  const [excluindo, setExcluindo] = useState(false)
   const ITENS_POR_PAGINA = 5
 
   // Carregar demandas ao montar componente
@@ -44,6 +46,30 @@ const MinhasDemandas = () => {
       console.error('Erro ao carregar demandas:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Função para excluir demanda
+  const handleExcluirDemanda = async () => {
+    if (!demandaParaExcluir) return
+
+    try {
+      setExcluindo(true)
+      await demandaService.deletar(demandaParaExcluir.id)
+      
+      // Atualizar lista de demandas
+      await carregarDemandas()
+      
+      // Fechar modal
+      setDemandaParaExcluir(null)
+      
+      // Mostrar feedback
+      console.log('✅ Demanda excluída com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir demanda:', error)
+      alert('Erro ao excluir demanda. Tente novamente.')
+    } finally {
+      setExcluindo(false)
     }
   }
 
@@ -297,17 +323,32 @@ const MinhasDemandas = () => {
                         variant="outline" 
                         size="sm"
                         onClick={() => navigate(`/demanda/${demanda.id}`)}
+                        className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:border-blue-600"
                       >
+                        <Eye className="h-4 w-4 mr-1" />
                         Ver Detalhes
                       </Button>
                       {demanda.status === 'aberta' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => navigate(`/editar-demanda/${demanda.id}`)}
-                        >
-                          Editar
-                        </Button>
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate(`/editar-demanda/${demanda.id}`)}
+                            className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setDemandaParaExcluir(demanda)}
+                            className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Excluir
+                          </Button>
+                        </>
                       )}
                     </div>
                   </CardContent>
@@ -366,6 +407,64 @@ const MinhasDemandas = () => {
         )}
 
       </div>
+
+      {/* Modal de Confirmação de Exclusão */}
+      {demandaParaExcluir && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2 text-red-600">
+                <Trash2 className="h-6 w-6" />
+                Confirmar Exclusão
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-gray-700 mb-2">
+                  Tem certeza que deseja excluir a demanda:
+                </p>
+                <p className="font-semibold text-gray-900 bg-gray-50 p-3 rounded-md">
+                  {demandaParaExcluir.nome}
+                </p>
+              </div>
+              
+              <Alert variant="warning">
+                <AlertTitle>⚠️ Atenção</AlertTitle>
+                <AlertDescription>
+                  Esta ação não pode ser desfeita. A demanda será excluída permanentemente.
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex gap-3 justify-end pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setDemandaParaExcluir(null)}
+                  disabled={excluindo}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleExcluirDemanda}
+                  disabled={excluindo}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {excluindo ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Excluindo...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Confirmar Exclusão
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
