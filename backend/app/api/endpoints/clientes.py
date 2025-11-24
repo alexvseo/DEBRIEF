@@ -43,12 +43,7 @@ def listar_clientes(
     GET /api/clientes?apenas_ativos=true&busca=prefeitura&limit=20
     ```
     """
-    from app.models.etiqueta_trello_cliente import EtiquetaTrelloCliente
-    from sqlalchemy.orm import joinedload
-    
-    query = db.query(Cliente).options(
-        joinedload(Cliente.etiquetas_trello)
-    )
+    query = db.query(Cliente)
     
     # Filtro: apenas ativos
     if apenas_ativos:
@@ -67,23 +62,7 @@ def listar_clientes(
     for cliente in clientes:
         total_demandas = db.query(Demanda).filter(Demanda.cliente_id == cliente.id).count()
         
-        # Buscar etiqueta ativa do cliente
-        etiqueta_trello = None
-        if cliente.etiquetas_trello:
-            # Pegar a primeira etiqueta ativa
-            etiqueta_ativa = next(
-                (e for e in cliente.etiquetas_trello if e.ativo and not e.deleted_at), 
-                None
-            )
-            if etiqueta_ativa:
-                etiqueta_trello = {
-                    'id': etiqueta_ativa.id,
-                    'nome': etiqueta_ativa.etiqueta_nome,
-                    'cor': etiqueta_ativa.etiqueta_cor,
-                    'etiqueta_trello_id': etiqueta_ativa.etiqueta_trello_id
-                }
-        
-        # Criar resposta incluindo total_demandas e etiqueta
+        # Criar resposta incluindo total_demandas
         cliente_dict = {
             'id': cliente.id,
             'nome': cliente.nome,
@@ -92,8 +71,7 @@ def listar_clientes(
             'ativo': cliente.ativo,
             'created_at': cliente.created_at,
             'updated_at': cliente.updated_at,
-            'total_demandas': total_demandas,
-            'etiqueta_trello': etiqueta_trello
+            'total_demandas': total_demandas
         }
         clientes_resposta.append(ClienteResponse(**cliente_dict))
     
