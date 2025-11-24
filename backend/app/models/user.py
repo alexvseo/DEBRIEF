@@ -58,17 +58,29 @@ class TipoUsuarioType(TypeDecorator):
             return None
         if isinstance(value, TipoUsuario):
             return value.value  # Retorna 'master' ou 'cliente'
-        return str(value)
+        # Se for string com formato 'TipoUsuario.MASTER', extrair apenas o valor
+        if isinstance(value, str):
+            if value.startswith('TipoUsuario.'):
+                enum_name = value.split('.')[1]
+                return enum_name.lower()
+            return value.lower()
+        return str(value).lower()
     
     def process_result_value(self, value, dialect):
         """Converter string do banco para string Python (não enum)"""
         if value is None:
             return None
-        # Se já for enum, retorna o valor da string
+        # Se for enum, retorna apenas o valor em minúsculas
         if isinstance(value, TipoUsuario):
             return value.value
-        # Retornar a string diretamente para compatibilidade com Pydantic
-        return str(value)
+        # Se for string com formato 'TipoUsuario.MASTER', extrair apenas o valor
+        if isinstance(value, str):
+            if value.startswith('TipoUsuario.'):
+                enum_name = value.split('.')[1]
+                return enum_name.lower()
+            # Garantir que retorne em minúsculas
+            return value.lower()
+        return str(value).lower()
 
 
 class User(BaseModel):
