@@ -1,5 +1,5 @@
 """
-Serviço de integração com WPPConnect (WhatsApp)
+Serviço de integração com WhatsApp API (wpapi)
 
 Este serviço gerencia o envio de notificações via WhatsApp
 para grupos de clientes quando há eventos importantes no sistema.
@@ -11,7 +11,7 @@ Funcionalidades:
 - Enviar mensagens customizadas
 
 Dependências:
-- requests: Para chamadas HTTP à API do WPPConnect
+- requests: Para chamadas HTTP à API WhatsApp
 - SQLAlchemy: Para acessar relacionamentos
 
 Autor: DeBrief Sistema
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 class WhatsAppService:
     """
-    Wrapper para WPPConnect API
+    Wrapper para WhatsApp API (wpapi)
     
     Gerencia o envio de mensagens via WhatsApp para grupos de clientes,
     notificando sobre demandas, atualizações e lembretes.
@@ -45,32 +45,32 @@ class WhatsAppService:
         """
         Inicializar serviço WhatsApp
         
-        Configura URL base e credenciais do WPPConnect
+        Configura URL base e API Key para Evolution API (Baileys)
         """
-        self.base_url = settings.WPP_URL
-        self.instance = settings.WPP_INSTANCE
-        self.token = settings.WPP_TOKEN
+        self.base_url = settings.WHATSAPP_API_URL
+        self.api_key = settings.WHATSAPP_API_KEY
+        self.instance_name = "debrief"  # Nome da instância no Evolution API
         
         self.headers = {
-            "Authorization": f"Bearer {self.token}",
+            "apikey": self.api_key,
             "Content-Type": "application/json"
         }
         
-        logger.info("WhatsAppService inicializado")
+        logger.info("WhatsAppService inicializado (Evolution API - Baileys)")
     
     async def enviar_mensagem(
         self,
-        group_id: str,
+        chat_id: str,
         mensagem: str,
         mencoes: Optional[list] = None
     ) -> bool:
         """
-        Enviar mensagem para grupo do WhatsApp
+        Enviar mensagem para grupo ou contato do WhatsApp via Evolution API
         
         Args:
-            group_id: ID do grupo (formato: numero@g.us)
+            chat_id: ID do chat (formato: 120363123456789012@g.us para grupos ou 5511999999999@c.us para contatos)
             mensagem: Texto da mensagem (suporta markdown do WhatsApp)
-            mencoes: Lista de números para mencionar (opcional)
+            mencoes: Lista de números para mencionar (opcional - não implementado)
         
         Returns:
             True se enviado com sucesso, False caso contrário
@@ -78,36 +78,44 @@ class WhatsAppService:
         Exemplo:
             ```python
             success = await whatsapp.enviar_mensagem(
-                "123456789@g.us",
+                "120363123456789012@g.us",
                 "*Teste* de mensagem"
             )
             ```
         """
-        url = f"{self.base_url}/api/{self.instance}/send-text"
+        # Evolution API v1.8.5 - Endpoint correto
+        url = f"{self.base_url}/message/sendText/{self.instance_name}"
         
+        # Extrair número do chat_id (remover @s.whatsapp.net ou @g.us)
+        numero = chat_id.split('@')[0]
+        
+        # Formato correto para Evolution API v1.8.5
         payload = {
-            "phone": group_id,
-            "message": mensagem,
-            "isGroup": True
+            "number": numero,
+            "textMessage": {
+                "text": mensagem
+            }
         }
         
-        # Adicionar menções se fornecidas
-        if mencoes:
-            payload["mentions"] = mencoes
-        
         try:
-            logger.info(f"Enviando mensagem WhatsApp para grupo {group_id}")
+            logger.info(f"Enviando mensagem WhatsApp via Evolution API para {chat_id}")
             
             response = requests.post(
                 url,
                 json=payload,
                 headers=self.headers,
-                timeout=10
+                timeout=30
             )
             
-            if response.status_code == 200:
-                logger.info(f"Mensagem WhatsApp enviada com sucesso para {group_id}")
-                return True
+            if response.status_code == 201 or response.status_code == 200:
+                result = response.json()
+                if result.get("key"):
+                    message_id = result.get("key", {}).get("id", "")
+                    logger.info(f"Mensagem WhatsApp enviada com sucesso para {chat_id}: {message_id}")
+                    return True
+                else:
+                    logger.error(f"Erro WhatsApp: {result}")
+                    return False
             else:
                 logger.error(f"Erro WhatsApp (status {response.status_code}): {response.text}")
                 return False
@@ -142,39 +150,68 @@ class WhatsAppService:
             )
             ```
         """
-        url = f"{self.base_url}/api/{self.instance}/send-text"
-        
         # Garantir que número tenha apenas dígitos
         numero_limpo = ''.join(filter(str.isdigit, numero))
         
+        # Formato correto: numero@c.us
+        chat_id = f"{numero_limpo}@c.us"
+        
+        # Usar o método principal de envio
+        return self.enviar_mensagem_sync(chat_id, mensagem)
+    
+    def enviar_mensagem_sync(self, chat_id: str, mensagem: str) -> bool:
+        """
+        Versão síncrona do enviar_mensagem (para uso sem async)
+        
+        Args:
+            chat_id: ID do chat
+            mensagem: Texto da mensagem
+        
+        Returns:
+            True se enviado com sucesso
+        """
+        # Evolution API v1.8.5 - Endpoint correto
+        url = f"{self.base_url}/message/sendText/{self.instance_name}"
+        
+        # Extrair número do chat_id (remover @s.whatsapp.net ou @g.us)
+        numero = chat_id.split('@')[0]
+        
+        # Formato correto para Evolution API v1.8.5
         payload = {
-            "phone": numero_limpo,
-            "message": mensagem,
-            "isGroup": False
+            "number": numero,
+            "textMessage": {
+                "text": mensagem
+            }
         }
         
         try:
-            logger.info(f"Enviando mensagem WhatsApp individual para {numero_limpo}")
+            logger.info(f"Enviando mensagem WhatsApp via Evolution API para {chat_id}")
             
             response = requests.post(
                 url,
                 json=payload,
                 headers=self.headers,
-                timeout=10
+                timeout=30
             )
             
-            if response.status_code == 200:
-                logger.info(f"Mensagem WhatsApp individual enviada com sucesso para {numero_limpo}")
-                return True
+            if response.status_code == 201 or response.status_code == 200:
+                result = response.json()
+                if result.get("key"):
+                    message_id = result.get("key", {}).get("id", "")
+                    logger.info(f"Mensagem WhatsApp enviada com sucesso para {chat_id}: {message_id}")
+                    return True
+                else:
+                    logger.error(f"Erro WhatsApp: {result}")
+                    return False
             else:
-                logger.error(f"Erro WhatsApp individual (status {response.status_code}): {response.text}")
+                logger.error(f"Erro WhatsApp (status {response.status_code}): {response.text}")
                 return False
                 
         except requests.exceptions.Timeout:
-            logger.error("Timeout ao enviar mensagem WhatsApp individual")
+            logger.error("Timeout ao enviar mensagem WhatsApp")
             return False
         except Exception as e:
-            logger.error(f"Exceção ao enviar WhatsApp individual: {e}")
+            logger.error(f"Exceção ao enviar WhatsApp: {e}")
             return False
     
     async def enviar_nova_demanda(self, demanda: Demanda, db: Session) -> bool:
@@ -353,25 +390,62 @@ _ID: {demanda.id}_
     
     async def verificar_status_instancia(self) -> dict:
         """
-        Verificar status da instância WPPConnect
+        Verificar status da conexão WhatsApp via Evolution API
         
         Returns:
-            Dicionário com informações da instância
+            Dicionário com informações da conexão
         """
-        url = f"{self.base_url}/api/{self.instance}/status"
+        # Evolution API v1.8.5 - Endpoint de status da instância
+        url = f"{self.base_url}/instance/connectionState/{self.instance_name}"
         
         try:
-            response = requests.get(url, headers=self.headers, timeout=5)
+            response = requests.get(url, headers=self.headers, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
-                logger.info(f"Status WPPConnect: {data}")
-                return data
+                state = data.get("instance", {}).get("state", "unknown")
+                connected = state == "open"
+                logger.info(f"Status WhatsApp Evolution API: {state} (conectado: {connected})")
+                return {
+                    "connected": connected,
+                    "state": state,
+                    "instance": data.get("instance", {})
+                }
             else:
                 logger.error(f"Erro ao verificar status: {response.text}")
-                return {"error": response.text}
+                return {"error": response.text, "connected": False}
                 
         except Exception as e:
             logger.error(f"Exceção ao verificar status: {e}")
-            return {"error": str(e)}
+            return {"error": str(e), "connected": False}
+    
+    def listar_grupos(self) -> list:
+        """
+        Listar todos os grupos WhatsApp via Evolution API
+        
+        Returns:
+            Lista de grupos com id, nome e participantes
+        """
+        # Evolution API v1.8.5 - Endpoint de listagem de grupos
+        url = f"{self.base_url}/group/fetchAllGroups/{self.instance_name}"
+        params = {"getParticipants": "true"}
+        
+        try:
+            response = requests.get(url, headers=self.headers, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                grupos = response.json()
+                if isinstance(grupos, list):
+                    logger.info(f"Encontrados {len(grupos)} grupos WhatsApp")
+                    return grupos
+                else:
+                    logger.warning(f"Resposta inesperada ao listar grupos: {grupos}")
+                    return []
+            else:
+                logger.error(f"Erro ao listar grupos: {response.text}")
+                return []
+                
+        except Exception as e:
+            logger.error(f"Exceção ao listar grupos: {e}")
+            return []
 
