@@ -321,6 +321,54 @@ def reativar_usuario(
     return UserResponse.from_orm(usuario)
 
 
+@router.delete("/{usuario_id}/permanente", status_code=status.HTTP_204_NO_CONTENT)
+def excluir_usuario_permanente(
+    usuario_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_master)
+):
+    """
+    Exclui um usuário permanentemente do banco de dados (hard delete)
+    
+    **Permissão:** Master apenas
+    
+    **ATENÇÃO:** Esta operação é irreversível! O usuário será completamente removido do sistema.
+    
+    **Nota:** Recomenda-se usar a desativação (soft delete) ao invés de exclusão permanente
+              para manter histórico e integridade referencial.
+    """
+    usuario = db.query(User).filter(User.id == usuario_id).first()
+    
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+    
+    # Impedir auto-exclusão
+    if usuario.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Você não pode excluir sua própria conta"
+        )
+    
+    # Verificar se usuário tem demandas associadas
+    from app.models.demanda import Demanda
+    demandas_count = db.query(Demanda).filter(Demanda.usuario_id == usuario_id).count()
+    
+    if demandas_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Não é possível excluir este usuário pois ele possui {demandas_count} demanda(s) associada(s). Desative o usuário ao invés de excluí-lo."
+        )
+    
+    # Deletar permanentemente
+    db.delete(usuario)
+    db.commit()
+    
+    return None
+
+
 @router.post("/{usuario_id}/reset-password", status_code=status.HTTP_200_OK)
 def resetar_senha(
     usuario_id: str,

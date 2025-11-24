@@ -18,7 +18,8 @@ import {
   User as UserIcon,
   RefreshCw,
   Phone,
-  MessageSquare
+  MessageSquare,
+  Trash2
 } from 'lucide-react'
 import {
   Button,
@@ -59,6 +60,7 @@ const GerenciarUsuarios = () => {
   // Modals
   const [modalUsuario, setModalUsuario] = useState({ open: false, item: null })
   const [modalSenha, setModalSenha] = useState({ open: false, item: null })
+  const [modalExcluir, setModalExcluir] = useState({ open: false, item: null })
   
   // Verificar permissão
   useEffect(() => {
@@ -183,6 +185,19 @@ const GerenciarUsuarios = () => {
     } catch (error) {
       console.error('Erro ao resetar senha:', error)
       alert(error.response?.data?.detail || 'Erro ao resetar senha')
+    }
+  }
+  
+  const excluirUsuarioPermanente = async (usuario) => {
+    try {
+      await api.delete(`/usuarios/${usuario.id}/permanente`)
+      setSuccessMessage('✅ Usuário excluído permanentemente!')
+      setModalExcluir({ open: false, item: null })
+      await carregarTodosDados()
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error)
+      alert(error.response?.data?.detail || 'Erro ao excluir usuário permanentemente')
     }
   }
   
@@ -363,14 +378,21 @@ const GerenciarUsuarios = () => {
                 </thead>
                 <tbody>
                   {usuariosFiltrados.map(usuario => (
-                    <tr key={usuario.id} className="border-b hover:bg-gray-50">
+                    <tr 
+                      key={usuario.id} 
+                      className={`border-b hover:bg-gray-50 ${!usuario.ativo ? 'bg-gray-100 opacity-60' : ''}`}
+                    >
                       <td className="py-3 px-4">
                         <div>
-                          <div className="font-medium text-gray-900">{usuario.nome_completo}</div>
+                          <div className={`font-medium ${usuario.ativo ? 'text-gray-900' : 'text-gray-500'}`}>
+                            {usuario.nome_completo}
+                          </div>
                           <div className="text-sm text-gray-500">@{usuario.username}</div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{usuario.email}</td>
+                      <td className={`py-3 px-4 text-sm ${usuario.ativo ? 'text-gray-600' : 'text-gray-400'}`}>
+                        {usuario.email}
+                      </td>
                       <td className="py-3 px-4 text-center">
                         {usuario.whatsapp ? (
                           <div className="flex items-center justify-center gap-1">
@@ -427,6 +449,17 @@ const GerenciarUsuarios = () => {
                           >
                             {usuario.ativo ? <ToggleLeft className="h-3 w-3" /> : <ToggleRight className="h-3 w-3" />}
                           </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="error"
+                            onClick={() => setModalExcluir({ open: true, item: usuario })}
+                            disabled={usuario.id === currentUser?.id}
+                            title="Excluir permanentemente"
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -479,6 +512,13 @@ const GerenciarUsuarios = () => {
         item={modalSenha.item}
         onClose={() => setModalSenha({ open: false, item: null })}
         onSave={resetarSenha}
+      />
+      
+      <ModalExcluirPermanente
+        open={modalExcluir.open}
+        item={modalExcluir.item}
+        onClose={() => setModalExcluir({ open: false, item: null })}
+        onConfirm={excluirUsuarioPermanente}
       />
     </div>
   )
@@ -791,6 +831,99 @@ const ModalResetSenha = ({ open, item, onClose, onSave }) => {
             </Button>
           </DialogFooter>
         </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ==================== MODAL EXCLUIR PERMANENTE ====================
+
+const ModalExcluirPermanente = ({ open, item, onClose, onConfirm }) => {
+  const [confirmText, setConfirmText] = useState('')
+  
+  useEffect(() => {
+    if (!open) {
+      setConfirmText('')
+    }
+  }, [open])
+  
+  const handleConfirm = () => {
+    if (confirmText.toUpperCase() !== 'EXCLUIR') {
+      alert('Digite "EXCLUIR" para confirmar')
+      return
+    }
+    
+    onConfirm(item)
+  }
+  
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="text-red-600">
+            <Trash2 className="h-5 w-5 inline mr-2" />
+            Excluir Usuário Permanentemente
+          </DialogTitle>
+        </DialogHeader>
+        
+        <DialogBody>
+          <Alert variant="error" className="mb-4">
+            <AlertTitle className="font-bold">⚠️ ATENÇÃO: Esta ação é irreversível!</AlertTitle>
+            <AlertDescription className="mt-2">
+              Você está prestes a excluir permanentemente o usuário:
+              <div className="mt-2 p-3 bg-red-50 rounded border border-red-200">
+                <p className="font-bold text-gray-900">{item?.nome_completo}</p>
+                <p className="text-sm text-gray-600">@{item?.username}</p>
+                <p className="text-sm text-gray-600">{item?.email}</p>
+              </div>
+            </AlertDescription>
+          </Alert>
+          
+          <div className="space-y-3 text-sm text-gray-700">
+            <p className="font-semibold">Esta ação irá:</p>
+            <ul className="list-disc list-inside space-y-1 ml-2">
+              <li>Remover completamente o usuário do banco de dados</li>
+              <li>Esta operação NÃO pode ser desfeita</li>
+              <li>Será bloqueada se o usuário tiver demandas associadas</li>
+            </ul>
+            
+            <div className="mt-4 p-3 bg-amber-50 rounded border border-amber-200">
+              <p className="text-sm text-amber-800">
+                💡 <strong>Dica:</strong> Se você deseja apenas desativar temporariamente o usuário, 
+                use o botão "Desativar" ao invés de excluir permanentemente.
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Digite <span className="font-bold text-red-600">EXCLUIR</span> para confirmar:
+            </label>
+            <Input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Digite EXCLUIR"
+              className="uppercase"
+            />
+          </div>
+        </DialogBody>
+        
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button 
+            type="button" 
+            variant="error"
+            onClick={handleConfirm}
+            disabled={confirmText.toUpperCase() !== 'EXCLUIR'}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Excluir Permanentemente
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
