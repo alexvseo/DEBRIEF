@@ -117,15 +117,25 @@ def criar_usuario(
     - tipo: Tipo (master/cliente)
     - cliente_id: ID do cliente (obrigatório se tipo=cliente)
     """
-    # Verificar se username já existe
-    if db.query(User).filter(User.username == user_data.username).first():
+    # Verificar se username já existe (apenas usuários ativos)
+    existing_user_username = db.query(User).filter(
+        User.username == user_data.username,
+        User.ativo == True
+    ).first()
+    
+    if existing_user_username:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username já cadastrado"
         )
     
-    # Verificar se email já existe
-    if db.query(User).filter(User.email == user_data.email).first():
+    # Verificar se email já existe (apenas usuários ativos)
+    existing_user_email = db.query(User).filter(
+        User.email == user_data.email,
+        User.ativo == True
+    ).first()
+    
+    if existing_user_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email já cadastrado"
@@ -200,17 +210,25 @@ def atualizar_usuario(
     # Atualizar campos fornecidos
     update_data = user_update.dict(exclude_unset=True)
     
-    # Verificar username único
+    # Verificar username único (apenas usuários ativos)
     if 'username' in update_data and update_data['username'] != usuario.username:
-        if db.query(User).filter(User.username == update_data['username']).first():
+        existing = db.query(User).filter(
+            User.username == update_data['username'],
+            User.ativo == True
+        ).first()
+        if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username já cadastrado"
             )
     
-    # Verificar email único
+    # Verificar email único (apenas usuários ativos)
     if 'email' in update_data and update_data['email'] != usuario.email:
-        if db.query(User).filter(User.email == update_data['email']).first():
+        existing = db.query(User).filter(
+            User.email == update_data['email'],
+            User.ativo == True
+        ).first()
+        if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email já cadastrado"

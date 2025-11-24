@@ -192,15 +192,25 @@ async def register(
     Raises:
         HTTPException: Se username ou email já existe
     """
-    # Verificar se username já existe
-    if db.query(User).filter(User.username == user_data.username).first():
+    # Verificar se username já existe (apenas usuários ativos)
+    existing_user_username = db.query(User).filter(
+        User.username == user_data.username,
+        User.ativo == True
+    ).first()
+    
+    if existing_user_username:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username já cadastrado"
         )
     
-    # Verificar se email já existe
-    if db.query(User).filter(User.email == user_data.email).first():
+    # Verificar se email já existe (apenas usuários ativos)
+    existing_user_email = db.query(User).filter(
+        User.email == user_data.email,
+        User.ativo == True
+    ).first()
+    
+    if existing_user_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email já cadastrado"
