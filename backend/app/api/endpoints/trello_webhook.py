@@ -25,86 +25,38 @@ def mapear_lista_para_status(lista_id: str, config: ConfiguracaoTrello, db: Sess
     """
     Mapeia o ID de uma lista do Trello para um status do DeBrief
     
+    Usa mapeamento direto por ID para evitar chamadas à API do Trello
+    que podem resultar em erro 403.
+    
     Args:
         lista_id: ID da lista do Trello
-        config: Configuração ativa do Trello
-        db: Sessão do banco
+        config: Configuração ativa do Trello (não usado, mantido por compatibilidade)
+        db: Sessão do banco (não usado, mantido por compatibilidade)
     
     Returns:
         Status correspondente ou None
     """
-    try:
-        # Buscar informações das listas do board
-        from trello import TrelloClient
+    # Mapeamento DIRETO por ID de lista → status
+    # Configurado para as listas específicas do board DeBrief
+    mapeamento_por_id = {
+        # Lista: ENVIOS DOS CLIENTES VIA DEBRIEF
+        '6810f40131d456a240f184ba': StatusDemanda.ABERTA.value,
         
-        client = TrelloClient(
-            api_key=config.api_key,
-            api_secret=config.token
-        )
+        # Lista: EM DESENVOLVIMENTO
+        '68b82f29253b5480f0c06f3d': StatusDemanda.EM_ANDAMENTO.value,
         
-        board = client.get_board(config.board_id)
-        listas = board.list_lists()
-        
-        # Encontrar nome da lista
-        lista_nome = None
-        for lista in listas:
-            if lista.id == lista_id:
-                lista_nome = lista.name.lower()
-                break
-        
-        if not lista_nome:
-            logger.warning(f"Lista {lista_id} não encontrada no board")
-            return None
-        
-        # Mapeamento de nomes de lista para status
-        # Configurado para as listas específicas do board DeBrief
-        mapeamento = {
-            # Lista: ENVIOS DOS CLIENTES VIA DEBRIEF (ID: 6810f40131d456a240f184ba)
-            'envios dos clientes via debrief': StatusDemanda.ABERTA.value,
-            'envios dos clientes': StatusDemanda.ABERTA.value,
-            'envios': StatusDemanda.ABERTA.value,
-            
-            # Lista: EM DESENVOLVIMENTO (ID: 68b82f29253b5480f0c06f3d)
-            'em desenvolvimento': StatusDemanda.EM_ANDAMENTO.value,
-            'desenvolvimento': StatusDemanda.EM_ANDAMENTO.value,
-            
-            # Lista: EM ESPERA (ID: 5ea097406d864d89b0017aa3)
-            # Nota: Esta lista representa demandas CONCLUÍDAS no DeBrief
-            'em espera': StatusDemanda.CONCLUIDA.value,
-            'espera': StatusDemanda.CONCLUIDA.value,
-            
-            # Mapeamentos genéricos (caso crie novas listas no futuro)
-            'backlog': StatusDemanda.ABERTA.value,
-            'a fazer': StatusDemanda.ABERTA.value,
-            'to do': StatusDemanda.ABERTA.value,
-            'abertas': StatusDemanda.ABERTA.value,
-            
-            'em andamento': StatusDemanda.EM_ANDAMENTO.value,
-            'doing': StatusDemanda.EM_ANDAMENTO.value,
-            'em progresso': StatusDemanda.EM_ANDAMENTO.value,
-            
-            'aguardando': StatusDemanda.AGUARDANDO_CLIENTE.value,
-            'aguardando cliente': StatusDemanda.AGUARDANDO_CLIENTE.value,
-            'waiting': StatusDemanda.AGUARDANDO_CLIENTE.value,
-            
-            'concluído': StatusDemanda.CONCLUIDA.value,
-            'concluida': StatusDemanda.CONCLUIDA.value,
-            'done': StatusDemanda.CONCLUIDA.value,
-            'finalizado': StatusDemanda.CONCLUIDA.value,
-            'entregue': StatusDemanda.CONCLUIDA.value,
-        }
-        
-        # Buscar status correspondente
-        for chave, valor in mapeamento.items():
-            if chave in lista_nome:
-                logger.info(f"Lista '{lista_nome}' mapeada para status '{valor}'")
-                return valor
-        
-        logger.warning(f"Nenhum mapeamento encontrado para lista '{lista_nome}'")
-        return None
-        
-    except Exception as e:
-        logger.error(f"Erro ao mapear lista para status: {e}")
+        # Lista: EM ESPERA (= CONCLUÍDA no DeBrief)
+        '5ea097406d864d89b0017aa3': StatusDemanda.CONCLUIDA.value,
+    }
+    
+    # Buscar status pelo ID da lista
+    status = mapeamento_por_id.get(lista_id)
+    
+    if status:
+        logger.info(f"Lista ID '{lista_id}' mapeada para status '{status}'")
+        return status
+    else:
+        logger.warning(f"Lista ID '{lista_id}' não encontrada no mapeamento")
         return None
 
 
