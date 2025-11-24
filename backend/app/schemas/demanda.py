@@ -95,12 +95,54 @@ class DemandaResponse(BaseModel):
         from_attributes = True
 
 
+class ClienteSimples(BaseModel):
+    """Schema simplificado de cliente"""
+    id: str
+    nome: str
+    
+    class Config:
+        from_attributes = True
+
+
+class SecretariaSimples(BaseModel):
+    """Schema simplificado de secretaria"""
+    id: str
+    nome: str
+    
+    class Config:
+        from_attributes = True
+
+
+class TipoDemandaSimples(BaseModel):
+    """Schema simplificado de tipo de demanda"""
+    id: str
+    nome: str
+    cor: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+
+class PrioridadeSimples(BaseModel):
+    """Schema simplificado de prioridade"""
+    id: str
+    nome: str
+    nivel: int
+    cor: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+
 class DemandaDetalhada(DemandaResponse):
     """Schema detalhado de demanda (com relacionamentos)"""
-    # Aqui podemos adicionar dados de usuário, tipo, etc
-    # usuario: Optional[UserResponse] = None
-    # arquivos: List[ArquivoResponse] = []
-    pass
+    cliente: Optional[ClienteSimples] = None
+    secretaria: Optional[SecretariaSimples] = None
+    tipo_demanda: Optional[TipoDemandaSimples] = None
+    prioridade: Optional[PrioridadeSimples] = None
+    
+    class Config:
+        from_attributes = True
 
 
 class DemandaListResponse(BaseModel):

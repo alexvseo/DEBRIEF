@@ -3,7 +3,7 @@ Endpoints de Demandas
 CRUD completo de demandas com upload de arquivos e integração Trello/WhatsApp
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Query, File, UploadFile, Form
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 import json
 from datetime import datetime
@@ -21,6 +21,7 @@ from app.schemas.demanda import (
     DemandaCreate,
     DemandaUpdate,
     DemandaResponse,
+    DemandaDetalhada,
     DemandaListResponse
 )
 from app.services.trello import TrelloService
@@ -219,7 +220,7 @@ async def criar_demanda(
         )
 
 
-@router.get("", response_model=List[DemandaResponse])
+@router.get("", response_model=List[DemandaDetalhada])
 async def listar_demandas(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
@@ -240,10 +241,15 @@ async def listar_demandas(
         db: Sessão do banco
         
     Returns:
-        List[DemandaResponse]: Lista de demandas
+        List[DemandaDetalhada]: Lista de demandas com relacionamentos
     """
-    # Query base
-    query = db.query(Demanda)
+    # Query base com eager loading dos relacionamentos
+    query = db.query(Demanda).options(
+        joinedload(Demanda.cliente),
+        joinedload(Demanda.secretaria),
+        joinedload(Demanda.tipo_demanda),
+        joinedload(Demanda.prioridade)
+    )
     
     # Se não for master, filtrar apenas demandas do usuário
     if not current_user.is_master():
@@ -262,7 +268,7 @@ async def listar_demandas(
     # Paginação
     demandas = query.offset(skip).limit(limit).all()
     
-    return [DemandaResponse.from_orm(d) for d in demandas]
+    return [DemandaDetalhada.from_orm(d) for d in demandas]
 
 
 @router.get("/{demanda_id}", response_model=DemandaResponse)

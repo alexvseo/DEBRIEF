@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Search, Filter, FileText, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { ArrowLeft, Plus, Search, Filter, FileText, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { 
   Button, 
   Card, 
@@ -27,6 +27,8 @@ const MinhasDemandas = () => {
   const [loading, setLoading] = useState(true)
   const [filtroStatus, setFiltroStatus] = useState('todas')
   const [busca, setBusca] = useState('')
+  const [paginaAtual, setPaginaAtual] = useState(1)
+  const ITENS_POR_PAGINA = 5
 
   // Carregar demandas ao montar componente
   useEffect(() => {
@@ -52,6 +54,17 @@ const MinhasDemandas = () => {
                       demanda.descricao.toLowerCase().includes(busca.toLowerCase())
     return matchStatus && matchBusca
   })
+
+  // Paginação
+  const totalPaginas = Math.ceil(demandasFiltradas.length / ITENS_POR_PAGINA)
+  const indiceInicio = (paginaAtual - 1) * ITENS_POR_PAGINA
+  const indiceFim = indiceInicio + ITENS_POR_PAGINA
+  const demandasPaginadas = demandasFiltradas.slice(indiceInicio, indiceFim)
+
+  // Resetar página ao filtrar
+  useEffect(() => {
+    setPaginaAtual(1)
+  }, [filtroStatus, busca])
 
   // Estatísticas
   const stats = {
@@ -239,55 +252,117 @@ const MinhasDemandas = () => {
             </AlertDescription>
           </Alert>
         ) : (
-          <div className="space-y-4">
-            {demandasFiltradas.map((demanda) => (
-              <Card key={demanda.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{demanda.nome}</CardTitle>
-                      <p className="text-sm text-gray-600 mt-2">{demanda.descricao}</p>
+          <>
+            <div className="space-y-4">
+              {demandasPaginadas.map((demanda) => (
+                <Card key={demanda.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{demanda.nome}</CardTitle>
+                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">{demanda.descricao}</p>
+                      </div>
+                      <div className="ml-4 flex flex-col gap-2">
+                        {getStatusBadge(demanda.status)}
+                        {getPrioridadeBadge(demanda.prioridade)}
+                      </div>
                     </div>
-                    <div className="ml-4 flex flex-col gap-2">
-                      {getStatusBadge(demanda.status)}
-                      {getPrioridadeBadge(demanda.prioridade)}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-sm mb-4">
+                      <div>
+                        <span className="font-semibold text-gray-700">Cliente:</span>
+                        <p className="text-gray-900">{demanda.cliente?.nome || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-700">Secretaria:</span>
+                        <p className="text-gray-900">{demanda.secretaria?.nome || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-700">Tipo:</span>
+                        <p className="text-gray-900">{demanda.tipo_demanda?.nome || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-700">Prazo:</span>
+                        <p className="text-gray-900">{new Date(demanda.prazo_final).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-700">Criada em:</span>
+                        <p className="text-gray-900">{new Date(demanda.created_at).toLocaleDateString('pt-BR')}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="font-semibold text-gray-700">Tipo:</span>
-                      <p className="text-gray-900">{demanda.tipo_demanda?.nome || demanda.tipo || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold text-gray-700">Secretaria:</span>
-                      <p className="text-gray-900">{demanda.secretaria?.nome || demanda.secretaria || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold text-gray-700">Prazo:</span>
-                      <p className="text-gray-900">{new Date(demanda.prazo_final).toLocaleDateString('pt-BR')}</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold text-gray-700">Criada em:</span>
-                      <p className="text-gray-900">{new Date(demanda.created_at).toLocaleDateString('pt-BR')}</p>
-                    </div>
-                  </div>
 
-                  <div className="flex gap-2 mt-4">
-                    <Button variant="outline" size="sm">
-                      Ver Detalhes
-                    </Button>
-                    {demanda.status === 'aberta' && (
-                      <Button variant="outline" size="sm">
-                        Editar
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => navigate(`/demanda/${demanda.id}`)}
+                      >
+                        Ver Detalhes
                       </Button>
-                    )}
+                      {demanda.status === 'aberta' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/editar-demanda/${demanda.id}`)}
+                        >
+                          Editar
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Paginação */}
+            {totalPaginas > 1 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      Mostrando {indiceInicio + 1}-{Math.min(indiceFim, demandasFiltradas.length)} de {demandasFiltradas.length} demandas
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
+                        disabled={paginaAtual === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Anterior
+                      </Button>
+                      
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(pagina => (
+                          <Button
+                            key={pagina}
+                            variant={paginaAtual === pagina ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setPaginaAtual(pagina)}
+                            className="w-10"
+                          >
+                            {pagina}
+                          </Button>
+                        ))}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPaginaAtual(p => Math.min(totalPaginas, p + 1))}
+                        disabled={paginaAtual === totalPaginas}
+                      >
+                        Próxima
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+            )}
+          </>
         )}
 
       </div>
