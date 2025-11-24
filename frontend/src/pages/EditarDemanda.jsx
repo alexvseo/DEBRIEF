@@ -9,7 +9,7 @@ import { Button, Card, CardContent, Alert, AlertTitle, AlertDescription } from '
 import DemandaForm from '@/components/forms/DemandaForm'
 import { useAuth } from '@/hooks/useAuth'
 import { demandaService } from '@/services/demandaService'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 
 const EditarDemanda = () => {
   const { id } = useParams()

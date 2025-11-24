@@ -32,7 +32,7 @@ import {
 } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
 import { demandaService } from '@/services/demandaService'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 
 const DemandaDetalhes = () => {
   const { id } = useParams()
