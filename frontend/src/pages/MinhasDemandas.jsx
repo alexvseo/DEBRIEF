@@ -242,7 +242,7 @@ const MinhasDemandas = () => {
 
         {/* Lista de Demandas */}
         {demandasFiltradas.length === 0 ? (
-          <Alert>
+          <Alert dismissible>
             <AlertTitle>Nenhuma demanda encontrada</AlertTitle>
             <AlertDescription>
               {busca 

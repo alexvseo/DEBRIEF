@@ -287,7 +287,7 @@ const ConfiguracaoTrello = () => {
         
         {/* Configuração Ativa */}
         {configuracaoAtiva && etapa === 4 && (
-          <Alert className="mb-6 bg-blue-50 border-blue-200">
+          <Alert className="mb-6 bg-blue-50 border-blue-200" dismissible>
             <CheckCircle className="h-4 w-4 text-blue-600" />
             <AlertTitle className="text-blue-900">Configuração Ativa</AlertTitle>
             <AlertDescription className="text-blue-800">
@@ -307,7 +307,7 @@ const ConfiguracaoTrello = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Alert>
+              <Alert dismissible>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Como obter as credenciais</AlertTitle>
                 <AlertDescription>

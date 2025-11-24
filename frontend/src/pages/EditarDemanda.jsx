@@ -167,7 +167,7 @@ const EditarDemanda = () => {
         </Card>
 
         {/* Aviso */}
-        <Alert>
+        <Alert dismissible>
           <AlertTitle>💡 Dica</AlertTitle>
           <AlertDescription>
             Após salvar, a demanda será atualizada e um card no Trello será atualizado automaticamente.

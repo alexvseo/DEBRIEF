@@ -293,7 +293,7 @@ const EtiquetasTrelloClientes = () => {
         </div>
         
         {/* Info da configuração ativa */}
-        <Alert className="mb-6 bg-blue-50 border-blue-200">
+        <Alert className="mb-6 bg-blue-50 border-blue-200" dismissible>
           <CheckCircle className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800">
             <strong>Board:</strong> {configuracaoAtiva.board_nome} | <strong>Lista:</strong> {configuracaoAtiva.lista_nome}

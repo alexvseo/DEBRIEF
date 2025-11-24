@@ -236,7 +236,7 @@ const GerenciarUsuarios = () => {
         
         {/* Mensagem de Sucesso */}
         {successMessage && (
-          <Alert variant="success">
+          <Alert variant="success" dismissible>
             <AlertDescription>{successMessage}</AlertDescription>
           </Alert>
         )}
@@ -753,7 +753,7 @@ const ModalResetSenha = ({ open, item, onClose, onSave }) => {
         
         <form onSubmit={handleSubmit}>
           <DialogBody>
-            <Alert variant="info" className="mb-4">
+            <Alert variant="info" className="mb-4" dismissible>
               <AlertDescription>
                 Você está resetando a senha do usuário: <strong>{item?.nome_completo}</strong>
               </AlertDescription>

@@ -52,7 +52,6 @@ const Dashboard = () => {
   const { user, logout, isMaster } = useAuth()
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [showAlert, setShowAlert] = useState(true)
   
   // Estados para métricas
   const [metricas, setMetricas] = useState({
@@ -235,21 +234,12 @@ const Dashboard = () => {
         </div>
 
         {/* Alert de Boas-Vindas */}
-        {showAlert && (
-          <Alert variant="success" className="relative">
-            <button
-              onClick={() => setShowAlert(false)}
-              className="absolute top-2 right-2 p-1 rounded-md hover:bg-green-200 transition-colors"
-              aria-label="Fechar"
-            >
-              <XCircle className="h-4 w-4 text-green-700" />
-            </button>
-            <AlertTitle>✅ Sistema Operacional!</AlertTitle>
-            <AlertDescription>
-              Todos os módulos estão funcionando. Dashboard com métricas em tempo real!
-            </AlertDescription>
-          </Alert>
-        )}
+        <Alert variant="success" dismissible>
+          <AlertTitle>✅ Sistema Operacional!</AlertTitle>
+          <AlertDescription>
+            Todos os módulos estão funcionando. Dashboard com métricas em tempo real!
+          </AlertDescription>
+        </Alert>
 
         {/* Cards de Estatísticas Principais */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -587,7 +577,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             {dadosGraficos.demandasRecentes.length === 0 ? (
-              <Alert variant="info">
+              <Alert variant="info" dismissible>
                 <AlertDescription>Nenhuma demanda cadastrada ainda.</AlertDescription>
               </Alert>
             ) : (
@@ -654,7 +644,7 @@ const Dashboard = () => {
 
         {/* Mensagem para Master */}
         {isMaster() && (
-          <Alert variant="info">
+          <Alert variant="info" dismissible>
             <AlertTitle>👑 Acesso Master</AlertTitle>
             <AlertDescription>
               Você tem acesso completo ao sistema. Todas as funcionalidades de administração estão disponíveis.

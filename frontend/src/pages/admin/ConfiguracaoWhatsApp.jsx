@@ -389,7 +389,7 @@ const ConfiguracaoWhatsApp = () => {
             
             {/* Resultado do Teste */}
             {testeResultado && (
-              <Alert variant={testeResultado.success ? "success" : "error"}>
+              <Alert variant={testeResultado.success ? "success" : "error"} dismissible>
                 {testeResultado.success ? (
                   <CheckCircle className="h-4 w-4" />
                 ) : (

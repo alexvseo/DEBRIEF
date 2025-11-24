@@ -677,7 +677,7 @@ const Configuracoes = () => {
         
         {/* Mensagem de Sucesso */}
         {successMessage && (
-          <Alert variant="success">
+          <Alert variant="success" dismissible>
             <AlertDescription>{successMessage}</AlertDescription>
           </Alert>
         )}
@@ -1355,7 +1355,7 @@ const ModalCliente = ({ open, item, onClose, onSave }) => {
               />
               
               {/* Campo WhatsApp Group ID - OBSOLETO (removido sistema de grupos) */}
-              <Alert variant="info" className="text-sm">
+              <Alert variant="info" className="text-sm" dismissible>
                 <AlertDescription>
                   ⚠️ <strong>Notificações via grupo WhatsApp foram descontinuadas.</strong><br/>
                   O sistema agora envia notificações <strong>individuais</strong> para cada usuário.<br/>

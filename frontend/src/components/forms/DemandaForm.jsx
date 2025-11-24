@@ -484,7 +484,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
 
           {/* Loading state */}
           {isLoadingData && (
-            <Alert>
+            <Alert dismissible>
               <Loader2 className="h-4 w-4 animate-spin" />
               <AlertDescription>
                 Carregando dados do formulário...
@@ -900,7 +900,7 @@ const DemandaForm = ({ demanda = null, onSuccess, onCancel }) => {
       </div>
 
       {/* Informações adicionais */}
-      <Alert className="bg-blue-50 border-blue-200">
+      <Alert className="bg-blue-50 border-blue-200" dismissible>
         <AlertCircle className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-800 text-sm">
           <strong>Importante:</strong> Ao criar a demanda, um card será automaticamente criado no Trello
