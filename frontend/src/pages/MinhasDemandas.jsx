@@ -23,7 +23,7 @@ import { demandaService } from '@/services/demandaService'
 
 const MinhasDemandas = () => {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, isMaster } = useAuth()
   const [demandas, setDemandas] = useState([])
   const [loading, setLoading] = useState(true)
   const [filtroStatus, setFiltroStatus] = useState('todas')
@@ -361,27 +361,29 @@ const MinhasDemandas = () => {
                         <Eye className="h-4 w-4 mr-1" />
                         Ver Detalhes
                       </Button>
-                      {demanda.status === 'aberta' && (
-                        <>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => navigate(`/editar-demanda/${demanda.id}`)}
-                            className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600"
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Editar
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setDemandaParaExcluir(demanda)}
-                            className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Excluir
-                          </Button>
-                        </>
+                      {/* Mostrar botão Editar para demandas abertas ou em andamento */}
+                      {(demanda.status === 'aberta' || demanda.status === 'em_andamento') && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/editar-demanda/${demanda.id}`)}
+                          className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                      )}
+                      {/* Mostrar botão Excluir APENAS para Masters e demandas abertas ou em andamento */}
+                      {isMaster() && (demanda.status === 'aberta' || demanda.status === 'em_andamento') && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setDemandaParaExcluir(demanda)}
+                          className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Excluir
+                        </Button>
                       )}
                     </div>
                   </CardContent>

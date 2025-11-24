@@ -189,7 +189,8 @@ const DemandaDetalhes = () => {
             </div>
           </div>
 
-          {demanda.status === 'aberta' && (
+          {/* Mostrar botão Editar para demandas abertas ou em andamento */}
+          {(demanda.status === 'aberta' || demanda.status === 'em_andamento') && (
             <Button onClick={() => navigate(`/editar-demanda/${id}`)}>
               <Edit className="h-4 w-4" />
               Editar Demanda
