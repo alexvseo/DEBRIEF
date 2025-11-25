@@ -308,3 +308,4 @@ https://debrief.interce.com.br/login
 **Commit:** `5805d0b` - "fix: Corrige serialização do campo tipo de usuário (TipoUsuario enum)"  
 **Servidor:** 82.25.92.217
 
+

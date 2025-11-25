@@ -259,3 +259,4 @@ sudo bash configurar-acesso-remoto-banco.sh
 
 **Próximo passo:** Execute o `diagnostico-servidor.sh` no servidor para descobrir onde seus dados estão! 🚀
 
+

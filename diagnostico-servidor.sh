@@ -132,3 +132,4 @@ echo "- Se não viu o container 'debrief_db': os dados estão no PostgreSQL loca
 echo "- A variável DATABASE_URL mostra exatamente onde o backend está conectando"
 echo ""
 
+

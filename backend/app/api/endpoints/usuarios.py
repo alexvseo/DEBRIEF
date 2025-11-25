@@ -88,6 +88,9 @@ def obter_perfil_atual(
     
     **Retorna:** Dados completos do usuário logado (sem senha)
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"🔍 GET /me CHAMADO! User: {current_user.username} (ID: {current_user.id})")
     return UserResponse.from_orm(current_user)
 
 

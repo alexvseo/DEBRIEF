@@ -94,3 +94,4 @@ echo -e "${YELLOW}📝 Agora atualize sua conexão local (DBeaver):${NC}"
 echo "  Password: ${NOVA_SENHA}"
 echo ""
 
+

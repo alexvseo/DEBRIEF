@@ -215,3 +215,4 @@ Agora é só atualizar a senha no DBeaver e continuar usando normalmente.
 **Senha Nova:** `Mslestra@2025db`  
 **Status:** ✅ Operacional
 
+

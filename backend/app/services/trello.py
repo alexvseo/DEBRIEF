@@ -500,4 +500,51 @@ class TrelloService:
         except Exception as e:
             logger.error(f"Erro ao arquivar card: {e}")
             return False
+    
+    async def deletar_card(self, demanda: Demanda) -> bool:
+        """
+        Deletar card permanentemente do Trello
+        
+        Remove o card completamente do board, diferente de arquivar.
+        Usado quando uma demanda é excluída do sistema.
+        
+        Args:
+            demanda: Objeto Demanda com trello_card_id
+        
+        Returns:
+            True se deletado com sucesso, False caso contrário
+        
+        Exemplo:
+            ```python
+            trello_service = TrelloService(db)
+            success = await trello_service.deletar_card(demanda)
+            if success:
+                print(f"Card {demanda.trello_card_id} deletado do Trello")
+            ```
+        """
+        if not demanda.trello_card_id:
+            logger.info("Demanda não possui card no Trello para deletar")
+            return False
+        
+        try:
+            url = f"{self.base_url}/cards/{demanda.trello_card_id}"
+            params = self._get_auth_params()
+            
+            # DELETE request para remover card permanentemente
+            response = requests.delete(url, params=params)
+            response.raise_for_status()
+            
+            logger.info(f"Card {demanda.trello_card_id} deletado permanentemente do Trello")
+            return True
+            
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                logger.warning(f"Card {demanda.trello_card_id} já foi deletado do Trello")
+                return True  # Considerar sucesso se já foi deletado
+            logger.error(f"Erro HTTP ao deletar card do Trello: {e}")
+            return False
+            
+        except Exception as e:
+            logger.error(f"Erro ao deletar card do Trello: {e}")
+            return False
 

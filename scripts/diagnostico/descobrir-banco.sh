@@ -117,3 +117,4 @@ echo "- Se container local: precisa criar um túnel SSH"
 echo "- Se PostgreSQL local: precisa configurar pg_hba.conf para aceitar conexões remotas"
 echo ""
 
+

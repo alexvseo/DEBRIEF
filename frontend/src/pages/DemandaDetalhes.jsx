@@ -17,7 +17,8 @@ import {
   Link as LinkIcon,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from 'lucide-react'
 import { 
   Button, 
@@ -37,7 +38,7 @@ import { toast } from 'sonner'
 const DemandaDetalhes = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, isMaster } = useAuth()
   const [demanda, setDemanda] = useState(null)
   const [loading, setLoading] = useState(true)
   const [processando, setProcessando] = useState(false)
@@ -129,6 +130,22 @@ const DemandaDetalhes = () => {
     }
   }
 
+  const handleExcluir = async () => {
+    if (!confirm('⚠️ ATENÇÃO: Deseja realmente EXCLUIR esta demanda?\n\nEsta ação é IRREVERSÍVEL e irá:\n- Remover a demanda permanentemente do sistema\n- Deletar o card do Trello\n- Esta operação NÃO pode ser desfeita\n\nTem certeza que deseja continuar?')) return
+    
+    try {
+      setProcessando(true)
+      await demandaService.deletar(id)
+      toast.success('Demanda excluída com sucesso!')
+      navigate('/minhas-demandas')
+    } catch (error) {
+      console.error('Erro ao excluir demanda:', error)
+      toast.error(error.response?.data?.detail || 'Erro ao excluir demanda')
+    } finally {
+      setProcessando(false)
+    }
+  }
+
   // Loading state
   if (loading) {
     return (
@@ -189,7 +206,8 @@ const DemandaDetalhes = () => {
             </div>
           </div>
 
-          {demanda.status === 'aberta' && (
+          {/* Mostrar botão Editar para demandas abertas ou em andamento */}
+          {(demanda.status === 'aberta' || demanda.status === 'em_andamento') && (
             <Button onClick={() => navigate(`/editar-demanda/${id}`)}>
               <Edit className="h-4 w-4" />
               Editar Demanda
@@ -314,8 +332,8 @@ const DemandaDetalhes = () => {
               </div>
             )}
 
-            {/* Card do Trello */}
-            {demanda.trello_card_url && (
+            {/* Card do Trello - Apenas para Masters */}
+            {demanda.trello_card_url && isMaster() && (
               <div className="space-y-2">
                 <h3 className="font-semibold text-gray-900 text-lg">Card no Trello</h3>
                 <a
@@ -379,7 +397,7 @@ const DemandaDetalhes = () => {
               <CardTitle>Ações</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4">
                 <Button
                   variant="default"
                   onClick={handleConcluir}
@@ -395,6 +413,15 @@ const DemandaDetalhes = () => {
                 >
                   <XCircle className="h-4 w-4" />
                   Cancelar Demanda
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleExcluir}
+                  disabled={processando}
+                  className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Excluir Demanda
                 </Button>
               </div>
             </CardContent>
