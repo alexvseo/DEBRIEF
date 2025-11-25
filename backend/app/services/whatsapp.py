@@ -89,8 +89,17 @@ class WhatsAppService:
         # Z-API - Endpoint de envio de texto
         url = f"{self.base_url}/send-text"
         
-        # Limpar número (remover @c.us se existir)
-        numero = chat_id.split('@')[0] if '@' in chat_id else chat_id
+        # Para grupos (@g.us), manter o ID completo
+        # Para contatos individuais (@c.us), remover o sufixo
+        if '@g.us' in chat_id:
+            # Grupo WhatsApp - manter ID completo
+            numero = chat_id
+        elif '@c.us' in chat_id:
+            # Contato individual - remover @c.us
+            numero = chat_id.split('@')[0]
+        else:
+            # Sem sufixo - assumir contato individual
+            numero = chat_id
         
         # Formato Z-API
         payload = {
@@ -99,7 +108,7 @@ class WhatsAppService:
         }
         
         try:
-            logger.info(f"Enviando mensagem WhatsApp via Evolution API para {chat_id}")
+            logger.info(f"Enviando mensagem WhatsApp via Z-API para {numero}")
             
             response = requests.post(
                 url,
