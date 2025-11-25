@@ -471,21 +471,11 @@ _ID: {demanda.id}_
                 mensagem=mensagem
             )
             
-            # Registrar log (sem demanda_id, pois não é relacionado a demanda)
-            log = NotificationLog(
-                demanda_id=None,
-                usuario_id=usuario.id,
-                tipo=TipoNotificacao.WHATSAPP,
-                destinatario=usuario.whatsapp,
-                mensagem=mensagem,
-                status=StatusNotificacao.ENVIADO if sucesso else StatusNotificacao.ERRO,
-                erro_mensagem=None if sucesso else "Falha ao enviar mensagem",
-                enviado_em=datetime.utcnow() if sucesso else None,
-                metadata='{"tipo_evento": "usuario_cadastrado"}'
+            # Log simplificado apenas para registro (NotificationLog requer demanda_id)
+            logger.info(
+                f"Notificação de cadastro para {usuario.username} - "
+                f"WhatsApp: {usuario.whatsapp} - Status: {'Enviado' if sucesso else 'Erro'}"
             )
-            
-            self.db.add(log)
-            self.db.commit()
             
             if sucesso:
                 logger.info(f"Notificação de cadastro enviada para {usuario.nome_completo} ({usuario.whatsapp})")
@@ -507,20 +497,11 @@ _ID: {demanda.id}_
         except Exception as e:
             logger.error(f"Erro ao enviar notificação de cadastro para usuário {usuario.id}: {str(e)}")
             
-            # Registrar log de erro
-            log = NotificationLog(
-                demanda_id=None,
-                usuario_id=usuario.id,
-                tipo=TipoNotificacao.WHATSAPP,
-                destinatario=usuario.whatsapp,
-                mensagem=mensagem,
-                status=StatusNotificacao.ERRO,
-                erro_mensagem=str(e),
-                metadata='{"tipo_evento": "usuario_cadastrado"}'
+            # Log de erro simplificado
+            logger.error(
+                f"Erro ao enviar notificação de cadastro para {usuario.username} - "
+                f"WhatsApp: {usuario.whatsapp} - Erro: {str(e)}"
             )
-            
-            self.db.add(log)
-            self.db.commit()
             
             return {
                 "sucesso": False,
