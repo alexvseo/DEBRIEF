@@ -105,7 +105,7 @@ def atualizar_configuracoes_notificacao(
     **Body:** (todos campos opcionais)
     ```json
     {
-        "whatsapp": "5585991042626",
+        "whatsapp": "5585996039026",
         "receber_notificacoes": true
     }
     ```

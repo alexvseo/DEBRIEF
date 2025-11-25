@@ -89,7 +89,7 @@ class Settings(BaseSettings):
     ZAPI_TOKEN: str = "F9BFDFA1F0A75E79536CE12D"
     ZAPI_CLIENT_TOKEN: str = "F47cfa53858ee4869bf3e027187aa6742S"
     ZAPI_BASE_URL: str = "https://api.z-api.io"
-    ZAPI_PHONE_NUMBER: str = "5585991042626"
+    ZAPI_PHONE_NUMBER: str = "5585996039026"
     
     # Compatibilidade (mantido para não quebrar imports existentes)
     WHATSAPP_API_URL: str = f"https://api.z-api.io/instances/3EABC3821EF52114B8836EDB289F0F12/token/F9BFDFA1F0A75E79536CE12D"

@@ -456,7 +456,7 @@ async def verificar_status_whatsapp(
             "connected": status_info.get("connected", False),
             "state": status_info.get("state", "unknown"),
             "instance": "debrief",
-            "numero_remetente": "5585991042626",
+            "numero_remetente": "5585996039026",
             "details": status_info
         }
     except Exception as e:
@@ -465,7 +465,7 @@ async def verificar_status_whatsapp(
             "connected": False,
             "state": "error",
             "instance": "debrief",
-            "numero_remetente": "5585991042626",
+            "numero_remetente": "5585996039026",
             "error": str(e)
         }
 
@@ -480,7 +480,7 @@ def testar_notificacao_whatsapp(
     
     Body:
     {
-        "numero": "5585991042626",
+        "numero": "5585996039026",
         "mensagem": "Mensagem de teste"
     }
     

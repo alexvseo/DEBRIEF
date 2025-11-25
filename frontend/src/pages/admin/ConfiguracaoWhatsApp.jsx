@@ -333,7 +333,7 @@ const ConfiguracaoWhatsApp = () => {
                   type="text"
                   value={userConfig.whatsapp}
                   onChange={(e) => handleNumeroChange('whatsapp', e.target.value)}
-                  placeholder="5585991042626"
+                  placeholder="5585996039026"
                   className="pl-10"
                   maxLength={15}
                 />
@@ -409,7 +409,7 @@ const ConfiguracaoWhatsApp = () => {
                   type="text"
                   value={testeData.numero_teste}
                   onChange={(e) => handleNumeroChange('numero_teste', e.target.value)}
-                  placeholder="5585991042626"
+                  placeholder="5585996039026"
                   className="pl-10"
                   maxLength={15}
                 />
