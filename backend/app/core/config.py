@@ -87,6 +87,7 @@ class Settings(BaseSettings):
     # WhatsApp API (Z-API)
     ZAPI_INSTANCE_ID: str = "3EABC3821EF52114B8836EDB289F0F12"
     ZAPI_TOKEN: str = "F9BFDFA1F0A75E79536CE12D"
+    ZAPI_CLIENT_TOKEN: str = "F47cfa53858ee4869bf3e027187aa6742S"
     ZAPI_BASE_URL: str = "https://api.z-api.io"
     ZAPI_PHONE_NUMBER: str = "5585996039026"
     

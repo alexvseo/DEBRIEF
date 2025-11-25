@@ -50,15 +50,16 @@ class WhatsAppService:
         """
         self.instance_id = settings.ZAPI_INSTANCE_ID
         self.token = settings.ZAPI_TOKEN
+        self.client_token = settings.ZAPI_CLIENT_TOKEN
         self.base_url = f"https://api.z-api.io/instances/{self.instance_id}/token/{self.token}"
         self.phone_number = settings.ZAPI_PHONE_NUMBER
         
         self.headers = {
             "Content-Type": "application/json",
-            "Client-Token": self.token  # Z-API usa Client-Token em alguns casos
+            "Client-Token": self.client_token  # Token de segurança da conta Z-API
         }
         
-        logger.info(f"WhatsAppService inicializado (Z-API) - Instância: {self.instance_id[:8]}...")
+        logger.info(f"✅ WhatsAppService inicializado (Z-API) - Instância: {self.instance_id[:8]}...")
     
     async def enviar_mensagem(
         self,
