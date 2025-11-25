@@ -388,33 +388,34 @@ _ID: {demanda.id}_
     
     async def verificar_status_instancia(self) -> dict:
         """
-        Verificar status da conexão WhatsApp via Evolution API
+        Verificar status da conexão WhatsApp via Z-API
         
         Returns:
             Dicionário com informações da conexão
         """
-        # Evolution API v1.8.5 - Endpoint de status da instância
-        url = f"{self.base_url}/instance/connectionState/{self.instance_name}"
+        # Z-API - Endpoint de status
+        url = f"{self.base_url}/status"
         
         try:
             response = requests.get(url, headers=self.headers, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
-                state = data.get("instance", {}).get("state", "unknown")
-                connected = state == "open"
-                logger.info(f"Status WhatsApp Evolution API: {state} (conectado: {connected})")
+                connected = data.get("connected", False)
+                phone = data.get("phone", "")
+                logger.info(f"✅ Status Z-API: conectado={connected}, phone={phone}")
                 return {
                     "connected": connected,
-                    "state": state,
-                    "instance": data.get("instance", {})
+                    "state": "open" if connected else "disconnected",
+                    "phone": phone,
+                    "instance": self.instance_id[:8] + "..."
                 }
             else:
-                logger.error(f"Erro ao verificar status: {response.text}")
+                logger.error(f"❌ Erro ao verificar status Z-API: {response.text}")
                 return {"error": response.text, "connected": False}
                 
         except Exception as e:
-            logger.error(f"Exceção ao verificar status: {e}")
+            logger.error(f"❌ Exceção ao verificar status Z-API: {e}")
             return {"error": str(e), "connected": False}
     
     def listar_grupos(self) -> list:
