@@ -310,8 +310,7 @@ def atualizar_template(
     Requer permissão: Master
     """
     template = db.query(TemplateMensagem).filter(
-        TemplateMensagem.id == template_id,
-        TemplateMensagem.deleted_at == None
+        TemplateMensagem.id == template_id
     ).first()
     
     if not template:
