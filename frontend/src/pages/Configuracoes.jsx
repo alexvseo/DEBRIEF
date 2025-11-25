@@ -337,6 +337,7 @@ const Configuracoes = () => {
       // Limpar campos vazios (enviar null em vez de string vazia)
       const dadosLimpos = {
         nome: dados.nome.trim(),
+        whatsapp_group_id: dados.whatsapp_group_id?.trim() || null,
         trello_member_id: dados.trello_member_id?.trim() || null,
         ativo: dados.ativo !== undefined ? dados.ativo : true
       }
@@ -1312,6 +1313,7 @@ const Configuracoes = () => {
 const ModalCliente = ({ open, item, onClose, onSave }) => {
   const [form, setForm] = useState({
     nome: '',
+    whatsapp_group_id: '',
     trello_member_id: ''
   })
   
@@ -1319,11 +1321,13 @@ const ModalCliente = ({ open, item, onClose, onSave }) => {
     if (item) {
       setForm({
         nome: item.nome || '',
+        whatsapp_group_id: item.whatsapp_group_id || '',
         trello_member_id: item.trello_member_id || ''
       })
     } else {
       setForm({
         nome: '',
+        whatsapp_group_id: '',
         trello_member_id: ''
       })
     }
@@ -1354,18 +1358,27 @@ const ModalCliente = ({ open, item, onClose, onSave }) => {
                 placeholder="Ex: Prefeitura Municipal"
               />
               
-              {/* Campo WhatsApp Group ID - OBSOLETO (removido sistema de grupos) */}
-              <Alert variant="info" className="text-sm" dismissible>
+              <Input
+                label="ID do Grupo WhatsApp"
+                value={form.whatsapp_group_id || ''}
+                onChange={(e) => setForm(prev => ({ ...prev, whatsapp_group_id: e.target.value }))}
+                placeholder="Ex: 120363123456789012@g.us"
+                helperText="ID do grupo WhatsApp para receber notificações. Deve terminar com @g.us. Deixe vazio se não usar grupos."
+              />
+              
+              <Alert variant="info" className="text-sm">
                 <AlertDescription>
-                  ⚠️ <strong>Notificações via grupo WhatsApp foram descontinuadas.</strong><br/>
-                  O sistema agora envia notificações <strong>individuais</strong> para cada usuário.<br/>
-                  Configure em: <strong>Configurações → Notificações WhatsApp</strong>
+                  💡 <strong>Como obter o ID do grupo:</strong><br/>
+                  1. Acesse o painel Z-API: <a href="https://developer.z-api.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">developer.z-api.io</a><br/>
+                  2. Use o endpoint <code className="bg-gray-100 px-1 rounded">GET /chats</code> para listar grupos<br/>
+                  3. O ID do grupo termina com <code className="bg-gray-100 px-1 rounded">@g.us</code><br/>
+                  4. As notificações serão enviadas para este grupo quando houver modificações nas demandas
                 </AlertDescription>
               </Alert>
               
               <Input
                 label="Trello Member ID"
-                value={form.trello_member_id}
+                value={form.trello_member_id || ''}
                 onChange={(e) => setForm(prev => ({ ...prev, trello_member_id: e.target.value }))}
                 placeholder="Ex: abc123def456"
                 helperText="ID do membro no Trello para atribuição de cards"
