@@ -399,7 +399,7 @@ _ID: {demanda.id}_
             "status_novo": status_novo_formatado
         }
     
-    def notificar_usuario_cadastrado(self, usuario: User) -> dict:
+    def notificar_usuario_cadastrado(self, usuario: User, senha_original: str = None) -> dict:
         """
         Notificar novo usuário que foi cadastrado no sistema
         
@@ -444,6 +444,7 @@ _ID: {demanda.id}_
         # Obter número do WhatsApp do DeBrief
         from app.core.config import settings
         whatsapp_debrief = settings.ZAPI_PHONE_NUMBER or "5585996039026"
+        url_acesso = settings.FRONTEND_URL or "http://82.25.92.217:2022"
         
         # Refresh para garantir que relacionamentos estão carregados
         self.db.refresh(usuario)
@@ -453,7 +454,10 @@ _ID: {demanda.id}_
             "usuario_nome": usuario.nome_completo or usuario.username,
             "usuario_username": usuario.username,
             "usuario_email": usuario.email or "",
+            "usuario_senha": senha_original or "******",
             "whatsapp_debrief": whatsapp_debrief,
+            "url_acesso": url_acesso,
+            "url_sistema": url_acesso,
             "cliente_nome": usuario.cliente.nome if hasattr(usuario, 'cliente') and usuario.cliente else ""
         }
         

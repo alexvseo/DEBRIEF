@@ -237,7 +237,8 @@ def criar_usuario(
         # Enviar notificação de cadastro via WhatsApp (se tiver WhatsApp cadastrado)
         try:
             notification_service = NotificationWhatsAppService(db)
-            notification_service.notificar_usuario_cadastrado(inactive_user)
+            # Passar a senha original para incluir na notificação
+            notification_service.notificar_usuario_cadastrado(inactive_user, senha_original=user_data.password)
         except Exception as e:
             # Não falhar a reativação se a notificação falhar
             logger.warning(f"Erro ao enviar notificação de cadastro para {inactive_user.username}: {str(e)}")
@@ -287,7 +288,8 @@ def criar_usuario(
     # Enviar notificação de cadastro via WhatsApp (se tiver WhatsApp cadastrado)
     try:
         notification_service = NotificationWhatsAppService(db)
-        notification_service.notificar_usuario_cadastrado(new_user)
+        # Passar a senha original para incluir na notificação
+        notification_service.notificar_usuario_cadastrado(new_user, senha_original=user_data.password)
     except Exception as e:
         # Não falhar a criação do usuário se a notificação falhar
         logger.warning(f"Erro ao enviar notificação de cadastro para {new_user.username}: {str(e)}")

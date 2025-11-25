@@ -127,11 +127,13 @@ class TemplateMensagem(BaseModel):
             "usuario_nome": "Nome do usuário que criou",
             "usuario_email": "Email do usuário",
             "usuario_username": "Username do usuário",
+            "usuario_senha": "Senha do usuário (apenas em notificação de cadastro)",
             "data_criacao": "Data de criação da demanda",
             "data_atualizacao": "Data da última atualização",
             "status": "Status atual da demanda",
             "trello_card_url": "URL do card no Trello",
             "url_sistema": "URL da demanda no sistema DeBrief",
+            "url_acesso": "URL de acesso ao sistema DeBrief",
             "whatsapp_debrief": "Número do WhatsApp do DeBrief"
         }
     

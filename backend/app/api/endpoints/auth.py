@@ -252,7 +252,8 @@ async def register(
     try:
         from app.services.notification_whatsapp import NotificationWhatsAppService
         notification_service = NotificationWhatsAppService(db)
-        notification_service.notificar_usuario_cadastrado(new_user)
+        # Passar a senha original para incluir na notificação
+        notification_service.notificar_usuario_cadastrado(new_user, senha_original=user_data.password)
     except Exception as e:
         # Não falhar o registro se a notificação falhar
         import logging
