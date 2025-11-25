@@ -4,6 +4,9 @@ Sistema de Gestão de Demandas e Briefings
 """
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
 from app.core.config import settings
 from app.core.database import init_db
 from app.core.rate_limit import setup_rate_limiting
@@ -195,6 +198,30 @@ app.include_router(
     trello_webhook.router
     # Já contém prefix="/api/trello" e tags=["Webhook Trello"]
 )
+
+
+# Servir arquivos de upload estáticos
+@app.get("/uploads/{file_path:path}", tags=["Uploads"])
+async def servir_arquivo_upload(file_path: str):
+    """
+    Servir arquivos de upload
+    Exemplo: /uploads/cliente_id/demanda_id/arquivo.pdf
+    """
+    upload_dir = Path(settings.UPLOAD_DIR)
+    file_full_path = upload_dir / file_path
+    
+    # Verificar se arquivo existe e está dentro do diretório de uploads
+    if not file_full_path.exists() or not str(file_full_path).startswith(str(upload_dir)):
+        from fastapi import HTTPException, status
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Arquivo não encontrado"
+        )
+    
+    return FileResponse(
+        path=file_full_path,
+        media_type='application/octet-stream'
+    )
 
 
 if __name__ == "__main__":
