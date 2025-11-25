@@ -33,7 +33,10 @@ class TemplateMensagemBase(BaseModel):
             'demanda_criada',
             'demanda_atualizada',
             'demanda_concluida',
-            'demanda_cancelada'
+            'demanda_cancelada',
+            'nova_demanda',  # Compatibilidade com dados existentes
+            'demanda_alterada',  # Compatibilidade com dados existentes  
+            'demanda_deletada'  # Compatibilidade com dados existentes
         ]
         if v not in tipos_validos:
             raise ValueError(f'Tipo de evento deve ser um de: {", ".join(tipos_validos)}')
