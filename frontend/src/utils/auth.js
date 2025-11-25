@@ -149,6 +149,7 @@ export const decodeToken = (token) => {
  * Verificar se o token está expirado
  * 
  * @param {string} token - Token JWT
+ * @param {number} bufferMinutes - Buffer em minutos antes da expiração (padrão: 5)
  * @returns {boolean}
  * 
  * @example
@@ -156,7 +157,7 @@ export const decodeToken = (token) => {
  *   // Token expirado, fazer refresh
  * }
  */
-export const isTokenExpired = (token) => {
+export const isTokenExpired = (token, bufferMinutes = 5) => {
   try {
     // Tokens mock nunca expiram (para desenvolvimento)
     if (token && token.includes('mock')) {
@@ -167,7 +168,9 @@ export const isTokenExpired = (token) => {
     if (!payload || !payload.exp) return true
     
     // exp está em segundos, Date.now() em milissegundos
-    return Date.now() >= payload.exp * 1000
+    // Adicionar buffer de tempo (padrão 5 minutos) para evitar falsos positivos
+    const bufferMs = bufferMinutes * 60 * 1000
+    return Date.now() >= (payload.exp * 1000 - bufferMs)
   } catch (error) {
     console.error('Erro ao verificar expiração do token:', error)
     return true

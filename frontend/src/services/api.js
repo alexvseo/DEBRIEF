@@ -34,14 +34,8 @@ api.interceptors.request.use(
     
     // Se tiver token e não for a rota de login, adicionar header
     if (token && !config.url?.includes('/auth/login')) {
-      // Verificar se token está expirado (ignorar tokens mock)
-      if (!token.includes('mock') && isTokenExpired(token)) {
-        console.warn('Token expirado, redirecionando para login...')
-        clearStoredAuth()
-        window.location.href = '/login'
-        return Promise.reject(new Error('Token expirado'))
-      }
-      
+      // Adicionar token no header - deixar o backend validar a expiração
+      // A verificação no frontend serve apenas como otimização
       config.headers.Authorization = `Bearer ${token}`
     }
     
