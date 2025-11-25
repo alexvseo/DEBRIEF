@@ -84,9 +84,15 @@ class Settings(BaseSettings):
     WPP_INSTANCE: Optional[str] = None
     WPP_TOKEN: Optional[str] = None
     
-    # WhatsApp API (Evolution API v1.8.5 com Baileys)
-    WHATSAPP_API_URL: str = "http://localhost:21465"
-    WHATSAPP_API_KEY: str = "debrief-wpp-58a2b7dda7da9474958e2a853062d5d5"
+    # WhatsApp API (Z-API)
+    ZAPI_INSTANCE_ID: str = "3EABC3821EF52114B8836EDB289F0F12"
+    ZAPI_TOKEN: str = "F9BFDFA1F0A75E79536CE12D"
+    ZAPI_BASE_URL: str = "https://api.z-api.io"
+    ZAPI_PHONE_NUMBER: str = "5585996039026"
+    
+    # Compatibilidade (mantido para não quebrar imports existentes)
+    WHATSAPP_API_URL: str = f"https://api.z-api.io/instances/3EABC3821EF52114B8836EDB289F0F12/token/F9BFDFA1F0A75E79536CE12D"
+    WHATSAPP_API_KEY: str = "F9BFDFA1F0A75E79536CE12D"
     
     # Google reCAPTCHA
     RECAPTCHA_SECRET_KEY: Optional[str] = None

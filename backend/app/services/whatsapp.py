@@ -1,8 +1,8 @@
 """
-Serviço de integração com WhatsApp API (wpapi)
+Serviço de integração com Z-API WhatsApp
 
 Este serviço gerencia o envio de notificações via WhatsApp
-para grupos de clientes quando há eventos importantes no sistema.
+para usuários quando há eventos importantes no sistema.
 
 Funcionalidades:
 - Enviar notificação de nova demanda
@@ -11,9 +11,10 @@ Funcionalidades:
 - Enviar mensagens customizadas
 
 Dependências:
-- requests: Para chamadas HTTP à API WhatsApp
+- requests: Para chamadas HTTP à Z-API
 - SQLAlchemy: Para acessar relacionamentos
 
+API: Z-API (https://www.z-api.io/)
 Autor: DeBrief Sistema
 """
 import requests
@@ -29,10 +30,10 @@ logger = logging.getLogger(__name__)
 
 class WhatsAppService:
     """
-    Wrapper para WhatsApp API (wpapi)
+    Wrapper para Z-API WhatsApp
     
-    Gerencia o envio de mensagens via WhatsApp para grupos de clientes,
-    notificando sobre demandas, atualizações e lembretes.
+    Gerencia o envio de mensagens via WhatsApp individuais,
+    notificando usuários sobre demandas, atualizações e lembretes.
     
     Exemplo de uso:
         ```python
@@ -43,20 +44,21 @@ class WhatsAppService:
     
     def __init__(self):
         """
-        Inicializar serviço WhatsApp
+        Inicializar serviço WhatsApp com Z-API
         
-        Configura URL base e API Key para Evolution API (Baileys)
+        Configura credenciais e URLs da Z-API
         """
-        self.base_url = settings.WHATSAPP_API_URL
-        self.api_key = settings.WHATSAPP_API_KEY
-        self.instance_name = "debrief"  # Nome da instância no Evolution API
+        self.instance_id = settings.ZAPI_INSTANCE_ID
+        self.token = settings.ZAPI_TOKEN
+        self.base_url = f"https://api.z-api.io/instances/{self.instance_id}/token/{self.token}"
+        self.phone_number = settings.ZAPI_PHONE_NUMBER
         
         self.headers = {
-            "apikey": self.api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Client-Token": self.token  # Z-API usa Client-Token em alguns casos
         }
         
-        logger.info("WhatsAppService inicializado (Evolution API - Baileys)")
+        logger.info(f"WhatsAppService inicializado (Z-API) - Instância: {self.instance_id[:8]}...")
     
     async def enviar_mensagem(
         self,
@@ -65,12 +67,12 @@ class WhatsAppService:
         mencoes: Optional[list] = None
     ) -> bool:
         """
-        Enviar mensagem para grupo ou contato do WhatsApp via Evolution API
+        Enviar mensagem para contato do WhatsApp via Z-API
         
         Args:
-            chat_id: ID do chat (formato: 120363123456789012@g.us para grupos ou 5511999999999@c.us para contatos)
-            mensagem: Texto da mensagem (suporta markdown do WhatsApp)
-            mencoes: Lista de números para mencionar (opcional - não implementado)
+            chat_id: Número do WhatsApp (formato: 5511999999999 ou 5511999999999@c.us)
+            mensagem: Texto da mensagem (suporta emojis e formatação WhatsApp)
+            mencoes: Lista de números para mencionar (não usado na Z-API)
         
         Returns:
             True se enviado com sucesso, False caso contrário
@@ -78,23 +80,21 @@ class WhatsAppService:
         Exemplo:
             ```python
             success = await whatsapp.enviar_mensagem(
-                "120363123456789012@g.us",
-                "*Teste* de mensagem"
+                "5585996039026",
+                "✅ Teste de mensagem"
             )
             ```
         """
-        # Evolution API v1.8.5 - Endpoint correto
-        url = f"{self.base_url}/message/sendText/{self.instance_name}"
+        # Z-API - Endpoint de envio de texto
+        url = f"{self.base_url}/send-text"
         
-        # Extrair número do chat_id (remover @s.whatsapp.net ou @g.us)
-        numero = chat_id.split('@')[0]
+        # Limpar número (remover @c.us se existir)
+        numero = chat_id.split('@')[0] if '@' in chat_id else chat_id
         
-        # Formato correto para Evolution API v1.8.5
+        # Formato Z-API
         payload = {
-            "number": numero,
-            "textMessage": {
-                "text": mensagem
-            }
+            "phone": numero,
+            "message": mensagem
         }
         
         try:
@@ -133,11 +133,11 @@ class WhatsAppService:
         mensagem: str
     ) -> bool:
         """
-        Enviar mensagem individual para número WhatsApp
+        Enviar mensagem individual para número WhatsApp via Z-API
         
         Args:
             numero: Número WhatsApp (formato: 5511999999999)
-            mensagem: Texto da mensagem (suporta markdown do WhatsApp)
+            mensagem: Texto da mensagem (suporta emojis e formatação WhatsApp)
         
         Returns:
             True se enviado com sucesso, False caso contrário
@@ -145,18 +145,18 @@ class WhatsAppService:
         Exemplo:
             ```python
             success = whatsapp.enviar_mensagem_individual(
-                "5511999999999",
-                "*Notificação*: Nova demanda criada"
+                "5585996039026",
+                "✅ Notificação: Nova demanda criada"
             )
             ```
         """
         # Garantir que número tenha apenas dígitos
         numero_limpo = ''.join(filter(str.isdigit, numero))
         
-        # Formato correto: numero@c.us
-        chat_id = f"{numero_limpo}@c.us"
+        # Z-API usa apenas o número (sem @c.us)
+        chat_id = numero_limpo
         
-        # Usar o método principal de envio
+        # Usar o método principal de envio (agora já adaptado para Z-API)
         return self.enviar_mensagem_sync(chat_id, mensagem)
     
     def enviar_mensagem_sync(self, chat_id: str, mensagem: str) -> bool:
@@ -164,28 +164,26 @@ class WhatsAppService:
         Versão síncrona do enviar_mensagem (para uso sem async)
         
         Args:
-            chat_id: ID do chat
+            chat_id: Número do WhatsApp
             mensagem: Texto da mensagem
         
         Returns:
             True se enviado com sucesso
         """
-        # Evolution API v1.8.5 - Endpoint correto
-        url = f"{self.base_url}/message/sendText/{self.instance_name}"
+        # Z-API - Endpoint de envio de texto
+        url = f"{self.base_url}/send-text"
         
-        # Extrair número do chat_id (remover @s.whatsapp.net ou @g.us)
-        numero = chat_id.split('@')[0]
+        # Limpar número (remover @c.us se existir)
+        numero = chat_id.split('@')[0] if '@' in chat_id else chat_id
         
-        # Formato correto para Evolution API v1.8.5
+        # Formato Z-API
         payload = {
-            "number": numero,
-            "textMessage": {
-                "text": mensagem
-            }
+            "phone": numero,
+            "message": mensagem
         }
         
         try:
-            logger.info(f"Enviando mensagem WhatsApp via Evolution API para {chat_id}")
+            logger.info(f"Enviando mensagem WhatsApp via Z-API para {numero}")
             
             response = requests.post(
                 url,
@@ -194,24 +192,24 @@ class WhatsAppService:
                 timeout=30
             )
             
-            if response.status_code == 201 or response.status_code == 200:
+            if response.status_code == 200:
                 result = response.json()
-                if result.get("key"):
-                    message_id = result.get("key", {}).get("id", "")
-                    logger.info(f"Mensagem WhatsApp enviada com sucesso para {chat_id}: {message_id}")
+                if result.get("messageId") or result.get("success"):
+                    message_id = result.get("messageId", "")
+                    logger.info(f"✅ Mensagem Z-API enviada com sucesso para {numero}: {message_id}")
                     return True
                 else:
-                    logger.error(f"Erro WhatsApp: {result}")
+                    logger.error(f"❌ Erro Z-API: {result}")
                     return False
             else:
-                logger.error(f"Erro WhatsApp (status {response.status_code}): {response.text}")
+                logger.error(f"❌ Erro Z-API (status {response.status_code}): {response.text}")
                 return False
                 
         except requests.exceptions.Timeout:
-            logger.error("Timeout ao enviar mensagem WhatsApp")
+            logger.error("⏱️ Timeout ao enviar mensagem Z-API")
             return False
         except Exception as e:
-            logger.error(f"Exceção ao enviar WhatsApp: {e}")
+            logger.error(f"❌ Exceção ao enviar Z-API: {e}")
             return False
     
     async def enviar_nova_demanda(self, demanda: Demanda, db: Session) -> bool:
