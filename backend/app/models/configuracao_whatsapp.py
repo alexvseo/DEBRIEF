@@ -76,8 +76,7 @@ class ConfiguracaoWhatsApp(BaseModel):
             ConfiguracaoWhatsApp ou None
         """
         return db.query(cls).filter(
-            cls.ativo == True,
-            cls.deleted_at == None
+            cls.ativo == True
         ).first()
     
     @classmethod
@@ -88,8 +87,6 @@ class ConfiguracaoWhatsApp(BaseModel):
         Args:
             db: Sessão do banco
         """
-        db.query(cls).filter(
-            cls.deleted_at == None
-        ).update({"ativo": False})
+        db.query(cls).update({"ativo": False})
         db.commit()
 

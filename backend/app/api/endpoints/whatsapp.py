@@ -42,9 +42,7 @@ def listar_configuracoes_whatsapp(
     
     Requer permissão: Master
     """
-    configuracoes = db.query(ConfiguracaoWhatsApp).filter(
-        ConfiguracaoWhatsApp.deleted_at == None
-    ).all()
+    configuracoes = db.query(ConfiguracaoWhatsApp).all()
     
     return configuracoes
 
@@ -113,8 +111,7 @@ def atualizar_configuracao_whatsapp(
     Requer permissão: Master
     """
     config = db.query(ConfiguracaoWhatsApp).filter(
-        ConfiguracaoWhatsApp.id == config_id,
-        ConfiguracaoWhatsApp.deleted_at == None
+        ConfiguracaoWhatsApp.id == config_id
     ).first()
     
     if not config:
@@ -152,8 +149,7 @@ def deletar_configuracao_whatsapp(
     Requer permissão: Master
     """
     config = db.query(ConfiguracaoWhatsApp).filter(
-        ConfiguracaoWhatsApp.id == config_id,
-        ConfiguracaoWhatsApp.deleted_at == None
+        ConfiguracaoWhatsApp.id == config_id
     ).first()
     
     if not config:
@@ -162,9 +158,8 @@ def deletar_configuracao_whatsapp(
             detail="Configuração não encontrada"
         )
     
-    # Soft delete
-    from datetime import datetime
-    config.deleted_at = datetime.utcnow()
+    # Deletar configuração
+    db.delete(config)
     db.commit()
     
     logger.info(f"Configuração WhatsApp deletada: {config.id} por usuário {current_user.username}")
@@ -274,9 +269,10 @@ def criar_template(
     
     Requer permissão: Master
     """
-    # Verificar se já existe template com mesmo nome
+    # Verificar se já existe template com mesmo nome ativo
     template_existente = db.query(TemplateMensagem).filter(
-        TemplateMensagem.nome == template_data.nome
+        TemplateMensagem.nome == template_data.nome,
+        TemplateMensagem.ativo == True
     ).first()
     
     if template_existente:
@@ -349,8 +345,7 @@ def deletar_template(
     Requer permissão: Master
     """
     template = db.query(TemplateMensagem).filter(
-        TemplateMensagem.id == template_id,
-        TemplateMensagem.deleted_at == None
+        TemplateMensagem.id == template_id
     ).first()
     
     if not template:
@@ -359,9 +354,8 @@ def deletar_template(
             detail="Template não encontrado"
         )
     
-    # Soft delete
-    from datetime import datetime
-    template.deleted_at = datetime.utcnow()
+    # Deletar template
+    db.delete(template)
     db.commit()
     
     logger.info(f"Template deletado: {template.id} por usuário {current_user.username}")
