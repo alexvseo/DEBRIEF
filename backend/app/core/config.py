@@ -84,9 +84,9 @@ class Settings(BaseSettings):
     WPP_INSTANCE: Optional[str] = None
     WPP_TOKEN: Optional[str] = None
     
-    # WhatsApp API (wpapi) - Nova implementação
-    WHATSAPP_API_URL: str = "http://localhost:3001"
-    WHATSAPP_API_KEY: str = "HUxJYioH28+/q45I46lAw5eCOGrHeeFpNPmfWVc/0Ck="
+    # WhatsApp API (Evolution API v1.8.5 com Baileys)
+    WHATSAPP_API_URL: str = "http://localhost:21465"
+    WHATSAPP_API_KEY: str = "debrief-wpp-58a2b7dda7da9474958e2a853062d5d5"
     
     # Google reCAPTCHA
     RECAPTCHA_SECRET_KEY: Optional[str] = None
