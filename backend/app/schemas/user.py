@@ -31,12 +31,30 @@ class UserCreate(BaseModel):
     nome_completo: str = Field(..., min_length=3, max_length=200)
     tipo: TipoUsuario = TipoUsuario.CLIENTE
     cliente_id: Optional[str] = None
+    whatsapp: Optional[str] = Field(None, max_length=20, description="Número WhatsApp com código do país (ex: 5511999999999)")
+    receber_notificacoes: Optional[bool] = Field(default=True, description="Se deseja receber notificações via WhatsApp")
     
     @validator('username')
     def username_alphanumeric(cls, v):
         if not v.replace('_', '').replace('.', '').isalnum():
             raise ValueError('Username deve conter apenas letras, números, _ e .')
         return v.lower()
+    
+    @validator('whatsapp')
+    def validar_whatsapp(cls, v):
+        """Validar formato do número WhatsApp"""
+        if v is None or v == '':
+            return None
+        
+        # Remover espaços, parênteses, hífens, etc
+        numero_limpo = ''.join(filter(str.isdigit, v))
+        
+        # Deve ter entre 10 e 15 dígitos
+        if len(numero_limpo) < 10 or len(numero_limpo) > 15:
+            raise ValueError('Número WhatsApp deve ter entre 10 e 15 dígitos')
+        
+        # Retornar apenas dígitos
+        return numero_limpo
 
 
 class UserUpdate(BaseModel):
