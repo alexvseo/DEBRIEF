@@ -77,6 +77,63 @@ def listar_usuarios(
     return [UserResponse.from_orm(u) for u in usuarios]
 
 
+@router.get("/me", response_model=UserResponse)
+def obter_perfil_atual(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Retorna informações do usuário autenticado
+    
+    **Permissão:** Qualquer usuário autenticado
+    
+    **Retorna:** Dados completos do usuário logado (sem senha)
+    """
+    return UserResponse.from_orm(current_user)
+
+
+@router.put("/me/notificacoes", response_model=UserResponse)
+def atualizar_configuracoes_notificacao(
+    settings: UserNotificationSettings,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Atualiza as configurações de notificação do usuário autenticado
+    
+    **Permissão:** Qualquer usuário autenticado (atualiza apenas sua própria conta)
+    
+    **Body:** (todos campos opcionais)
+    ```json
+    {
+        "whatsapp": "5585991042626",
+        "receber_notificacoes": true
+    }
+    ```
+    
+    **Exemplo de uso:**
+    - Para adicionar/atualizar WhatsApp: envie o número com código do país
+    - Para desabilitar notificações: envie receber_notificacoes=false
+    - Para remover WhatsApp: envie whatsapp="" (string vazia)
+    """
+    # Atualizar apenas campos fornecidos
+    update_data = settings.dict(exclude_unset=True)
+    
+    if 'whatsapp' in update_data:
+        # Permitir string vazia para remover WhatsApp
+        if update_data['whatsapp'] == '':
+            current_user.whatsapp = None
+        else:
+            current_user.whatsapp = update_data['whatsapp']
+    
+    if 'receber_notificacoes' in update_data:
+        current_user.receber_notificacoes = update_data['receber_notificacoes']
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    return UserResponse.from_orm(current_user)
+
+
 @router.get("/{usuario_id}", response_model=UserResponse)
 def buscar_usuario(
     usuario_id: str,
@@ -494,61 +551,4 @@ def estatisticas_usuarios(
         "masters": masters,
         "clientes": clientes
     }
-
-
-@router.get("/me", response_model=UserResponse)
-def obter_perfil_atual(
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Retorna informações do usuário autenticado
-    
-    **Permissão:** Qualquer usuário autenticado
-    
-    **Retorna:** Dados completos do usuário logado (sem senha)
-    """
-    return UserResponse.from_orm(current_user)
-
-
-@router.put("/me/notificacoes", response_model=UserResponse)
-def atualizar_configuracoes_notificacao(
-    settings: UserNotificationSettings,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Atualiza as configurações de notificação do usuário autenticado
-    
-    **Permissão:** Qualquer usuário autenticado (atualiza apenas sua própria conta)
-    
-    **Body:** (todos campos opcionais)
-    ```json
-    {
-        "whatsapp": "5511999999999",
-        "receber_notificacoes": true
-    }
-    ```
-    
-    **Exemplo de uso:**
-    - Para adicionar/atualizar WhatsApp: envie o número com código do país
-    - Para desabilitar notificações: envie receber_notificacoes=false
-    - Para remover WhatsApp: envie whatsapp="" (string vazia)
-    """
-    # Atualizar apenas campos fornecidos
-    update_data = settings.dict(exclude_unset=True)
-    
-    if 'whatsapp' in update_data:
-        # Permitir string vazia para remover WhatsApp
-        if update_data['whatsapp'] == '':
-            current_user.whatsapp = None
-        else:
-            current_user.whatsapp = update_data['whatsapp']
-    
-    if 'receber_notificacoes' in update_data:
-        current_user.receber_notificacoes = update_data['receber_notificacoes']
-    
-    db.commit()
-    db.refresh(current_user)
-    
-    return UserResponse.from_orm(current_user)
 
