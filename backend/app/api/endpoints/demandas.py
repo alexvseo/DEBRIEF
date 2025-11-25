@@ -449,6 +449,18 @@ async def deletar_demanda(
             # Não falhar a exclusão da demanda se o Trello falhar
             # O card pode não existir mais ou API pode estar indisponível
     
+    # Deletar logs de notificação relacionados ANTES de deletar a demanda
+    # Isso evita erro de constraint NOT NULL no demanda_id
+    try:
+        from app.models.notification_log import NotificationLog
+        logs_deletados = db.query(NotificationLog).filter(
+            NotificationLog.demanda_id == demanda_id
+        ).delete(synchronize_session=False)
+        logger.info(f"Deletados {logs_deletados} logs de notificação para demanda {demanda_id}")
+    except Exception as e:
+        logger.error(f"Erro ao deletar logs de notificação: {e}")
+        # Não falhar a exclusão se houver erro ao deletar logs
+    
     # Deletar demanda do banco
     db.delete(demanda)
     db.commit()
