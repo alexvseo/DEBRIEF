@@ -248,6 +248,17 @@ async def register(
     db.commit()
     db.refresh(new_user)
     
+    # Enviar notificação de cadastro via WhatsApp (se tiver WhatsApp cadastrado)
+    try:
+        from app.services.notification_whatsapp import NotificationWhatsAppService
+        notification_service = NotificationWhatsAppService(db)
+        notification_service.notificar_usuario_cadastrado(new_user)
+    except Exception as e:
+        # Não falhar o registro se a notificação falhar
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Erro ao enviar notificação de cadastro para {new_user.username}: {str(e)}")
+    
     return UserResponse.from_orm(new_user)
 
 

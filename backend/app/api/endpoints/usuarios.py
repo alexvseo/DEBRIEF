@@ -5,6 +5,7 @@ CRUD completo - Apenas Master pode gerenciar
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import logging
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user, require_master
@@ -17,8 +18,10 @@ from app.schemas.user import (
     UserChangePassword,
     UserNotificationSettings
 )
+from app.services.notification_whatsapp import NotificationWhatsAppService
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/", response_model=List[UserResponse])
@@ -231,6 +234,14 @@ def criar_usuario(
         db.commit()
         db.refresh(inactive_user)
         
+        # Enviar notificação de cadastro via WhatsApp (se tiver WhatsApp cadastrado)
+        try:
+            notification_service = NotificationWhatsAppService(db)
+            notification_service.notificar_usuario_cadastrado(inactive_user)
+        except Exception as e:
+            # Não falhar a reativação se a notificação falhar
+            logger.warning(f"Erro ao enviar notificação de cadastro para {inactive_user.username}: {str(e)}")
+        
         return UserResponse.from_orm(inactive_user)
     
     # Se não existe ou não está inativo, criar novo usuário
@@ -272,6 +283,14 @@ def criar_usuario(
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    
+    # Enviar notificação de cadastro via WhatsApp (se tiver WhatsApp cadastrado)
+    try:
+        notification_service = NotificationWhatsAppService(db)
+        notification_service.notificar_usuario_cadastrado(new_user)
+    except Exception as e:
+        # Não falhar a criação do usuário se a notificação falhar
+        logger.warning(f"Erro ao enviar notificação de cadastro para {new_user.username}: {str(e)}")
     
     return UserResponse.from_orm(new_user)
 

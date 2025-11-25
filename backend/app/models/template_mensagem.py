@@ -104,8 +104,7 @@ class TemplateMensagem(BaseModel):
         """
         return db.query(cls).filter(
             cls.tipo_evento == tipo_evento,
-            cls.ativo == True,
-            cls.deleted_at == None
+            cls.ativo == True
         ).first()
     
     @classmethod
@@ -127,11 +126,13 @@ class TemplateMensagem(BaseModel):
             "usuario_responsavel": "Nome do usuário responsável",
             "usuario_nome": "Nome do usuário que criou",
             "usuario_email": "Email do usuário",
+            "usuario_username": "Username do usuário",
             "data_criacao": "Data de criação da demanda",
             "data_atualizacao": "Data da última atualização",
             "status": "Status atual da demanda",
             "trello_card_url": "URL do card no Trello",
-            "url_sistema": "URL da demanda no sistema DeBrief"
+            "url_sistema": "URL da demanda no sistema DeBrief",
+            "whatsapp_debrief": "Número do WhatsApp do DeBrief"
         }
     
     def renderizar(self, dados: dict) -> str:

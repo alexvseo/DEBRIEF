@@ -398,4 +398,130 @@ _ID: {demanda.id}_
             "status_antigo": status_antigo_formatado,
             "status_novo": status_novo_formatado
         }
+    
+    def notificar_usuario_cadastrado(self, usuario: User) -> dict:
+        """
+        Notificar novo usuário que foi cadastrado no sistema
+        
+        Args:
+            usuario: Usuário recém-cadastrado
+            
+        Returns:
+            Estatísticas de envio
+        """
+        # Verificar se há configuração WhatsApp ativa
+        config = ConfiguracaoWhatsApp.get_ativa(self.db)
+        if not config:
+            logger.warning("Nenhuma configuração WhatsApp ativa encontrada")
+            return {
+                "sucesso": False,
+                "mensagem": "Nenhuma configuração WhatsApp ativa",
+                "enviados": 0,
+                "falhas": 0
+            }
+        
+        # Verificar se o usuário tem WhatsApp cadastrado
+        if not usuario.whatsapp or usuario.whatsapp == "":
+            logger.info(f"Usuário {usuario.username} não tem WhatsApp cadastrado, notificação não enviada")
+            return {
+                "sucesso": True,
+                "mensagem": "Usuário não possui WhatsApp cadastrado",
+                "enviados": 0,
+                "falhas": 0
+            }
+        
+        # Buscar template para o evento usuario_cadastrado
+        template = TemplateMensagem.get_by_tipo_evento(self.db, "usuario_cadastrado")
+        if not template:
+            logger.warning("Nenhum template encontrado para evento: usuario_cadastrado")
+            return {
+                "sucesso": False,
+                "mensagem": "Nenhum template encontrado para evento: usuario_cadastrado",
+                "enviados": 0,
+                "falhas": 0
+            }
+        
+        # Obter número do WhatsApp do DeBrief
+        from app.core.config import settings
+        whatsapp_debrief = settings.ZAPI_PHONE_NUMBER or "5585996039026"
+        
+        # Refresh para garantir que relacionamentos estão carregados
+        self.db.refresh(usuario)
+        
+        # Preparar dados para renderizar template
+        dados = {
+            "usuario_nome": usuario.nome_completo or usuario.username,
+            "usuario_username": usuario.username,
+            "usuario_email": usuario.email or "",
+            "whatsapp_debrief": whatsapp_debrief,
+            "cliente_nome": usuario.cliente.nome if hasattr(usuario, 'cliente') and usuario.cliente else ""
+        }
+        
+        # Renderizar mensagem
+        mensagem = template.renderizar(dados)
+        
+        # Enviar notificação para o novo usuário
+        try:
+            sucesso = self.whatsapp_service.enviar_mensagem_individual(
+                numero=usuario.whatsapp,
+                mensagem=mensagem
+            )
+            
+            # Registrar log (sem demanda_id, pois não é relacionado a demanda)
+            log = NotificationLog(
+                demanda_id=None,
+                usuario_id=usuario.id,
+                tipo=TipoNotificacao.WHATSAPP,
+                destinatario=usuario.whatsapp,
+                mensagem=mensagem,
+                status=StatusNotificacao.ENVIADO if sucesso else StatusNotificacao.ERRO,
+                erro_mensagem=None if sucesso else "Falha ao enviar mensagem",
+                enviado_em=datetime.utcnow() if sucesso else None,
+                metadata='{"tipo_evento": "usuario_cadastrado"}'
+            )
+            
+            self.db.add(log)
+            self.db.commit()
+            
+            if sucesso:
+                logger.info(f"Notificação de cadastro enviada para {usuario.nome_completo} ({usuario.whatsapp})")
+                return {
+                    "sucesso": True,
+                    "mensagem": "Notificação enviada com sucesso",
+                    "enviados": 1,
+                    "falhas": 0
+                }
+            else:
+                logger.warning(f"Falha ao enviar notificação de cadastro para {usuario.nome_completo}")
+                return {
+                    "sucesso": False,
+                    "mensagem": "Falha ao enviar notificação",
+                    "enviados": 0,
+                    "falhas": 1
+                }
+                
+        except Exception as e:
+            logger.error(f"Erro ao enviar notificação de cadastro para usuário {usuario.id}: {str(e)}")
+            
+            # Registrar log de erro
+            log = NotificationLog(
+                demanda_id=None,
+                usuario_id=usuario.id,
+                tipo=TipoNotificacao.WHATSAPP,
+                destinatario=usuario.whatsapp,
+                mensagem=mensagem,
+                status=StatusNotificacao.ERRO,
+                erro_mensagem=str(e),
+                metadata='{"tipo_evento": "usuario_cadastrado"}'
+            )
+            
+            self.db.add(log)
+            self.db.commit()
+            
+            return {
+                "sucesso": False,
+                "mensagem": f"Erro ao enviar notificação: {str(e)}",
+                "enviados": 0,
+                "falhas": 1
+            }
 
