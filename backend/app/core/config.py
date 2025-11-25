@@ -79,10 +79,14 @@ class Settings(BaseSettings):
     TRELLO_BOARD_ID: Optional[str] = None
     TRELLO_LIST_ID: Optional[str] = None
     
-    # WhatsApp/WPPConnect Integration
+    # WhatsApp/WPPConnect Integration (Deprecated - usar WHATSAPP_API_*)
     WPP_URL: Optional[str] = None
     WPP_INSTANCE: Optional[str] = None
     WPP_TOKEN: Optional[str] = None
+    
+    # WhatsApp API (wpapi) - Nova implementação
+    WHATSAPP_API_URL: str = "http://localhost:3001"
+    WHATSAPP_API_KEY: str = "HUxJYioH28+/q45I46lAw5eCOGrHeeFpNPmfWVc/0Ck="
     
     # Google reCAPTCHA
     RECAPTCHA_SECRET_KEY: Optional[str] = None
