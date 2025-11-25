@@ -81,7 +81,7 @@ class WhatsAppService:
         Exemplo:
             ```python
             success = await whatsapp.enviar_mensagem(
-                "5585996039026",
+                "5585991042626",
                 "✅ Teste de mensagem"
             )
             ```
@@ -146,7 +146,7 @@ class WhatsAppService:
         Exemplo:
             ```python
             success = whatsapp.enviar_mensagem_individual(
-                "5585996039026",
+                "5585991042626",
                 "✅ Notificação: Nova demanda criada"
             )
             ```

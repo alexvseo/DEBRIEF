@@ -252,7 +252,7 @@ ZAPI_BASE_URL: https://api.z-api.io
 ZAPI_INSTANCE_ID: 3EABC3821EF52114B8836EDB289F0F12
 ZAPI_TOKEN: F9BFDFA1F0A75E79536CE12D
 ZAPI_CLIENT_TOKEN: F47cfa53858ee4869bf3e027187aa6742S
-Número Conectado: 5585996039026
+Número Conectado: 5585991042626
 ```
 
 #### Variáveis de Ambiente (.env)
@@ -281,7 +281,7 @@ POST {base_url}/send-text
 
 # Payload
 {
-    "phone": "5585996039026",
+    "phone": "5585991042626",
     "message": "Sua mensagem aqui"
 }
 

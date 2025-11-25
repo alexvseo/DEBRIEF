@@ -327,18 +327,18 @@ const demandaService = {
         throw new Error('Demanda não encontrada')
       }
 
-      // Soft delete: mudar status para cancelada
-      mockDemandasState[index].status = 'cancelada'
-      mockDemandasState[index].updated_at = new Date().toISOString()
+      // Remover da lista (hard delete)
+      mockDemandasState.splice(index, 1)
 
-      console.log('✅ Demanda cancelada (MOCK):', id)
+      console.log('✅ Demanda deletada (MOCK):', id)
       return { data: { success: true } }
     }
 
     // Produção
     try {
-      const response = await api.delete(`/demandas/${id}`)
-      return response
+      // DELETE retorna 204 (No Content), então não há response.data
+      await api.delete(`/demandas/${id}`)
+      return { data: { success: true } }
     } catch (error) {
       console.error('Erro ao deletar demanda:', error)
       throw error

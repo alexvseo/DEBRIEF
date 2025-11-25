@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus, Search, Filter, FileText, Clock, CheckCircle, XCircle, ChevronLeft, ChevronRight, Trash2, Eye, Edit } from 'lucide-react'
 import { toast } from 'sonner'
+import Footer from '@/components/layout/Footer'
 import { 
   Button, 
   Card, 
@@ -508,6 +509,9 @@ const MinhasDemandas = () => {
           </Card>
         </div>
       )}
+      
+      {/* Footer com versão */}
+      <Footer />
     </div>
   )
 }

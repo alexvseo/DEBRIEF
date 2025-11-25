@@ -7,7 +7,7 @@ echo ""
 INSTANCE_ID="3EABC3821EF52114B8836EDB289F0F12"
 TOKEN="F9BFDFA1F0A75E79536CE12D"
 BASE_URL="https://api.z-api.io/instances/$INSTANCE_ID/token/$TOKEN"
-PHONE="5585996039026"
+PHONE="5585991042626"
 
 echo "1️⃣ Verificando status da instância Z-API..."
 echo ""

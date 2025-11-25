@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     
     # Aplicação
     APP_NAME: str = "DeBrief API"
-    APP_VERSION: str = "1.0.0"
+    APP_VERSION: str = "1.1.0"
     DEBUG: bool = True
     
     # Servidor
@@ -89,7 +89,7 @@ class Settings(BaseSettings):
     ZAPI_TOKEN: str = "F9BFDFA1F0A75E79536CE12D"
     ZAPI_CLIENT_TOKEN: str = "F47cfa53858ee4869bf3e027187aa6742S"
     ZAPI_BASE_URL: str = "https://api.z-api.io"
-    ZAPI_PHONE_NUMBER: str = "5585996039026"
+    ZAPI_PHONE_NUMBER: str = "5585991042626"
     
     # Compatibilidade (mantido para não quebrar imports existentes)
     WHATSAPP_API_URL: str = f"https://api.z-api.io/instances/3EABC3821EF52114B8836EDB289F0F12/token/F9BFDFA1F0A75E79536CE12D"
@@ -112,7 +112,7 @@ class Settings(BaseSettings):
     
     # Environment
     ENVIRONMENT: str = "development"
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "http://82.25.92.217:2022"  # URL do frontend em produção
     MAX_UPLOAD_SIZE: int = 52428800  # 50MB
     ALLOWED_EXTENSIONS: Union[str, list[str]] = ["pdf", "jpg", "jpeg", "png"]
     

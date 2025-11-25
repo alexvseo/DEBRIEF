@@ -249,7 +249,8 @@ async def listar_demandas(
         joinedload(Demanda.cliente),
         joinedload(Demanda.secretaria),
         joinedload(Demanda.tipo_demanda),
-        joinedload(Demanda.prioridade)
+        joinedload(Demanda.prioridade),
+        joinedload(Demanda.usuario)
     )
     
     # Se não for master, filtrar apenas demandas do usuário

@@ -189,6 +189,11 @@ class NotificationService:
             "Urgente": "🔴"
         }.get(demanda.prioridade.nome, "📌")
         
+        # Obter URL do sistema
+        from app.core.config import settings
+        base_url = settings.FRONTEND_URL or "http://82.25.92.217:2022"
+        url_sistema = f"{base_url}/demanda/{demanda.id}"
+        
         # Construir mensagem
         mensagem = f"""
 🔔 *Nova Demanda Criada!*
@@ -202,7 +207,7 @@ class NotificationService:
 
 👤 *Solicitante:* {demanda.usuario.nome_completo}
 
-🔗 *Ver no Sistema:* {demanda.trello_card_url or 'Processando...'}
+🔗 *Ver no Sistema:* {url_sistema}
 
 _ID: {demanda.id}_
         """.strip()
@@ -242,6 +247,11 @@ _ID: {demanda.id}_
         if not usuarios:
             return 0
         
+        # Obter URL do sistema
+        from app.core.config import settings
+        base_url = settings.FRONTEND_URL or "http://82.25.92.217:2022"
+        url_sistema = f"{base_url}/demanda/{demanda.id}"
+        
         # Construir mensagem
         mensagem = f"""
 🔄 *Demanda Atualizada*
@@ -251,7 +261,7 @@ _ID: {demanda.id}_
 🏛️ *Secretaria:* {demanda.secretaria.nome}
 📊 *Status:* {demanda.status.value.replace('_', ' ').title()}
 
-🔗 *Ver detalhes:* {demanda.trello_card_url}
+🔗 *Ver detalhes:* {url_sistema}
 
 _ID: {demanda.id}_
         """.strip()
@@ -309,6 +319,11 @@ _ID: {demanda.id}_
         elif status_novo == "concluida":
             titulo = "✅ *Demanda Concluída!*"
         
+        # Obter URL do sistema
+        from app.core.config import settings
+        base_url = settings.FRONTEND_URL or "http://82.25.92.217:2022"
+        url_sistema = f"{base_url}/demanda/{demanda.id}"
+        
         mensagem = f"""
 {titulo}
 
@@ -317,7 +332,7 @@ _ID: {demanda.id}_
 
 {emoji_status} *Status:* {status_antigo.replace('_', ' ').title()} → *{status_novo.replace('_', ' ').title()}*
 
-🔗 *Ver no Sistema:* {demanda.trello_card_url}
+🔗 *Ver no Sistema:* {url_sistema}
 
 _ID: {demanda.id}_
         """.strip()

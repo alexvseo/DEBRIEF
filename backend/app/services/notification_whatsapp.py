@@ -57,6 +57,11 @@ class NotificationWhatsAppService:
         # Refresh para garantir que relacionamentos estão carregados
         self.db.refresh(demanda)
         
+        # Obter URL base do sistema
+        from app.core.config import settings
+        base_url = settings.FRONTEND_URL or "http://82.25.92.217:2022"
+        url_sistema = f"{base_url}/demanda/{demanda.id}"
+        
         dados = {
             "demanda_titulo": demanda.nome or "",
             "demanda_descricao": demanda.descricao or "",
@@ -71,7 +76,8 @@ class NotificationWhatsAppService:
             "data_criacao": demanda.created_at.strftime("%d/%m/%Y %H:%M") if demanda.created_at else "",
             "data_atualizacao": demanda.updated_at.strftime("%d/%m/%Y %H:%M") if demanda.updated_at else "",
             "status": demanda.status.value if demanda.status else "",
-            "trello_card_url": demanda.trello_card_url or ""
+            "trello_card_url": demanda.trello_card_url or "",
+            "url_sistema": url_sistema
         }
         
         return dados

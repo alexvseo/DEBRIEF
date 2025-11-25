@@ -130,7 +130,8 @@ class TemplateMensagem(BaseModel):
             "data_criacao": "Data de criação da demanda",
             "data_atualizacao": "Data da última atualização",
             "status": "Status atual da demanda",
-            "trello_card_url": "URL do card no Trello"
+            "trello_card_url": "URL do card no Trello",
+            "url_sistema": "URL da demanda no sistema DeBrief"
         }
     
     def renderizar(self, dados: dict) -> str:

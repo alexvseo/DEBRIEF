@@ -137,12 +137,23 @@ class PrioridadeSimples(BaseModel):
         from_attributes = True
 
 
+class UsuarioSimples(BaseModel):
+    """Schema simplificado de usuário"""
+    id: str
+    nome_completo: str
+    username: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+
 class DemandaDetalhada(DemandaResponse):
     """Schema detalhado de demanda (com relacionamentos)"""
     cliente: Optional[ClienteSimples] = None
     secretaria: Optional[SecretariaSimples] = None
     tipo_demanda: Optional[TipoDemandaSimples] = None
     prioridade: Optional[PrioridadeSimples] = None
+    usuario: Optional[UsuarioSimples] = None
     
     class Config:
         from_attributes = True

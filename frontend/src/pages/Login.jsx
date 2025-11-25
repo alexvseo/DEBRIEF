@@ -216,6 +216,12 @@ const Login = () => {
         {/* Informações Adicionais */}
         <div className="text-center text-xs text-gray-500 space-y-1">
           <p>© 2025 DeBrief. Todos os direitos reservados.</p>
+          <p className="flex items-center justify-center gap-2">
+            <span>Versão</span>
+            <span className="font-semibold text-gray-700 bg-gray-200 px-2 py-0.5 rounded">
+              v1.1.0
+            </span>
+          </p>
           <p>
             <Link to="/privacy" className="hover:underline">Privacidade</Link>
             {' • '}
