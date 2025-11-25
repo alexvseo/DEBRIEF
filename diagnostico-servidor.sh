@@ -133,3 +133,4 @@ echo "- A variável DATABASE_URL mostra exatamente onde o backend está conectan
 echo ""
 
 
+

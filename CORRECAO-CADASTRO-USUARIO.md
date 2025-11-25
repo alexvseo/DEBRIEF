@@ -236,3 +236,4 @@ As melhorias no `TipoUsuarioType` agora garantem que:
 **Impacto**: Cadastro de usuários totalmente funcional
 
 
+

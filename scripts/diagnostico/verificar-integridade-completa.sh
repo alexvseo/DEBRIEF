@@ -118,3 +118,4 @@ echo "Se houver problemas de conexão, execute:"
 echo "  ./scripts/diagnostico/corrigir-conexao-banco.sh"
 
 
+

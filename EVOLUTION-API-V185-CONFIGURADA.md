@@ -353,3 +353,4 @@ docker-compose restart
 **Versão:** Evolution API v1.8.5  
 **Status:** ⏳ Aguardando conexão WhatsApp
 
+

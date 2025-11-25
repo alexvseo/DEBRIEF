@@ -246,3 +246,4 @@ ssh root@82.25.92.217 "curl -s 'http://localhost:21465/instance/fetchInstances' 
 **Próxima tentativa recomendada:** 25/11/2025 ou 26/11/2025  
 **Status:** Aguardando liberação do WhatsApp  
 
+

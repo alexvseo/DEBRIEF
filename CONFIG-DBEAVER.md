@@ -256,3 +256,4 @@ cd /Users/alexmini/Documents/PROJETOS\ DEV\ COM\ IA/DEBRIEF
 **Pronto para usar! 🚀**
 
 
+

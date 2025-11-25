@@ -216,3 +216,4 @@ Agora é só atualizar a senha no DBeaver e continuar usando normalmente.
 **Status:** ✅ Operacional
 
 
+

@@ -535,3 +535,4 @@ Quando o IP do servidor liberar (25/11 ou 26/11):
 **Válido até:** Bloqueio do servidor liberar  
 **Próxima revisão:** 25/11/2025  
 
+

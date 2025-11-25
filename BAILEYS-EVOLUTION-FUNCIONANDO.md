@@ -222,3 +222,4 @@ Cada cliente pode ter seu próprio WhatsApp conectado! 🎉
 **Atualizado em**: 24/11/2025 19:02  
 **Status**: Evolution funcionando, aguardando conexão WhatsApp
 
+

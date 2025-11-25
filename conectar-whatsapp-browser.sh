@@ -83,3 +83,4 @@ echo -e "${YELLOW}💡 Após conectar, teste no DeBrief:${NC}"
 echo "   https://debrief.interce.com.br/admin/configuracao-whatsapp"
 echo ""
 
+

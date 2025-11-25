@@ -118,3 +118,4 @@ echo "- Se PostgreSQL local: precisa configurar pg_hba.conf para aceitar conexõ
 echo ""
 
 
+

@@ -348,3 +348,4 @@ API Key: debrief-wpp-58a2b7dda7da9474958e2a853062d5d5
 **Próxima verificação:** 25/11/2025 ou 26/11/2025  
 **Status:** Aguardando decisão sobre qual solução usar  
 
+
