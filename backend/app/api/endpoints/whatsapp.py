@@ -234,9 +234,7 @@ def listar_templates(
     
     Requer permissão: Master
     """
-    templates = db.query(TemplateMensagem).filter(
-        TemplateMensagem.deleted_at == None
-    ).all()
+    templates = db.query(TemplateMensagem).all()
     
     return templates
 
@@ -253,8 +251,7 @@ def obter_template(
     Requer permissão: Master
     """
     template = db.query(TemplateMensagem).filter(
-        TemplateMensagem.id == template_id,
-        TemplateMensagem.deleted_at == None
+        TemplateMensagem.id == template_id
     ).first()
     
     if not template:
@@ -279,8 +276,7 @@ def criar_template(
     """
     # Verificar se já existe template com mesmo nome
     template_existente = db.query(TemplateMensagem).filter(
-        TemplateMensagem.nome == template_data.nome,
-        TemplateMensagem.deleted_at == None
+        TemplateMensagem.nome == template_data.nome
     ).first()
     
     if template_existente:
