@@ -42,11 +42,11 @@ const ConfiguracaoWhatsApp = () => {
   const [verificando, setVerificando] = useState(false)
   const [statusConnection, setStatusConnection] = useState(null)
   
-  // Dados fixos do sistema (Evolution API já configurado)
+  // Dados fixos do sistema (Z-API já configurado)
   const [configuracaoSistema] = useState({
-    numero_remetente: '5585991042626',
-    instancia_wpp: 'debrief',
-    api_url: 'http://localhost:21465',
+    numero_remetente: '5585996039026',
+    instancia_wpp: 'Z-API',
+    api_url: 'https://api.z-api.io',
     ativo: true
   })
   
@@ -247,11 +247,11 @@ const ConfiguracaoWhatsApp = () => {
           </AlertTitle>
           <AlertDescription>
             {verificando ? (
-              'Verificando status da conexão Evolution API...'
+              'Verificando status da conexão Z-API...'
             ) : statusConnection?.connected ? (
               `Instância "${configuracaoSistema.instancia_wpp}" está online e pronta para enviar notificações`
             ) : (
-              `Não foi possível conectar à instância "${configuracaoSistema.instancia_wpp}". Verifique o Evolution API.`
+              `Não foi possível conectar à instância "${configuracaoSistema.instancia_wpp}". Verifique a conexão.`
             )}
           </AlertDescription>
         </Alert>
@@ -261,7 +261,7 @@ const ConfiguracaoWhatsApp = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Configuração do Sistema (Evolution API)
+              Configuração do Sistema (Z-API)
             </CardTitle>
           </CardHeader>
           
@@ -297,7 +297,7 @@ const ConfiguracaoWhatsApp = () => {
                 className="bg-gray-50"
               />
               <p className="text-xs text-gray-500">
-                Instância configurada no servidor Evolution API
+                Instância configurada no servidor Z-API
               </p>
             </div>
             
@@ -507,7 +507,7 @@ const ConfiguracaoWhatsApp = () => {
               <li><strong>Teste falhou:</strong>
                 <ul className="ml-6 mt-1 space-y-1 list-disc list-inside">
                   <li>Aguarde alguns segundos e tente novamente</li>
-                  <li>Verifique se o WhatsApp Evolution API está rodando</li>
+                  <li>Verifique se o WhatsApp Z-API está conectado</li>
                   <li>Clique em "Verificar Conexão" para atualizar o status</li>
                 </ul>
               </li>
