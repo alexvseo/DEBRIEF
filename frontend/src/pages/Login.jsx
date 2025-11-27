@@ -2,7 +2,7 @@
  * Página de Login
  * Interface de autenticação usando componentes UI
  */
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import {
@@ -17,8 +17,9 @@ import {
   Alert,
   AlertDescription,
 } from '@/components/ui'
-import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, LogIn, KeyRound, Info } from 'lucide-react'
 import { toast } from 'sonner'
+import ReCAPTCHA from 'react-google-recaptcha'
 
 /**
  * Página de Login
@@ -27,13 +28,18 @@ const Login = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { login, isAuthenticated } = useAuth()
+  const recaptchaRef = useRef(null)
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY
 
   // Estados do formulário
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [otp, setOtp] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [requireOtp, setRequireOtp] = useState(false)
+  const [recaptchaToken, setRecaptchaToken] = useState(null)
 
   // Redirecionar se já autenticado
   if (isAuthenticated) {
@@ -62,11 +68,26 @@ const Login = () => {
     try {
       setLoading(true)
 
+      if (recaptchaSiteKey && !recaptchaToken) {
+        setError('Confirme o reCAPTCHA antes de continuar')
+        setLoading(false)
+        return
+      }
+
       // Fazer login
-      const { user } = await login(username, password)
+      const { user } = await login(username, password, {
+        recaptchaToken,
+        otp: otp.trim() || undefined,
+      })
 
       // Mostrar mensagem de sucesso
       toast.success(`Bem-vindo(a), ${user.nome_completo}!`)
+      setOtp('')
+      setRequireOtp(false)
+      if (recaptchaSiteKey) {
+        recaptchaRef.current?.reset()
+        setRecaptchaToken(null)
+      }
 
       // Redirecionar
       const from = location.state?.from?.pathname || '/dashboard'
@@ -75,6 +96,13 @@ const Login = () => {
       console.error('Erro no login:', err)
       setError(err.message || 'Erro ao fazer login. Tente novamente.')
       toast.error(err.message || 'Erro ao fazer login')
+      if (err.message?.toLowerCase().includes('totp')) {
+        setRequireOtp(true)
+      }
+      if (recaptchaSiteKey) {
+        recaptchaRef.current?.reset()
+        setRecaptchaToken(null)
+      }
     } finally {
       setLoading(false)
     }
@@ -106,6 +134,14 @@ const Login = () => {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               
+              {/* Mensagem de atualizações */}
+              <Alert variant="info">
+                <AlertDescription className="flex items-center gap-2">
+                  <Info className="h-4 w-4 flex-shrink-0" />
+                  <span>A plataforma está passando por atualizações. Algumas funcionalidades podem estar temporariamente indisponíveis.</span>
+                </AlertDescription>
+              </Alert>
+
               {/* Mensagem de erro */}
               {error && (
                 <Alert variant="error">
@@ -154,14 +190,38 @@ const Login = () => {
                 />
               </div>
 
-              {/* Link de Esqueci a Senha */}
-              <div className="text-right">
+              {/* Código 2FA */}
+              {(requireOtp || otp) && (
+                <Input
+                  label="Código 2FA"
+                  type="text"
+                  placeholder="000000"
+                  icon={<KeyRound className="h-4 w-4" />}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  disabled={loading}
+                  inputMode="numeric"
+                  maxLength={6}
+                />
+              )}
+
+              {/* Link de Esqueci a Senha / 2FA */}
+              <div className="flex items-center justify-between text-sm">
                 <Link 
                   to="/forgot-password" 
-                  className="text-sm text-primary hover:underline"
+                  className="text-primary hover:underline"
                 >
                   Esqueci minha senha
                 </Link>
+                {!requireOtp && (
+                  <button
+                    type="button"
+                    className="text-primary hover:underline"
+                    onClick={() => setRequireOtp(true)}
+                  >
+                    Tenho código 2FA
+                  </button>
+                )}
               </div>
 
             </CardContent>
@@ -186,6 +246,18 @@ const Login = () => {
                   </>
                 )}
               </Button>
+
+              {/* reCAPTCHA */}
+              {recaptchaSiteKey && (
+                <div className="w-full flex justify-center">
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={recaptchaSiteKey}
+                    onChange={(token) => setRecaptchaToken(token)}
+                    onExpired={() => setRecaptchaToken(null)}
+                  />
+                </div>
+              )}
 
               {/* Divider */}
               <div className="relative w-full">

@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 
 // Páginas
+import EmBreve from '@/pages/EmBreve'
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
 import NovaDemanda from '@/pages/NovaDemanda'
@@ -65,17 +66,14 @@ function App() {
 
   return (
     <Routes>
-      {/* Rota raiz - redireciona baseado na autenticação */}
+      {/* Rota raiz - redireciona para página de manutenção */}
       <Route 
         path="/" 
-        element={
-          isAuthenticated ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } 
+        element={<Navigate to="/em-breve" replace />}
       />
+
+      {/* Rota de Manutenção - Em Breve */}
+      <Route path="/em-breve" element={<EmBreve />} />
 
       {/* Rota de Login */}
       <Route path="/login" element={<Login />} />
