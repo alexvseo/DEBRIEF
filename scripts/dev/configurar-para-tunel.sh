@@ -42,7 +42,7 @@ else
     else
         print_info "Criando backend/.env.dev básico..."
         cat > backend/.env.dev << 'EOF'
-DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief
+DATABASE_URL=postgresql://postgres:<redacted-legacy-password-encoded>@localhost:5432/dbrief
 SECRET_KEY=dev-secret-key-local-change-me
 FRONTEND_URL=http://localhost:5173
 ENVIRONMENT=development

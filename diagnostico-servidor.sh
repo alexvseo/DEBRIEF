@@ -76,12 +76,12 @@ else
     echo "Tentando conexão com PostgreSQL local do servidor..."
     
     # Tentar com diferentes credenciais
-    echo "Tentando com usuário 'postgres' e senha 'Mslestra@2025db':"
-    PGPASSWORD='Mslestra@2025db' psql -h localhost -U postgres -d dbrief -c "\dt" 2>/dev/null && {
+    echo "Tentando com usuário 'postgres' e senha '<redacted-db-password>':"
+    PGPASSWORD='<redacted-db-password>' psql -h localhost -U postgres -d dbrief -c "\dt" 2>/dev/null && {
         echo "✅ Conectado ao PostgreSQL LOCAL do servidor!"
         echo ""
         echo "Contando registros:"
-        PGPASSWORD='Mslestra@2025db' psql -h localhost -U postgres -d dbrief -c "
+        PGPASSWORD='<redacted-db-password>' psql -h localhost -U postgres -d dbrief -c "
             SELECT 'usuarios' as tabela, COUNT(*) FROM usuarios
             UNION ALL
             SELECT 'demandas', COUNT(*) FROM demandas
@@ -89,10 +89,10 @@ else
             SELECT 'secretarias', COUNT(*) FROM secretarias;
         " 2>/dev/null
     } || {
-        echo "Tentando com usuário 'root' e senha 'Mslestra@2025':"
-        PGPASSWORD='Mslestra@2025' psql -h localhost -U root -d dbrief -c "\dt" 2>/dev/null && {
+        echo "Tentando com usuário 'root' e senha '<redacted-db-password>':"
+        PGPASSWORD='<redacted-db-password>' psql -h localhost -U root -d dbrief -c "\dt" 2>/dev/null && {
             echo "✅ Conectado com usuário 'root'!"
-            PGPASSWORD='Mslestra@2025' psql -h localhost -U root -d dbrief -c "
+            PGPASSWORD='<redacted-db-password>' psql -h localhost -U root -d dbrief -c "
                 SELECT 'usuarios' as tabela, COUNT(*) FROM usuarios
                 UNION ALL
                 SELECT 'demandas', COUNT(*) FROM demandas
@@ -131,6 +131,8 @@ echo "- Se você viu o container 'debrief_db': os dados estão no container Dock
 echo "- Se não viu o container 'debrief_db': os dados estão no PostgreSQL local"
 echo "- A variável DATABASE_URL mostra exatamente onde o backend está conectando"
 echo ""
+
+
 
 
 

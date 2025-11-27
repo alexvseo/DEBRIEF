@@ -1,7 +1,19 @@
 #!/bin/bash
+set -euo pipefail
 
 # Script para Deploy Final com Configurações Corretas
 # Execute no servidor: ./deploy-final.sh
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+SECRETS_LIB="${SCRIPT_DIR}/lib/secrets.sh"
+if [ -f "${SECRETS_LIB}" ]; then
+    # shellcheck source=../../scripts/deploy/lib/secrets.sh
+    source "${SECRETS_LIB}"
+    debrief_load_secrets "${PROJECT_ROOT}"
+fi
+
+cd "${PROJECT_ROOT}"
 
 echo "=========================================="
 echo "🚀 DEPLOY FINAL - DeBrief"

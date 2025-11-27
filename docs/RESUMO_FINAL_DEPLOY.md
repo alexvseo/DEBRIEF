@@ -172,12 +172,12 @@ Host: 82.25.92.217
 Port: 5432
 Database: dbrief
 User: root
-Password: Mslestra@2025
+Password: <redacted-db-password>
 ```
 
 ### Connection String (No docker-compose.yml):
 ```
-postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 ```
 
 ### Portas da Aplicação:

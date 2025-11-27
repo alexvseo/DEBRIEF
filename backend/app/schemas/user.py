@@ -122,6 +122,7 @@ class UserResponse(BaseModel):
     receber_notificacoes: bool = True
     created_at: datetime
     updated_at: datetime
+    mfa_enabled: bool = False
     
     class Config:
         from_attributes = True  # Permite conversão de ORM
@@ -151,6 +152,28 @@ class TokenData(BaseModel):
 class LoginResponse(BaseModel):
     """Resposta completa de login"""
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     user: UserResponse
+
+
+class RefreshTokenRequest(BaseModel):
+    """Payload para renovar token de acesso"""
+    refresh_token: str
+
+
+class TwoFactorSetupResponse(BaseModel):
+    """Resposta com dados para configurar MFA"""
+    secret: str
+    otpauth_url: str
+
+
+class TwoFactorCodeRequest(BaseModel):
+    """Payload para confirmar/disable MFA"""
+    code: str = Field(..., min_length=6, max_length=6)
+
+
+class LogoutRequest(BaseModel):
+    """Payload opcional para logout"""
+    refresh_token: Optional[str] = None
 

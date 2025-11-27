@@ -247,3 +247,5 @@ ssh root@82.25.92.217 "curl -s 'http://localhost:21465/instance/fetchInstances' 
 **Status:** Aguardando liberação do WhatsApp  
 
 
+
+

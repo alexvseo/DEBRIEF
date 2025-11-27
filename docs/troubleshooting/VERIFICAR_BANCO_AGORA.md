@@ -4,7 +4,7 @@
 
 O `docker-compose.yml` já está configurado corretamente:
 ```
-DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5432/dbrief
+DATABASE_URL=postgresql://postgres:<redacted-legacy-password-encoded>@host.docker.internal:5432/dbrief
 ```
 
 ## 🧪 Verificação Completa
@@ -32,7 +32,7 @@ docker exec debrief-backend env | grep DATABASE_URL
 systemctl status postgresql
 
 # 3. Testar conexão local
-export PGPASSWORD="Mslestra@2025"
+export PGPASSWORD="<redacted-db-password>"
 psql -h localhost -U postgres -d dbrief -c "SELECT 1;"
 
 # 4. Testar conexão do container

@@ -18,20 +18,20 @@ echo "=================================================="
 docker exec debrief_db env | grep POSTGRES_PASSWORD
 echo ""
 
-echo "2️⃣ Resetando senha do usuário postgres para: Mslestra@2025db"
+echo "2️⃣ Resetando senha do usuário postgres para: <redacted-db-password>"
 echo "=================================================="
-docker exec debrief_db psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'Mslestra@2025db';"
+docker exec debrief_db psql -U postgres -c "ALTER USER postgres WITH PASSWORD '<redacted-db-password>';"
 echo ""
 
 echo "3️⃣ Verificando se a senha foi alterada (testando conexão)"
 echo "=================================================="
-docker exec debrief_db sh -c "PGPASSWORD='Mslestra@2025db' psql -U postgres -d dbrief -c 'SELECT COUNT(*) FROM demandas;'"
+docker exec debrief_db sh -c "PGPASSWORD='<redacted-db-password>' psql -U postgres -d dbrief -c 'SELECT COUNT(*) FROM demandas;'"
 echo ""
 
 echo "4️⃣ Atualizando .env do backend com a senha correta"
 echo "=================================================="
 cd /var/www/debrief/backend
-sed -i 's|postgresql://postgres:[^@]*@|postgresql://postgres:Mslestra%402025db@|g' .env
+sed -i 's|postgresql://postgres:[^@]*@|postgresql://postgres:<redacted-db-password-encoded>@|g' .env
 grep DATABASE_URL .env | sed 's/:[^@]*@/:***@/g'
 echo ""
 
@@ -60,12 +60,14 @@ echo "=================================================="
 echo "✅ SENHA RESETADA COM SUCESSO!"
 echo "=================================================="
 echo ""
-echo "Nova senha: Mslestra@2025db"
+echo "Nova senha: <redacted-db-password>"
 
 ENDSSH
 
 echo ""
 echo "💡 Teste no navegador: http://debrief.interce.com.br"
+
+
 
 
 

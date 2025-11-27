@@ -17,8 +17,8 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-NOVA_SENHA="Mslestra@2025db"
-NOVA_SENHA_ENCODED="Mslestra%402025db"
+NOVA_SENHA="<redacted-db-password>"
+NOVA_SENHA_ENCODED="<redacted-db-password-encoded>"
 
 echo -e "${BLUE}Nova senha: ${NOVA_SENHA}${NC}"
 echo -e "${BLUE}Nova senha (URL encoded): ${NOVA_SENHA_ENCODED}${NC}"
@@ -93,6 +93,8 @@ echo ""
 echo -e "${YELLOW}📝 Agora atualize sua conexão local (DBeaver):${NC}"
 echo "  Password: ${NOVA_SENHA}"
 echo ""
+
+
 
 
 

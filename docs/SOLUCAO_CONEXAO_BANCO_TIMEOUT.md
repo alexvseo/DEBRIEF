@@ -219,7 +219,7 @@ conn = psycopg2.connect(
     port=5432,
     database="dbrief",
     user="root",
-    password="Mslestra@2025"
+    password="<redacted-db-password>"
 )
 print("✅ Conexão OK!")
 conn.close()

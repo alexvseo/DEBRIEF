@@ -81,7 +81,7 @@ export const authService = {
    * @example
    * const { access_token, user } = await authService.login('usuario', 'senha')
    */
-  login: async (username, password) => {
+  login: async (username, password, options = {}) => {
     // Usar mock se ativado
     if (USE_MOCK) {
       return mockLogin(username, password)
@@ -95,10 +95,18 @@ export const authService = {
       params.append('username', username)
       params.append('password', password)
       
+      const headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      }
+      if (options.recaptchaToken) {
+        headers['X-Recaptcha-Token'] = options.recaptchaToken
+      }
+      if (options.otp) {
+        headers['X-TOTP-Code'] = options.otp
+      }
+      
       const response = await api.post('/auth/login', params.toString(), {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers,
       })
       
       return response.data
@@ -124,10 +132,11 @@ export const authService = {
    * @example
    * await authService.logout()
    */
-  logout: async () => {
+  logout: async (refreshToken) => {
     try {
-      // Se o backend tiver endpoint de logout, chamar aqui
-      // await api.post('/auth/logout')
+      await api.post('/auth/logout', {
+        refresh_token: refreshToken,
+      })
       return Promise.resolve()
     } catch (error) {
       console.error('Erro ao fazer logout:', error)

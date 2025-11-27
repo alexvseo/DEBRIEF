@@ -119,3 +119,5 @@ echo "  ./scripts/diagnostico/corrigir-conexao-banco.sh"
 
 
 
+
+

@@ -6,7 +6,7 @@ echo ""
 
 DB_NAME="dbrief"
 DB_USER="postgres"
-DB_PASS="Mslestra@2025"
+DB_PASS="<redacted-db-password>"
 
 export PGPASSWORD="$DB_PASS"
 

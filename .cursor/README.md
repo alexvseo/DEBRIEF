@@ -95,7 +95,7 @@ Host debrief
 - **Servidor:** 127.0.0.1:5432
 - **Banco:** dbrief
 - **Usuário:** postgres
-- **Senha:** Mslestrategia.2025@
+- **Senha:** <redacted-legacy-password>
 
 ### Diretórios
 - **Local:** `/Users/alexsantos/Documents/PROJETOS DEV COM IA/DEBRIEF`
@@ -108,7 +108,7 @@ Host debrief
 
 O sistema está configurado para acesso automático via:
 1. **Chave SSH:** `~/.ssh/id_ed25519`
-2. **Passphrase:** `Mslestra2025@` (configurada no ssh-agent)
+2. **Passphrase:** `<redacted-passphrase>` (configurada no ssh-agent)
 3. **Conexão Persistente:** Mantém conexão por 4 horas
 4. **Túnel Automático:** Script gerencia túnel SSH para banco
 

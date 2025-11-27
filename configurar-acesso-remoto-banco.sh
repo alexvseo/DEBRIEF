@@ -41,7 +41,7 @@ if docker ps | grep -q "debrief_db"; then
     echo "  Port: 5432"
     echo "  Database: dbrief"
     echo "  Username: postgres"
-    echo "  Password: Mslestra@2025"
+    echo "  Password: <redacted-db-password>"
     echo ""
     echo "OPÇÃO 2: Expor porta do container (NÃO RECOMENDADO)"
     echo "----------------------------------------------------"
@@ -140,7 +140,7 @@ elif systemctl is-active --quiet postgresql; then
     echo "  Port: 5432"
     echo "  Database: dbrief"
     echo "  Username: postgres"
-    echo "  Password: Mslestra@2025db"
+    echo "  Password: <redacted-db-password>"
     echo ""
     echo -e "${YELLOW}⚠️  AVISO DE SEGURANÇA:${NC}"
     echo "O banco está agora acessível remotamente."
@@ -155,6 +155,8 @@ else
     echo "O banco pode estar em outro lugar ou não estar instalado."
     exit 1
 fi
+
+
 
 
 

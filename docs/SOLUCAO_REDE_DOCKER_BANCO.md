@@ -33,7 +33,7 @@ backend:
   extra_hosts:
     - "host.docker.internal:host-gateway"
   environment:
-    - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@host.docker.internal:5432/dbrief
+    - DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@host.docker.internal:5432/dbrief
 ```
 
 **O que isso faz:**
@@ -45,12 +45,12 @@ backend:
 
 Mudado de:
 ```
-DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 ```
 
 Para:
 ```
-DATABASE_URL=postgresql://root:Mslestrategia.2025%40@host.docker.internal:5432/dbrief
+DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@host.docker.internal:5432/dbrief
 ```
 
 ---
@@ -100,7 +100,7 @@ conn = psycopg2.connect(
     port=5432,
     database="dbrief",
     user="root",
-    password="Mslestra@2025"
+    password="<redacted-db-password>"
 )
 print("✅ Conexão OK!")
 conn.close()
@@ -119,7 +119,7 @@ HOST_IP=$(hostname -I | awk '{print $1}')
 echo "IP do host: $HOST_IP"
 
 # Atualizar docker-compose.yml
-# DATABASE_URL=postgresql://root:Mslestrategia.2025%40@$HOST_IP:5432/dbrief
+# DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@$HOST_IP:5432/dbrief
 ```
 
 ### Alternativa 2: Usar `network_mode: host`
@@ -128,7 +128,7 @@ echo "IP do host: $HOST_IP"
 backend:
   network_mode: host  # Container usa rede do host diretamente
   environment:
-    - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+    - DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 ```
 
 **Nota:** Com `network_mode: host`, não precisa mapear portas e o container acessa a rede do host diretamente.
@@ -140,7 +140,7 @@ backend:
 DOCKER_GATEWAY=$(docker network inspect debrief_debrief-network | grep Gateway | head -1 | awk '{print $2}' | tr -d '"' | tr -d ',')
 
 # Usar gateway em vez de IP externo
-# DATABASE_URL=postgresql://root:Mslestrategia.2025%40@$DOCKER_GATEWAY:5432/dbrief
+# DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@$DOCKER_GATEWAY:5432/dbrief
 ```
 
 ---
@@ -255,7 +255,7 @@ try:
         port=5432,
         database="dbrief",
         user="root",
-        password="Mslestra@2025",
+        password="<redacted-db-password>",
         connect_timeout=5
     )
     print("✅ Conexão OK!")

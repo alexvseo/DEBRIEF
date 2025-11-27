@@ -94,11 +94,22 @@ class TrelloService:
             'token': self.token
         }
     
+    def _request(self, method: str, url: str, params: Optional[dict] = None, **kwargs) -> requests.Response:
+        """Wrapper centralizado para chamadas HTTP com validação."""
+        merged_params = params.copy() if params else {}
+        merged_params.update(self._get_auth_params())
+        try:
+            response = requests.request(method, url, params=merged_params, timeout=15, **kwargs)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.RequestException as exc:
+            logger.error("Erro Trello %s %s: %s", method.upper(), url, exc)
+            raise
+    
     def _get_board_info(self) -> dict:
         """Obter informações do board"""
         url = f"{self.base_url}/boards/{self.board_id}"
-        response = requests.get(url, params=self._get_auth_params())
-        response.raise_for_status()
+        response = self._request("get", url)
         return response.json()
     
     async def criar_card(self, demanda: Demanda, db: Session) -> Dict:
@@ -205,21 +216,18 @@ class TrelloService:
             
             # ========== CRIAR CARD ==========
             url = f"{self.base_url}/cards"
-            params = self._get_auth_params()
-            params.update({
+            params = {
                 'idList': self.lista_id,
                 'name': card_name,
                 'desc': card_desc,
                 'pos': 'top'
-            })
+            }
             
             # Adicionar due date se houver
             if demanda.prazo_final:
                 params['due'] = demanda.prazo_final.isoformat()
             
-            response = requests.post(url, params=params)
-            response.raise_for_status()
-            card_data = response.json()
+            card_data = self._request("post", url, params=params).json()
             
             card_id = card_data['id']
             card_url = card_data['url']
@@ -235,9 +243,8 @@ class TrelloService:
                 try:
                     # Adicionar label ao card
                     label_url = f"{self.base_url}/cards/{card_id}/idLabels"
-                    label_params = self._get_auth_params()
-                    label_params['value'] = etiqueta_cliente.etiqueta_trello_id
-                    requests.post(label_url, params=label_params)
+                    label_params = {'value': etiqueta_cliente.etiqueta_trello_id}
+                    self._request("post", label_url, params=label_params)
                     logger.info(f"Etiqueta '{etiqueta_cliente.etiqueta_nome}' aplicada ao card")
                 except Exception as e:
                     logger.warning(f"Erro ao aplicar etiqueta do cliente: {e}")
@@ -248,16 +255,14 @@ class TrelloService:
             try:
                 # Buscar labels do board
                 labels_url = f"{self.base_url}/boards/{self.board_id}/labels"
-                labels_response = requests.get(labels_url, params=self._get_auth_params())
-                labels = labels_response.json()
+                labels = self._request("get", labels_url).json()
                 
                 prioridade_nome = demanda.prioridade.nome
                 for label in labels:
                     if label.get('name', '').lower() == prioridade_nome.lower():
                         label_url = f"{self.base_url}/cards/{card_id}/idLabels"
-                        label_params = self._get_auth_params()
-                        label_params['value'] = label['id']
-                        requests.post(label_url, params=label_params)
+                        label_params = {'value': label['id']}
+                        self._request("post", label_url, params=label_params)
                         logger.info(f"Label '{prioridade_nome}' adicionado ao card")
                         break
             except Exception as e:
@@ -267,9 +272,8 @@ class TrelloService:
             if hasattr(demanda.cliente, 'trello_member_id') and demanda.cliente.trello_member_id:
                 try:
                     member_url = f"{self.base_url}/cards/{card_id}/idMembers"
-                    member_params = self._get_auth_params()
-                    member_params['value'] = demanda.cliente.trello_member_id
-                    requests.post(member_url, params=member_params)
+                    member_params = {'value': demanda.cliente.trello_member_id}
+                    self._request("post", member_url, params=member_params)
                     logger.info(f"Membro {demanda.cliente.trello_member_id} atribuído ao card")
                 except Exception as e:
                     logger.warning(f"Não foi possível adicionar membro: {e}")
@@ -281,10 +285,11 @@ class TrelloService:
                         # Construir URL pública do anexo
                         anexo_url = f"{settings.FRONTEND_URL}/uploads/{anexo.caminho}"
                         attach_url = f"{self.base_url}/cards/{card_id}/attachments"
-                        attach_params = self._get_auth_params()
-                        attach_params['url'] = anexo_url
-                        attach_params['name'] = anexo.nome_arquivo
-                        requests.post(attach_url, params=attach_params)
+                        attach_params = {
+                            'url': anexo_url,
+                            'name': anexo.nome_arquivo
+                        }
+                        self._request("post", attach_url, params=attach_params)
                         logger.info(f"Anexo '{anexo.nome_arquivo}' adicionado ao card")
                     except Exception as e:
                         logger.warning(f"Erro ao anexar arquivo '{anexo.nome_arquivo}': {e}")
@@ -370,15 +375,12 @@ class TrelloService:
             
             # Fazer requisição de atualização
             url = f"{self.base_url}/cards/{demanda.trello_card_id}"
-            params = self._get_auth_params()
-            params['name'] = card_name
-            params['desc'] = card_desc
+            params = {'name': card_name, 'desc': card_desc}
             
             if demanda.prazo_final:
                 params['due'] = demanda.prazo_final.isoformat()
             
-            response = requests.put(url, params=params)
-            response.raise_for_status()
+            self._request("put", url, params=params)
             
             logger.info(f"Card atualizado com sucesso")
             return True
@@ -412,11 +414,9 @@ class TrelloService:
             texto_final = f"**{autor}:** {comentario}" if autor else comentario
             
             url = f"{self.base_url}/cards/{demanda.trello_card_id}/actions/comments"
-            params = self._get_auth_params()
-            params['text'] = texto_final
+            params = {'text': texto_final}
             
-            response = requests.post(url, params=params)
-            response.raise_for_status()
+            self._request("post", url, params=params)
             
             logger.info(f"Comentário adicionado ao card {demanda.trello_card_id}")
             return True
@@ -455,9 +455,7 @@ class TrelloService:
             
             # Buscar listas do board
             url = f"{self.base_url}/boards/{self.board_id}/lists"
-            response = requests.get(url, params=self._get_auth_params())
-            response.raise_for_status()
-            listas = response.json()
+            listas = self._request("get", url).json()
             
             # Buscar lista pelo nome
             for lista in listas:
@@ -488,11 +486,8 @@ class TrelloService:
         
         try:
             url = f"{self.base_url}/cards/{demanda.trello_card_id}"
-            params = self._get_auth_params()
-            params['closed'] = 'true'
-            
-            response = requests.put(url, params=params)
-            response.raise_for_status()
+            params = {'closed': 'true'}
+            self._request("put", url, params=params)
             
             logger.info(f"Card {demanda.trello_card_id} arquivado")
             return True
@@ -528,11 +523,7 @@ class TrelloService:
         
         try:
             url = f"{self.base_url}/cards/{demanda.trello_card_id}"
-            params = self._get_auth_params()
-            
-            # DELETE request para remover card permanentemente
-            response = requests.delete(url, params=params)
-            response.raise_for_status()
+            self._request("delete", url)
             
             logger.info(f"Card {demanda.trello_card_id} deletado permanentemente do Trello")
             return True

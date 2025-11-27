@@ -28,7 +28,7 @@ O túnel SSH está rodando e mantendo a conexão ativa automaticamente.
 │  Port:       5432                       │
 │  Database:   dbrief                     │
 │  Username:   postgres                   │
-│  Password:   Mslestra@2025db            │
+│  Password:   <redacted-db-password>            │
 │                                         │
 │  ☑ Show all databases                  │
 │  ☑ Save password                       │
@@ -156,8 +156,8 @@ ps aux | grep "ssh.*5432"
 **Problema:** Senha incorreta
 
 **Soluções possíveis:**
-1. Tente senha: `Mslestra@2025db`
-2. Tente senha: `Mslestra@2025` (sem 'db')
+1. Tente senha: `<redacted-db-password>`
+2. Tente senha: `<redacted-db-password>` (sem 'db')
 3. Verifique o arquivo `.env` no servidor
 
 ---
@@ -254,6 +254,8 @@ cd /Users/alexmini/Documents/PROJETOS\ DEV\ COM\ IA/DEBRIEF
 ```
 
 **Pronto para usar! 🚀**
+
+
 
 
 

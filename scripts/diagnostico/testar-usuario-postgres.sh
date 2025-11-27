@@ -34,7 +34,7 @@ print_error() {
 # Configurações
 DB_NAME="dbrief"
 DB_USER="postgres"
-DB_PASS="Mslestra@2025"
+DB_PASS="<redacted-db-password>"
 
 echo "Configurações:"
 echo "  Usuário: $DB_USER"
@@ -209,13 +209,13 @@ if [ $PYTHON_EXIT -eq 0 ]; then
     print_info "Próximos passos:"
     echo ""
     echo "1️⃣  Atualizar DATABASE_URL no docker-compose.yml:"
-    echo "   DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief"
+    echo "   DATABASE_URL=postgresql://postgres:<redacted-legacy-password-encoded>@localhost:5432/dbrief"
     echo ""
     echo "2️⃣  Usar network_mode: host para o backend:"
     echo "   docker-compose -f docker-compose.host-network.yml up -d"
     echo ""
     echo "3️⃣  Ou atualizar docker-compose.yml com:"
-    echo "   - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief"
+    echo "   - DATABASE_URL=postgresql://postgres:<redacted-legacy-password-encoded>@localhost:5432/dbrief"
     echo "   - network_mode: host no backend"
     echo ""
 else

@@ -79,7 +79,7 @@ ssh ${SERVER_USER}@${SERVER_HOST} << 'ENDSSH'
     
     echo "5️⃣  Testando conexão local com PostgreSQL..."
     echo ""
-    export PGPASSWORD="Mslestra@2025"
+    export PGPASSWORD="<redacted-db-password>"
     if psql -h localhost -U postgres -d dbrief -c "SELECT version();" &> /dev/null; then
         echo "✅ Conexão local funciona"
         psql -h localhost -U postgres -d dbrief -c "SELECT version();" | head -3

@@ -59,7 +59,7 @@ Host: 82.25.92.217
 Port: 5432
 Database: dbrief
 User: root
-Password: Mslestra@2025
+Password: <redacted-db-password>
 ```
 
 **SSH Access:**
@@ -149,7 +149,7 @@ docker-compose exec backend python manage.py
 
 ```bash
 # Conectar ao PostgreSQL remoto via container
-docker-compose exec backend psql postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+docker-compose exec backend psql postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 
 # Executar migrations
 docker-compose exec backend alembic upgrade head
@@ -311,7 +311,7 @@ docker-compose up -d
 
 ```bash
 # Testar conexão do host
-psql postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+psql postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 
 # Testar do container
 docker-compose exec backend python -c "from app.core.database import engine; engine.connect()"

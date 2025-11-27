@@ -36,7 +36,7 @@ DB_HOST="82.25.92.217"
 DB_PORT="5432"
 DB_NAME="dbrief"
 DB_USER="root"
-DB_PASS="Mslestra@2025"
+DB_PASS="<redacted-db-password>"
 
 echo "Configurações:"
 echo "  Host: $DB_HOST"

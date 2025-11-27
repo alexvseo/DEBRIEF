@@ -129,7 +129,7 @@ curl http://localhost:2023/health
 
 ### 1️⃣ Senha do Banco de Dados (15:26 UTC)
 - **Problema:** Backend não conectava ao banco
-- **Causa:** Senha incorreta (`Mslestra@2025` vs `Mslestra@2025db`)
+- **Causa:** Senha incorreta (`<redacted-db-password>` vs `<redacted-db-password>`)
 - **Solução:** Reset da senha do PostgreSQL
 - **Status:** ✅ Resolvido
 
@@ -248,6 +248,8 @@ Todas as funcionalidades estão funcionando:
 - ✅ Todas as APIs respondendo
 
 **Pode usar o sistema normalmente!** 🚀
+
+
 
 
 

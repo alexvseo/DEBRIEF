@@ -141,8 +141,8 @@ ssh root@82.25.92.217 "docker ps"
 Host: debrief_db (no Docker) / localhost (via túnel)
 Port: 5432 (container) / 5433 (túnel SSH)
 Database: dbrief
-Username: postgres
-Password: Mslestra@2025db
+Username: ${POSTGRES_USER}  # definido em .env / secret manager
+Password: ${POSTGRES_PASSWORD}  # NUNCA versionado
 IP Container: 172.19.0.2
 Network: debrief_debrief-network
 ```
@@ -158,8 +158,8 @@ O PostgreSQL **não aceita conexões remotas diretas**. Use o túnel SSH:
 # Ou comando manual
 ssh -N -L 5433:172.19.0.2:5432 root@82.25.92.217
 
-# Testar conexão
-PGPASSWORD='Mslestra@2025db' psql -h localhost -p 5433 -U postgres -d dbrief -c "SELECT COUNT(*) FROM demandas;"
+# Testar conexão (senha vem do Secret Manager)
+PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -p 5433 -U ${POSTGRES_USER} -d dbrief -c "SELECT COUNT(*) FROM demandas;"
 ```
 
 ### Gerenciar Túnel
@@ -185,11 +185,23 @@ Connection Settings:
   Host: localhost
   Port: 5433  # IMPORTANTE: Não usar 5432!
   Database: dbrief
-  Username: postgres
-  Password: Mslestra@2025db
+  Username: ${POSTGRES_USER}
+  Password: ${POSTGRES_PASSWORD} (consulte Secret Manager)
   
 SSH Tunnel: NÃO NECESSÁRIO
 (Use o script ./conectar-banco-correto.sh antes)
+```
+
+### Usuário de aplicação (least-privilege)
+
+- Execute `psql -U postgres -d dbrief -f scripts/db/create_app_user.sql` para criar/atualizar o usuário `debrief_app`.
+- Defina `APP_DB_USER/APP_DB_PASSWORD` nos arquivos `.env` e `DATABASE_URL` passará a usar essas credenciais.
+
+### Backup rápido
+
+```bash
+# Gera pg_dump usando DATABASE_URL do backend
+./scripts/diagnostico/backup-banco.sh
 ```
 
 ### Estrutura do Banco (14 Tabelas)
@@ -227,13 +239,13 @@ No arquivo `backend/.env`:
 
 ```bash
 # Produção (Docker)
-DATABASE_URL=postgresql://postgres:Mslestra%402025db@debrief_db:5432/dbrief
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@debrief_db:5432/${POSTGRES_DB}
 
-# Desenvolvimento Local (via túnel)
-DATABASE_URL=postgresql://postgres:Mslestra%402025db@localhost:5433/dbrief
+# Desenvolvimento Local (via túnel SSH)
+DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5433/${POSTGRES_DB}
 ```
 
-⚠️ **IMPORTANTE:** A senha contém `@`, então usa URL encoding: `%40`
+⚠️ **IMPORTANTE:** mantenha `POSTGRES_USER/POSTGRES_PASSWORD` fora do Git (Secret Manager ou arquivos `.env` ignorados).
 
 ---
 
@@ -247,22 +259,14 @@ O sistema usa **Z-API** para envio de notificações WhatsApp (substituiu Evolut
 
 #### Configuração Z-API
 
-```yaml
-ZAPI_BASE_URL: https://api.z-api.io
-ZAPI_INSTANCE_ID: 3EABC3821EF52114B8836EDB289F0F12
-ZAPI_TOKEN: F9BFDFA1F0A75E79536CE12D
-ZAPI_CLIENT_TOKEN: F47cfa53858ee4869bf3e027187aa6742S
-Número Conectado: 5585991042626
-```
-
-#### Variáveis de Ambiente (.env)
+As credenciais ficam protegidas no Secret Manager e devem ser preenchidas via `backend/.env`. Utilize o template `backend/env.example` como referência:
 
 ```bash
-# Z-API WhatsApp Configuration
 ZAPI_BASE_URL=https://api.z-api.io
-ZAPI_INSTANCE_ID=3EABC3821EF52114B8836EDB289F0F12
-ZAPI_TOKEN=F9BFDFA1F0A75E79536CE12D
-ZAPI_CLIENT_TOKEN=F47cfa53858ee4869bf3e027187aa6742S
+ZAPI_INSTANCE_ID=<fornecido pelo provedor>
+ZAPI_TOKEN=<fornecido pelo provedor>
+ZAPI_CLIENT_TOKEN=<fornecido pelo provedor>
+ZAPI_PHONE_NUMBER=<número conectado>
 ```
 
 #### Implementação Backend
@@ -446,8 +450,9 @@ git clone <seu-repo>
 cd DEBRIEF
 
 # 2. Configurar variáveis de ambiente
-cp env.docker.example backend/.env
-nano backend/.env  # Editar credenciais
+cp env.example .env
+cp backend/env.example backend/.env
+nano .env backend/.env  # Ajustar credenciais (SECRET_KEY, DATABASE_URL, etc)
 
 # 3. Iniciar com Docker
 docker-compose up -d
@@ -488,6 +493,32 @@ docker exec -it debrief-backend bash
 # Acessar PostgreSQL
 docker exec -it debrief_db psql -U postgres -d dbrief
 ```
+
+### 🔐 Gerenciamento de Segredos
+
+- `env.example` e `backend/env.example` são templates; copie-os para `.env` e `backend/.env` e mantenha os arquivos reais fora do Git.
+- `scripts/deploy/lib/secrets.sh` injeta segredos automaticamente nos scripts:
+  - `DEBRIEF_SECRETS_PROVIDER=file` (default) carrega `backend/.env` e `.env`.
+  - `DEBRIEF_SECRETS_PROVIDER=doppler` usa `doppler secrets download` (requer `doppler` CLI e `DOPPLER_TOKEN`).
+- Exemplo com Doppler:
+
+```bash
+export DEBRIEF_SECRETS_PROVIDER=doppler
+export DOPPLER_TOKEN=<token>
+./scripts/deploy/deploy-final.sh
+```
+
+- Para apontar um arquivo específico, defina `DEBRIEF_SECRETS_FILE=/caminho/para/seu/env`.
+
+### 🔒 Segurança de Login
+
+- **reCAPTCHA**: ative exigência configurando `RECAPTCHA_SECRET_KEY` e `RECAPTCHA_REQUIRE_ON_LOGIN/REGISTER=true`.
+- **Tentativas e bloqueio**: `AUTH_MAX_FAILED_ATTEMPTS` + `AUTH_LOCKOUT_MINUTES` controlam lockout automático; falhas são gravadas na tabela `login_attempts`.
+- **Refresh tokens rotativos**: guardados (hash SHA-256) em `refresh_tokens`; logout revoga tokens imediatamente.
+- **MFA (TOTP)**: usuários habilitam via `/api/auth/2fa/setup` e confirmam em `/api/auth/2fa/enable`; frontend coleta `X-TOTP-Code`.
+- **Rate limiting distribuído**: configure `RATE_LIMIT_STORAGE_URI=redis://...` para usar Redis via SlowAPI.
+- **Proteção de PII**: `users.whatsapp` é armazenado criptografado (Fernet) quando `ENCRYPTION_KEY` está definido.
+- **Uploads inspecionados**: validação de assinatura + antivírus opcional via `ANTIVIRUS_ENABLED`/`ANTIVIRUS_COMMAND`.
 
 ---
 

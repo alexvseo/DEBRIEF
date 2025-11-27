@@ -66,7 +66,7 @@ Após iniciar, acesse:
 O backend está configurado para:
 
 - **Porta**: 8000
-- **Banco de Dados**: `postgresql://postgres:Mslestrategia.2025%40@82.25.92.217:5432/dbrief`
+- **Banco de Dados**: `postgresql://postgres:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief`
 - **Hot Reload**: Habilitado (código montado como volume)
 - **CORS**: Permite `http://localhost:5173`
 

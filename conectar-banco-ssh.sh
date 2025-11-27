@@ -39,7 +39,7 @@ echo -e "${CYAN}  Host:     localhost${NC}"
 echo -e "${CYAN}  Port:     5433${NC}"
 echo -e "${CYAN}  Database: dbrief${NC}"
 echo -e "${CYAN}  Username: postgres${NC}"
-echo -e "${CYAN}  Password: Mslestra@2025db${NC}"
+echo -e "${CYAN}  Password: <redacted-db-password>${NC}"
 echo -e "${CYAN}═══════════════════════════════════════${NC}"
 echo ""
 

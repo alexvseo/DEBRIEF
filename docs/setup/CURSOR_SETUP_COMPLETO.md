@@ -25,7 +25,7 @@ O Cursor AI está **100% configurado** para acessar e gerenciar automaticamente 
 Servidor: 82.25.92.217
 Usuário: root
 Chave SSH: ~/.ssh/id_ed25519
-Passphrase: Mslestra2025@ (pré-configurada)
+Passphrase: <redacted-passphrase> (pré-configurada)
 ```
 
 ### Host Alias Configurado em ~/.ssh/config
@@ -74,7 +74,7 @@ Host (remoto): 82.25.92.217:5432
 Host (via túnel): localhost:5433
 Database: dbrief
 Usuário: postgres
-Senha: Mslestrategia.2025@
+Senha: <redacted-legacy-password>
 ```
 
 ### Comandos do Túnel
@@ -384,7 +384,7 @@ ssh debrief "cd /var/www/debrief && docker-compose ps"
 ### Banco de Dados
 ```bash
 # Conectar via túnel
-psql postgresql://postgres:Mslestrategia.2025@localhost:5433/dbrief
+psql postgresql://postgres:<redacted-legacy-password>localhost:5433/dbrief
 
 # Backup
 ./.cursor/debrief-config.sh  # Opção 11

@@ -35,7 +35,7 @@ Todas com status: "aberta"
 
 **O que mudou:**
 - ✅ Porta: 5432 → **5433**
-- ✅ Senha: **Mslestra@2025db**
+- ✅ Senha: **<redacted-db-password>**
 
 ### 📝 **Configuração Atualizada:**
 
@@ -45,7 +45,7 @@ Todas com status: "aberta"
 ║  Port:     5433                        ║
 ║  Database: dbrief                      ║
 ║  Username: postgres                    ║
-║  Password: Mslestra@2025db             ║
+║  Password: <redacted-db-password>             ║
 ╚════════════════════════════════════════╝
 ```
 
@@ -59,7 +59,7 @@ Todas com status: "aberta"
 2. Selecione **"Edit Connection"**
 3. Atualize:
    - Port: `5433`
-   - Password: `Mslestra@2025`
+   - Password: `<redacted-db-password>`
 4. **Test Connection**
 5. **OK**
 
@@ -73,7 +73,7 @@ Todas com status: "aberta"
    - Port: `5433`
    - Database: `dbrief`
    - Username: `postgres`
-   - Password: `Mslestra@2025`
+   - Password: `<redacted-db-password>`
 5. **Test Connection** (baixe driver se pedir)
 6. **Finish**
 
@@ -190,7 +190,7 @@ pkill -f "ssh.*5433"
 
 ### Testar conexão:
 ```bash
-PGPASSWORD='Mslestra@2025' psql -h localhost -p 5433 -U postgres -d dbrief -c "SELECT COUNT(*) FROM demandas;"
+PGPASSWORD='<redacted-db-password>' psql -h localhost -p 5433 -U postgres -d dbrief -c "SELECT COUNT(*) FROM demandas;"
 ```
 
 ---
@@ -201,7 +201,7 @@ PGPASSWORD='Mslestra@2025' psql -h localhost -p 5433 -U postgres -d dbrief -c "S
 |----------------|---------------------|----------------------|
 | **Local** | PostgreSQL do servidor | Container debrief_db |
 | **Porta Local** | 5432 | 5433 |
-| **Senha** | Mslestra@2025 | Mslestra@2025db |
+| **Senha** | <redacted-db-password> | <redacted-db-password> |
 | **Demandas** | 3 (antigas) | 12 (atuais) ✅ |
 | **Usado pelo site** | ❌ NÃO | ✅ SIM |
 | **Campo** | titulo | nome ✅ |

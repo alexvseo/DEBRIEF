@@ -37,7 +37,7 @@ else
     sed -i '/^    extra_hosts:/,/^    environment:/d' docker-compose.yml
     
     # Atualizar DATABASE_URL para localhost
-    sed -i 's|DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@.*:5432/dbrief|DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief|g' docker-compose.yml
+    sed -i 's|DATABASE_URL=postgresql://postgres:<redacted-legacy-password-encoded>@.*:5432/dbrief|DATABASE_URL=postgresql://postgres:<redacted-legacy-password-encoded>@localhost:5432/dbrief|g' docker-compose.yml
     
     # Remover networks do backend
     sed -i '/^    networks:/d' docker-compose.yml

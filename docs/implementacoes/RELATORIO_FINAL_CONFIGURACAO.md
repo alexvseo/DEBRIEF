@@ -241,7 +241,7 @@ Servidor: 82.25.92.217
 Usuário: root
 Host Alias: debrief
 Chave: ~/.ssh/id_ed25519
-Passphrase: Mslestra2025@
+Passphrase: <redacted-passphrase>
 Persistência: 4 horas
 ```
 
@@ -251,7 +251,7 @@ Host Remoto: 82.25.92.217:5432
 Host via Túnel: localhost:5433
 Database: dbrief
 Usuário: postgres
-Senha: Mslestrategia.2025@
+Senha: <redacted-legacy-password>
 ```
 
 ### URLs Locais

@@ -259,3 +259,5 @@ curl -X POST 'http://localhost:21465/webhook/set/debrief' \
 ✨ **O WhatsApp está 100% funcional via Baileys Multi-Device!**
 
 
+
+

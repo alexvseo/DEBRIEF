@@ -2,7 +2,7 @@
 
 ## 🎯 **O QUE FOI FEITO**
 
-A senha do banco de dados PostgreSQL foi alterada com sucesso para `Mslestra@2025db`.
+A senha do banco de dados PostgreSQL foi alterada com sucesso para `<redacted-db-password>`.
 
 ---
 
@@ -12,12 +12,12 @@ A senha do banco de dados PostgreSQL foi alterada com sucesso para `Mslestra@202
 
 1. ✅ **Senha alterada no PostgreSQL**
    ```sql
-   ALTER USER postgres WITH PASSWORD 'Mslestra@2025db';
+   ALTER USER postgres WITH PASSWORD '<redacted-db-password>';
    ```
 
 2. ✅ **Arquivo `backend/.env` atualizado**
    ```
-   DATABASE_URL=postgresql://postgres:Mslestra%402025db@debrief_db:5432/dbrief
+   DATABASE_URL=postgresql://postgres:<redacted-db-password-encoded>@debrief_db:5432/dbrief
    ```
 
 3. ✅ **Container backend reiniciado**
@@ -52,7 +52,7 @@ A senha do banco de dados PostgreSQL foi alterada com sucesso para `Mslestra@202
 ║  Port:     5433                        ║
 ║  Database: dbrief                      ║
 ║  Username: postgres                    ║
-║  Password: Mslestra@2025db             ║
+║  Password: <redacted-db-password>             ║
 ╚════════════════════════════════════════╝
 ```
 
@@ -71,7 +71,7 @@ A senha do banco de dados PostgreSQL foi alterada com sucesso para `Mslestra@202
    - Port: `5433`
    - Database: `dbrief`
    - Username: `postgres`
-   - Password: `Mslestra@2025db` ← **Esta é a senha atual**
+   - Password: `<redacted-db-password>` ← **Esta é a senha atual**
 
 3. **Teste:**
    - Clique em **"Test Connection"**
@@ -92,7 +92,7 @@ Se preferir começar do zero, siga o guia em `INICIO-RAPIDO-DBEAVER.txt`.
 
 ```
 ┌────────────────────────────────────────────────┐
-│  🔐 SENHA: ✅ Mslestra@2025db                 │
+│  🔐 SENHA: ✅ <redacted-db-password>                 │
 │  🔧 SERVIDOR: ✅ PostgreSQL atualizado        │
 │  📝 .ENV: ✅ Arquivo atualizado               │
 │  🐳 BACKEND: ✅ Reiniciado e funcionando      │
@@ -104,7 +104,7 @@ Se preferir começar do zero, siga o guia em `INICIO-RAPIDO-DBEAVER.txt`.
 ### Teste realizado:
 
 ```bash
-$ PGPASSWORD='Mslestra@2025db' psql -h localhost -p 5433 -U postgres -d dbrief -c "SELECT COUNT(*) FROM demandas;"
+$ PGPASSWORD='<redacted-db-password>' psql -h localhost -p 5433 -U postgres -d dbrief -c "SELECT COUNT(*) FROM demandas;"
 
  total_demandas 
 ----------------
@@ -124,7 +124,7 @@ $ PGPASSWORD='Mslestra@2025db' psql -h localhost -p 5433 -U postgres -d dbrief -
 | **Porta** | 5433 |
 | **Banco** | dbrief |
 | **Usuário** | postgres |
-| **Senha** | Mslestra@2025db |
+| **Senha** | <redacted-db-password> |
 | **Container** | debrief_db |
 | **IP Container** | 172.19.0.2 |
 
@@ -139,7 +139,7 @@ ps aux | grep "ssh.*5433"
 
 ### Testar conexão:
 ```bash
-PGPASSWORD='Mslestra@2025db' psql -h localhost -p 5433 -U postgres -d dbrief -c "SELECT COUNT(*) FROM demandas;"
+PGPASSWORD='<redacted-db-password>' psql -h localhost -p 5433 -U postgres -d dbrief -c "SELECT COUNT(*) FROM demandas;"
 ```
 
 ### Reiniciar túnel:
@@ -182,7 +182,7 @@ pkill -f "ssh.*5433"
 
 1. ✅ **Túnel SSH já está rodando** com a nova senha
 2. 📱 **Abra o DBeaver**
-3. 🔧 **Edite/Configure** a conexão com senha `Mslestra@2025db`
+3. 🔧 **Edite/Configure** a conexão com senha `<redacted-db-password>`
 4. 🧪 **Teste** a conexão
 5. 📊 **Acesse** as 12 demandas!
 
@@ -203,7 +203,7 @@ pkill -f "ssh.*5433"
 
 ## 🎉 **CONCLUÍDO!**
 
-A senha do banco de dados foi alterada com sucesso para `Mslestra@2025db`.
+A senha do banco de dados foi alterada com sucesso para `<redacted-db-password>`.
 
 **Tudo funcionando perfeitamente! 🚀**
 
@@ -212,8 +212,10 @@ Agora é só atualizar a senha no DBeaver e continuar usando normalmente.
 ---
 
 **Data:** 24 de Novembro de 2025  
-**Senha Nova:** `Mslestra@2025db`  
+**Senha Nova:** `<redacted-db-password>`  
 **Status:** ✅ Operacional
+
+
 
 
 

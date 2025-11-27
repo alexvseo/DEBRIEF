@@ -29,7 +29,7 @@
      - users
 
 6. **DATABASE_URL está correto** ✅
-   - `postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5432/dbrief`
+   - `postgresql://postgres:<redacted-legacy-password-encoded>@host.docker.internal:5432/dbrief`
    - Configurado no docker-compose.yml
    - Configurado no container backend
 
@@ -72,7 +72,7 @@ with engine.connect() as conn:
 ### 2. Verificar Usuários no Banco
 
 ```bash
-export PGPASSWORD="Mslestra@2025"
+export PGPASSWORD="<redacted-db-password>"
 psql -h localhost -U postgres -d dbrief -c "SELECT id, username, email, tipo, ativo FROM users LIMIT 5;"
 ```
 

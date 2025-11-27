@@ -41,7 +41,7 @@ Host:     82.25.92.217
 Port:     5432
 Database: dbrief
 User:     root
-Password: Mslestra@2025
+Password: <redacted-db-password>
 ```
 
 **SSH Access:**
@@ -52,7 +52,7 @@ Port: 22
 
 **Connection String (no docker-compose.yml):**
 ```
-postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 ```
 
 > **Nota:** O `%40` é o encoding de `@` na URL
@@ -137,7 +137,7 @@ No arquivo `backend/.env`:
 
 ```bash
 # BANCO DE DADOS (já configurado)
-DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 
 # SEGURANÇA (GERAR NOVAS!)
 SECRET_KEY=<gerar-nova-chave>

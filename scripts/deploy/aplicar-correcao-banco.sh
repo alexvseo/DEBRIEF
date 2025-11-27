@@ -52,7 +52,7 @@ ssh ${SERVER_USER}@${SERVER_HOST} << 'ENDSSH'
     if grep -q "localhost:5432" docker-compose.yml; then
         echo "⚠️  Ainda está usando localhost:5432"
         echo "3️⃣  Aplicando correção..."
-        sed -i 's|postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief|postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5432/dbrief|g' docker-compose.yml
+        sed -i 's|postgresql://postgres:<redacted-legacy-password-encoded>@localhost:5432/dbrief|postgresql://postgres:<redacted-legacy-password-encoded>@host.docker.internal:5432/dbrief|g' docker-compose.yml
         echo "✅ Correção aplicada"
     else
         echo "✅ DATABASE_URL já está correto"

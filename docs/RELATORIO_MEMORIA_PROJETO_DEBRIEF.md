@@ -28,7 +28,7 @@ Host: 82.25.92.217
 Usuário: root
 Porta: 22
 Chave SSH: ~/.ssh/id_ed25519
-Passphrase: Mslestra2025@
+Passphrase: <redacted-passphrase>
 ```
 
 ### Arquivo de Configuração SSH (~/.ssh/config)
@@ -83,17 +83,17 @@ Host: 82.25.92.217
 Porta: 5432
 Database: dbrief
 Usuário: postgres
-Senha: Mslestrategia.2025@
+Senha: <redacted-legacy-password>
 
 # Acesso Local via Túnel
 Host: localhost
 Porta: 5433
 Database: dbrief
 Usuário: postgres
-Senha: Mslestrategia.2025@
+Senha: <redacted-legacy-password>
 
 # Connection String (Docker)
-DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5433/dbrief
+DATABASE_URL=postgresql://postgres:<redacted-legacy-password-encoded>@host.docker.internal:5433/dbrief
 ```
 
 ### Como Iniciar o Túnel
@@ -174,7 +174,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@host.docker.internal:5433/dbrief
+      - DATABASE_URL=postgresql://postgres:<redacted-legacy-password-encoded>@host.docker.internal:5433/dbrief
       - FRONTEND_URL=http://localhost:3000
       - ENVIRONMENT=development
     extra_hosts:
@@ -459,7 +459,7 @@ docker-compose logs -f
 ### Variáveis de Ambiente (.env)
 ```bash
 # Database
-DATABASE_URL=postgresql://postgres:Mslestrategia.2025@82.25.92.217:5432/dbrief
+DATABASE_URL=postgresql://postgres:<redacted-legacy-password>82.25.92.217:5432/dbrief
 
 # JWT
 SECRET_KEY=sua-chave-secreta-super-segura-aqui-change-me
@@ -641,7 +641,7 @@ docker exec -it debrief-backend bash
 ### Database
 ```bash
 # Conectar via túnel local
-psql postgresql://postgres:Mslestrategia.2025@localhost:5433/dbrief
+psql postgresql://postgres:<redacted-legacy-password>localhost:5433/dbrief
 
 # Via Docker
 docker exec debrief-backend psql $DATABASE_URL -c "SELECT * FROM users;"

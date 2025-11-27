@@ -163,7 +163,7 @@ docker logs debrief-frontend -f
 ### Banco de Dados
 ```bash
 # Via túnel local
-psql postgresql://postgres:Mslestrategia.2025@localhost:5433/dbrief
+psql postgresql://postgres:<redacted-legacy-password>localhost:5433/dbrief
 
 # Aplicar migrations
 docker exec debrief-backend alembic upgrade head

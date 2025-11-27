@@ -20,6 +20,7 @@ Autor: DeBrief Sistema
 import requests
 from sqlalchemy.orm import Session
 from typing import Optional
+from datetime import datetime, timedelta
 from app.core.config import settings
 from app.models.demanda import Demanda
 import logging
@@ -29,6 +30,10 @@ logger = logging.getLogger(__name__)
 
 
 class WhatsAppService:
+    MAX_FAILURES = 3
+    COOLDOWN_SECONDS = 60
+    _failure_count: int = 0
+    _next_retry_at: Optional[datetime] = None
     """
     Wrapper para Z-API WhatsApp
     
@@ -86,6 +91,14 @@ class WhatsAppService:
             )
             ```
         """
+        if not self._can_send():
+            logger.warning("Circuit breaker WhatsApp ativo — tentativa bloqueada.")
+            return False
+        
+        if not self._can_send():
+            logger.warning("Circuit breaker WhatsApp ativo — tentativa bloqueada.")
+            return False
+        
         # Z-API - Endpoint de envio de texto
         url = f"{self.base_url}/send-text"
         
@@ -117,24 +130,29 @@ class WhatsAppService:
                 timeout=30
             )
             
-            if response.status_code == 201 or response.status_code == 200:
+            if response.status_code in (200, 201):
                 result = response.json()
                 if result.get("key"):
                     message_id = result.get("key", {}).get("id", "")
                     logger.info(f"Mensagem WhatsApp enviada com sucesso para {chat_id}: {message_id}")
+                    self._reset_circuit()
                     return True
                 else:
                     logger.error(f"Erro WhatsApp: {result}")
+                    self._register_failure()
                     return False
             else:
-                logger.error(f"Erro WhatsApp (status {response.status_code}): {response.text}")
+                logger.error("Erro WhatsApp (status %s): %.200s", response.status_code, response.text)
+                self._register_failure()
                 return False
                 
         except requests.exceptions.Timeout:
             logger.error("Timeout ao enviar mensagem WhatsApp")
+            self._register_failure()
             return False
         except Exception as e:
             logger.error(f"Exceção ao enviar WhatsApp: {e}")
+            self._register_failure()
             return False
     
     def enviar_mensagem_individual(
@@ -211,25 +229,49 @@ class WhatsAppService:
                 timeout=30
             )
             
-            if response.status_code == 200:
+            if response.status_code in (200, 201):
                 result = response.json()
-                if result.get("messageId") or result.get("success"):
-                    message_id = result.get("messageId", "")
+                if result.get("messageId") or result.get("success") or result.get("key"):
+                    message_id = result.get("messageId") or result.get("key", {}).get("id", "")
                     logger.info(f"✅ Mensagem Z-API enviada com sucesso para {numero}: {message_id}")
+                    self._reset_circuit()
                     return True
                 else:
                     logger.error(f"❌ Erro Z-API: {result}")
+                    self._register_failure()
                     return False
             else:
-                logger.error(f"❌ Erro Z-API (status {response.status_code}): {response.text}")
+                logger.error("❌ Erro Z-API (status %s): %.200s", response.status_code, response.text)
+                self._register_failure()
                 return False
                 
         except requests.exceptions.Timeout:
             logger.error("⏱️ Timeout ao enviar mensagem Z-API")
+            self._register_failure()
             return False
         except Exception as e:
             logger.error(f"❌ Exceção ao enviar Z-API: {e}")
+            self._register_failure()
             return False
+
+    @classmethod
+    def _can_send(cls) -> bool:
+        if cls._next_retry_at and datetime.utcnow() < cls._next_retry_at:
+            return False
+        return True
+
+    @classmethod
+    def _register_failure(cls) -> None:
+        cls._failure_count += 1
+        if cls._failure_count >= cls.MAX_FAILURES:
+            cls._next_retry_at = datetime.utcnow() + timedelta(seconds=cls.COOLDOWN_SECONDS)
+            logger.warning("Circuit breaker WhatsApp ativado por %s segundos.", cls.COOLDOWN_SECONDS)
+            cls._failure_count = 0
+
+    @classmethod
+    def _reset_circuit(cls) -> None:
+        cls._failure_count = 0
+        cls._next_retry_at = None
     
     async def enviar_nova_demanda(self, demanda: Demanda, db: Session) -> bool:
         """

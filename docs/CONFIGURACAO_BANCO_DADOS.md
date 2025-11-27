@@ -13,7 +13,7 @@ Host:     82.25.92.217
 Port:     5432
 Database: dbrief
 User:     root
-Password: Mslestra@2025
+Password: <redacted-db-password>
 ```
 
 ---
@@ -25,7 +25,7 @@ Password: Mslestra@2025
 A URL do banco está configurada para apontar para o servidor remoto:
 
 ```python
-DATABASE_URL: str = "postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief"
+DATABASE_URL: str = "postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief"
 ```
 
 **Nota:** O `%40` é a codificação URL do caractere `@` na senha.
@@ -36,7 +36,7 @@ O `docker-compose.yml` já está configurado:
 
 ```yaml
 environment:
-  - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+  - DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 ```
 
 ### 3. **Variável de Ambiente (.env)**
@@ -45,7 +45,7 @@ Para desenvolvimento local, crie um arquivo `backend/.env`:
 
 ```bash
 # Banco de Dados Remoto
-DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 
 # Outras configurações...
 SECRET_KEY=sua-chave-secreta-aqui

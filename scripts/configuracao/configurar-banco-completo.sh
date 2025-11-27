@@ -35,7 +35,7 @@ print_error() {
 # Configurações
 DB_NAME="dbrief"
 DB_USER="root"
-DB_PASS="Mslestra@2025"
+DB_PASS="<redacted-db-password>"
 
 # 1. Verificar se PostgreSQL está rodando
 print_info "1️⃣  Verificando PostgreSQL..."

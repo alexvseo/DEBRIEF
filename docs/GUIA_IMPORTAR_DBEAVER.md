@@ -35,7 +35,7 @@ Importar o script SQL completo do banco de dados do sistema DeBrief no DBeaver p
    Port:     5432
    Database: dbrief
    Username: root
-   Password: Mslestra@2025
+   Password: <redacted-db-password>
    ```
 
 5. Clique em **"Testar Conexão"**

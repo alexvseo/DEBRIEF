@@ -267,7 +267,7 @@ Depois disso, eu poderei acessar automaticamente sem precisar da passphrase!
 
 ### User Input
 
-Mslestra@2025 a passphrase do servidor, pode usar quando precisar
+<redacted-db-password> a passphrase do servidor, pode usar quando precisar
 
 ### Planner Response
 
@@ -293,17 +293,17 @@ Deixe-me cancelar este comando e tentar uma abordagem diferente usando o ssh-age
 
 Agora vou adicionar a chave ao ssh-agent para facilitar o acesso:
 
-*User rejected the command `ssh-add ~/.ssh/id_ed25519 <<< "Mslestra@2025"`*
+*User rejected the command `ssh-add ~/.ssh/id_ed25519 <<< "<redacted-db-password>"`*
 
 ### User Input
 
-Tente essa Mslestra2025@
+Tente essa <redacted-passphrase>
 
 ### Planner Response
 
 Perfeito! Vou tentar com a nova passphrase. Deixe-me adicionar a chave ao ssh-agent:
 
-*User accepted the command `echo "Mslestra2025@" | ssh-add ~/.ssh/id_ed25519`*
+*User accepted the command `echo "<redacted-passphrase>" | ssh-add ~/.ssh/id_ed25519`*
 
 *Checked command status*
 
@@ -345,14 +345,14 @@ vou mudar a chave ssh para uma que tenha essa passphrase que lhe enviei, um inst
 
 Perfeito! 👍 Ótima ideia! 
 
-Enquanto você faz isso, vou ficar aguardando. Quando terminar de configurar a nova chave SSH com a passphrase `Mslestra2025@`, me avise e eu testo a conexão novamente.
+Enquanto você faz isso, vou ficar aguardando. Quando terminar de configurar a nova chave SSH com a passphrase `<redacted-passphrase>`, me avise e eu testo a conexão novamente.
 
 ## 📝 Lembretes para você:
 
 1. **Gerar nova chave** (se necessário):
    ```bash
    ssh-keygen -t ed25519 -C "alexwebstudio@gmail.com"
-   # Use a passphrase: Mslestra2025@
+   # Use a passphrase: <redacted-passphrase>
    ```
 
 2. **Adicionar a chave pública no painel da Hostinger**:
@@ -364,7 +364,7 @@ Enquanto você faz isso, vou ficar aguardando. Quando terminar de configurar a n
 Fico no aguardo! ⏳
 
 *User accepted the command `ssh-keygen -t ed25519 -C "alexwebstudio@gmail.com"
-# Use a passphrase: Mslestra2025@`*
+# Use a passphrase: <redacted-passphrase>`*
 
 ### User Input
 
@@ -729,7 +729,7 @@ VERIFIQUE o banco de dados da aplicacao DEBRIEF no vps se as tabelas ja tem info
 
 *Edited relevant file*
 
-*User accepted the command `ssh root@82.25.92.217 "export PGPASSWORD='Mslestrategia.2025@'; psql -U root -d dbrief -h localhost -c '\dt' && echo '---' && psql -U root -d dbrief -h localhost -c 'SELECT count(*) FROM users;' && echo '---' && psql -U root -d dbrief -h localhost -c 'SELECT count(*) FROM clientes;'"`*
+*User accepted the command `ssh root@82.25.92.217 "export PGPASSWORD='<redacted-legacy-password>'; psql -U root -d dbrief -h localhost -c '\dt' && echo '---' && psql -U root -d dbrief -h localhost -c 'SELECT count(*) FROM users;' && echo '---' && psql -U root -d dbrief -h localhost -c 'SELECT count(*) FROM clientes;'"`*
 
 *User accepted the command `ls -F /Users/alexsantos/Documents/PROJETOS\ DEV\ COM\ IA/DEBRIEF/`*
 
@@ -737,9 +737,9 @@ VERIFIQUE o banco de dados da aplicacao DEBRIEF no vps se as tabelas ja tem info
 
 *User accepted the command `ssh root@82.25.92.217 "docker ps && echo '---' && systemctl status postgresql | head -n 10"`*
 
-*User accepted the command `ssh root@82.25.92.217 "docker exec debrief_db env | grep POSTGRES && echo '---' && docker exec -e PGPASSWORD=Mslestrategia.2025@ debrief_db psql -U root -d dbrief -c '\dt' || docker exec -e PGPASSWORD=Mslestrategia.2025@ debrief_db psql -U postgres -d dbrief -c '\dt'"`*
+*User accepted the command `ssh root@82.25.92.217 "docker exec debrief_db env | grep POSTGRES && echo '---' && docker exec -e PGPASSWORD=<redacted-legacy-password> debrief_db psql -U root -d dbrief -c '\dt' || docker exec -e PGPASSWORD=<redacted-legacy-password> debrief_db psql -U postgres -d dbrief -c '\dt'"`*
 
-*User accepted the command `ssh root@82.25.92.217 "docker exec -e PGPASSWORD=Mslestra@2025 debrief_db psql -U postgres -d dbrief -c 'SELECT count(*) FROM users;' -c 'SELECT count(*) FROM clientes;' -c 'SELECT count(*) FROM demandas;' && echo '=== BACKEND LOGS ===' && docker logs --tail 50 debrief-backend && echo '=== FRONTEND LOGS ===' && docker logs --tail 50 debrief-frontend"`*
+*User accepted the command `ssh root@82.25.92.217 "docker exec -e PGPASSWORD=<redacted-db-password> debrief_db psql -U postgres -d dbrief -c 'SELECT count(*) FROM users;' -c 'SELECT count(*) FROM clientes;' -c 'SELECT count(*) FROM demandas;' && echo '=== BACKEND LOGS ===' && docker logs --tail 50 debrief-backend && echo '=== FRONTEND LOGS ===' && docker logs --tail 50 debrief-frontend"`*
 
 *User accepted the command `find backend/app -maxdepth 3 -name "*.py" | grep -i "api" && echo "---" && find frontend/src -maxdepth 3 -name "*.jsx" | grep -i "pages"`*
 
@@ -753,7 +753,7 @@ no frontend na internet já tem alguns dados, onde estão sendo inseridos?
 
 *Edited relevant file*
 
-*User accepted the command `ssh root@82.25.92.217 "docker exec debrief-backend env | grep DATABASE_URL && echo '---' && docker exec -e PGPASSWORD=Mslestra@2025 msl_db psql -U postgres -l"`*
+*User accepted the command `ssh root@82.25.92.217 "docker exec debrief-backend env | grep DATABASE_URL && echo '---' && docker exec -e PGPASSWORD=<redacted-db-password> msl_db psql -U postgres -l"`*
 
 *User accepted the command `ssh root@82.25.92.217 "netstat -tulpn | grep 5432 && echo '---' && docker exec debrief-frontend cat /usr/share/nginx/html/assets/index-*.js | grep -o 'http.*api' | head -n 5"`*
 
@@ -863,7 +863,7 @@ docker rodando no desktop
 
 *User accepted the command `docker logs debrief-backend --tail 50 && echo "---" && curl -I http://localhost:3000`*
 
-*User accepted the command `ssh root@82.25.92.217 "export PGPASSWORD='Mslestrategia.2025@'; psql -U root -h 82.25.92.217 -d dbrief -c 'SELECT 1'"`*
+*User accepted the command `ssh root@82.25.92.217 "export PGPASSWORD='<redacted-legacy-password>'; psql -U root -h 82.25.92.217 -d dbrief -c 'SELECT 1'"`*
 
 *User accepted the command `ssh root@82.25.92.217 "docker inspect root-sigepre | grep -i env -A 20 && echo '---' && docker logs --tail 20 root-sigepre"`*
 

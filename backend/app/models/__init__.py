@@ -30,6 +30,8 @@ from app.models.configuracao_whatsapp import ConfiguracaoWhatsApp
 from app.models.template_mensagem import TemplateMensagem
 from app.models.configuracao_trello import ConfiguracaoTrello
 from app.models.etiqueta_trello_cliente import EtiquetaTrelloCliente
+from app.models.refresh_token import RefreshToken
+from app.models.login_attempt import LoginAttempt
 
 __all__ = [
     'Base',
@@ -52,5 +54,7 @@ __all__ = [
     'TemplateMensagem',
     'ConfiguracaoTrello',
     'EtiquetaTrelloCliente',
+    'RefreshToken',
+    'LoginAttempt',
 ]
 

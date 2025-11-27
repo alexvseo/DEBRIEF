@@ -50,7 +50,7 @@ Atualizado `docker-compose.yml` para usar `localhost` em vez de IP externo:
 
 ```yaml
 environment:
-  - DATABASE_URL=postgresql://root:Mslestrategia.2025%40@localhost:5432/dbrief
+  - DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@localhost:5432/dbrief
 ```
 
 **Nota:** Isso funciona apenas se usar `network_mode: host` ou se PostgreSQL aceitar conexões remotas.
@@ -154,7 +154,7 @@ sudo netstat -tlnp | grep postgres
 ### 3. Testar conexão local
 
 ```bash
-export PGPASSWORD="Mslestra@2025"
+export PGPASSWORD="<redacted-db-password>"
 psql -h localhost -p 5432 -U root -d dbrief -c "SELECT 1;"
 unset PGPASSWORD
 ```
@@ -170,7 +170,7 @@ conn = psycopg2.connect(
     port=5432,
     database="dbrief",
     user="root",
-    password="Mslestra@2025"
+    password="<redacted-db-password>"
 )
 print("✅ Conexão OK!")
 conn.close()
@@ -253,7 +253,7 @@ sudo systemctl status postgresql
 sudo -u postgres psql -c "CREATE DATABASE dbrief;"
 
 # Criar usuário
-sudo -u postgres psql -c "CREATE USER root WITH PASSWORD 'Mslestra@2025';"
+sudo -u postgres psql -c "CREATE USER root WITH PASSWORD '<redacted-db-password>';"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE dbrief TO root;"
 ```
 
@@ -261,7 +261,7 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE dbrief TO root;"
 
 ```bash
 # Criar usuário
-sudo -u postgres psql -c "CREATE USER root WITH PASSWORD 'Mslestra@2025';"
+sudo -u postgres psql -c "CREATE USER root WITH PASSWORD '<redacted-db-password>';"
 sudo -u postgres psql -c "ALTER USER root CREATEDB;"
 ```
 
@@ -280,7 +280,7 @@ try:
         port=5432,
         database="dbrief",
         user="root",
-        password="Mslestra@2025",
+        password="<redacted-db-password>",
         connect_timeout=5
     )
     print("✅ Conexão OK!")

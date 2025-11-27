@@ -129,7 +129,7 @@ curl http://localhost:2023/api/usuarios/me \
 # - Port: 5433
 # - Database: dbrief
 # - User: postgres
-# - Password: Mslestra@2025db
+# - Password: <redacted-db-password>
 
 # Executar queries de configuração
 # (usar o arquivo configurar-whatsapp-usuarios.sql)

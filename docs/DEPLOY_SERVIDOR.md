@@ -68,7 +68,7 @@ nano backend/.env
 
 ```bash
 # ==================== BANCO DE DADOS ====================
-DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 
 # ==================== SEGURANÇA ====================
 # GERAR NOVAS CHAVES!

@@ -536,3 +536,5 @@ Quando o IP do servidor liberar (25/11 ou 26/11):
 **Próxima revisão:** 25/11/2025  
 
 
+
+

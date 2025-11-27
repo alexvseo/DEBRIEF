@@ -21,7 +21,7 @@ Você reportou que a aplicação não estava se conectando com o banco de dados 
 
 **Senha incorreta entre Backend e Banco de Dados**
 
-- Backend tentava usar: `Mslestra@2025db`
+- Backend tentava usar: `<redacted-db-password>`
 - Banco estava com: Senha diferente (alterada manualmente em algum momento)
 - Resultado: Falha de autenticação
 
@@ -31,12 +31,12 @@ Você reportou que a aplicação não estava se conectando com o banco de dados 
 
 ### 1️⃣ Resetei a senha do PostgreSQL
 ```bash
-ALTER USER postgres WITH PASSWORD 'Mslestra@2025db';
+ALTER USER postgres WITH PASSWORD '<redacted-db-password>';
 ```
 
 ### 2️⃣ Atualizei o arquivo `.env` do backend
 ```bash
-DATABASE_URL=postgresql://postgres:Mslestra%402025db@debrief_db:5432/dbrief
+DATABASE_URL=postgresql://postgres:<redacted-db-password-encoded>@debrief_db:5432/dbrief
 ```
 
 ### 3️⃣ Reiniciei o container do backend
@@ -86,7 +86,7 @@ HTTP/2 200
 **A senha agora está padronizada em todos os lugares:**
 
 ```
-Senha: Mslestra@2025db
+Senha: <redacted-db-password>
 ```
 
 Configurada em:
@@ -178,6 +178,8 @@ https://debrief.interce.com.br
 **Tempo de Resolução:** ~15 minutos  
 **Servidor:** 82.25.92.217  
 **Aplicação:** DeBrief v1.0.0
+
+
 
 
 

@@ -14,7 +14,7 @@ DB_CONFIG = {
     'port': 5432,
     'database': 'dbrief',
     'user': 'postgres',
-    'password': 'Mslestra@2025db'
+    'password': '<redacted-db-password>'
 }
 
 def print_separator():
@@ -170,6 +170,8 @@ def test_connection():
 if __name__ == "__main__":
     success = test_connection()
     sys.exit(0 if success else 1)
+
+
 
 
 

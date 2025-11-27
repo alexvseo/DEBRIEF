@@ -29,7 +29,7 @@ DB_HOST="localhost"
 DB_PORT="5433"
 DB_NAME="dbrief"
 DB_USER="postgres"
-DB_PASSWORD="Mslestra@2025db"
+DB_PASSWORD="<redacted-db-password>"
 
 # Função para fazer requisição autenticada
 make_request() {

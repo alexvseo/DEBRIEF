@@ -33,13 +33,13 @@ function show_status() {
             echo ""
             
             # Testar banco de dados
-            if PGPASSWORD='Mslestra@2025db' psql -h localhost -p 5432 -U postgres -d dbrief -c "SELECT 1" &>/dev/null; then
+            if PGPASSWORD='<redacted-db-password>' psql -h localhost -p 5432 -U postgres -d dbrief -c "SELECT 1" &>/dev/null; then
                 echo -e "${GREEN}✅ BANCO DE DADOS: CONECTADO${NC}"
                 echo ""
                 
                 # Mostrar estatísticas
                 echo -e "${CYAN}📊 Registros no banco:${NC}"
-                PGPASSWORD='Mslestra@2025db' psql -h localhost -p 5432 -U postgres -d dbrief -t -c "
+                PGPASSWORD='<redacted-db-password>' psql -h localhost -p 5432 -U postgres -d dbrief -t -c "
                     SELECT '  ' || tabela || ': ' || registros 
                     FROM (
                         SELECT 'Usuários' as tabela, COUNT(*) as registros FROM users
@@ -108,7 +108,7 @@ function start_tunnel() {
         echo "  Port: 5432"
         echo "  Database: dbrief"
         echo "  Username: postgres"
-        echo "  Password: Mslestra@2025db"
+        echo "  Password: <redacted-db-password>"
         echo ""
     else
         echo -e "${RED}❌ Falha ao iniciar túnel${NC}"
@@ -172,7 +172,7 @@ function test_connection() {
     
     echo ""
     echo "2. Testando conexão PostgreSQL..."
-    if PGPASSWORD='Mslestra@2025db' psql -h localhost -p 5432 -U postgres -d dbrief -c "SELECT version();" &>/dev/null; then
+    if PGPASSWORD='<redacted-db-password>' psql -h localhost -p 5432 -U postgres -d dbrief -c "SELECT version();" &>/dev/null; then
         echo -e "   ${GREEN}✅ PostgreSQL conectado${NC}"
     else
         echo -e "   ${RED}❌ Falha na autenticação PostgreSQL${NC}"
@@ -181,7 +181,7 @@ function test_connection() {
     
     echo ""
     echo "3. Listando tabelas..."
-    PGPASSWORD='Mslestra@2025db' psql -h localhost -p 5432 -U postgres -d dbrief -c "\dt" | head -20
+    PGPASSWORD='<redacted-db-password>' psql -h localhost -p 5432 -U postgres -d dbrief -c "\dt" | head -20
     
     echo ""
     echo -e "${GREEN}✅ Conexão funcionando perfeitamente!${NC}"
@@ -240,6 +240,8 @@ case "$1" in
         fi
         ;;
 esac
+
+
 
 
 

@@ -5,22 +5,34 @@ Protege a API contra abuso e ataques de força bruta
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from fastapi import Request
 from app.core.config import settings
 
-# Criar limiter
-limiter = Limiter(
-    key_func=get_remote_address,  # Usa IP do cliente
-    default_limits=["100/minute"],  # Limite padrão: 100 requisições por minuto
-    storage_uri="memory://",  # Usa memória (para produção, usar Redis)
-)
+
+class _NoopLimiter:
+    """Decorador neutro quando rate limiting está desabilitado."""
+    
+    def limit(self, *_args, **_kwargs):
+        def decorator(func):
+            return func
+        return decorator
+
+
+# Criar limiter real ou no-op com base na configuração
+if settings.RATE_LIMIT_ENABLED:
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=[settings.RATE_LIMIT_DEFAULT],
+        storage_uri=settings.RATE_LIMIT_STORAGE_URI,
+    )
+else:
+    limiter = _NoopLimiter()
 
 # Configurações de rate limit por endpoint
 RATE_LIMITS = {
-    "auth": "5/minute",  # Login: 5 tentativas por minuto
-    "default": "100/minute",  # Padrão: 100 requisições por minuto
-    "upload": "10/minute",  # Upload: 10 arquivos por minuto
-    "reports": "20/minute",  # Relatórios: 20 por minuto
+    "auth": settings.RATE_LIMIT_AUTH,
+    "default": settings.RATE_LIMIT_DEFAULT,
+    "upload": settings.RATE_LIMIT_UPLOAD,
+    "reports": settings.RATE_LIMIT_REPORTS,
 }
 
 
@@ -58,10 +70,9 @@ def setup_rate_limiting(app):
         app: Instância FastAPI
     """
     # Adicionar limiter ao app
-    app.state.limiter = limiter
-    
-    # Adicionar handler de erro
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    if settings.RATE_LIMIT_ENABLED:
+        app.state.limiter = limiter
+        app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     
     return limiter
 

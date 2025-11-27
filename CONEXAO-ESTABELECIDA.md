@@ -36,7 +36,7 @@ Confirmado que os dados estão sendo salvos corretamente:
 ║  Port:       5432                      ║
 ║  Database:   dbrief                    ║
 ║  Username:   postgres                  ║
-║  Password:   Mslestra@2025db           ║
+║  Password:   <redacted-db-password>           ║
 ╚════════════════════════════════════════╝
 ```
 
@@ -54,7 +54,7 @@ Confirmado que os dados estão sendo salvos corretamente:
    - Port: `5432`
    - Database: `dbrief`
    - Username: `postgres`
-   - Password: `Mslestra@2025db`
+   - Password: `<redacted-db-password>`
    - ☑️ Marque: `Save password`
 
 4. **Teste a Conexão:**
@@ -263,7 +263,7 @@ cd /Users/alexmini/Documents/PROJETOS\ DEV\ COM\ IA/DEBRIEF
 
 **Problema:** Senha incorreta
 
-**Solução:** Certifique-se de usar: `Mslestra@2025db` (com 'db' no final)
+**Solução:** Certifique-se de usar: `<redacted-db-password>` (com 'db' no final)
 
 ---
 
@@ -355,6 +355,8 @@ Agora você tem **acesso completo** ao banco de dados do DeBrief via DBeaver!
 ```
 
 **Bom trabalho! 🚀**
+
+
 
 
 

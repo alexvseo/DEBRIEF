@@ -223,3 +223,5 @@ Cada cliente pode ter seu próprio WhatsApp conectado! 🎉
 **Status**: Evolution funcionando, aguardando conexão WhatsApp
 
 
+
+

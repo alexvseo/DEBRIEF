@@ -35,7 +35,7 @@ echo ""
 
 # Configurações
 DB_USER="postgres"
-DB_PASSWORD="Mslestra@2025"
+DB_PASSWORD="<redacted-db-password>"
 DB_NAME="dbrief"
 DB_PORT="5432"
 

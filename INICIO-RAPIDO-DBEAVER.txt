@@ -16,11 +16,11 @@ Host:       localhost
 Port:       5433
 Database:   dbrief
 Username:   postgres
-Password:   Mslestra@2025db
+Password:   <redacted-db-password>
 
 ⚠️  IMPORTANTE: 
 - Use porta 5433 (não 5432)
-- Senha: Mslestra@2025db (COM 'db' no final)
+- Senha: <redacted-db-password> (COM 'db' no final)
 
 ═══════════════════════════════════════════════════════════════
   🎯 PASSO A PASSO NO DBEAVER
@@ -90,7 +90,7 @@ Testar conexão: ./gerenciar-tunel.sh test
 ⚠️  SE VOCÊ JÁ CONFIGUROU O DBEAVER ANTES:
     Edite a conexão e certifique-se:
     - Porta: 5433
-    - Senha: Mslestra@2025db
+    - Senha: <redacted-db-password>
 
 ═══════════════════════════════════════════════════════════════
 

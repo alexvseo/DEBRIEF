@@ -58,7 +58,7 @@ network_mode: host
 #    - networks: debrief-network
 
 # 4. Alterar DATABASE_URL para:
-DATABASE_URL=postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief
+DATABASE_URL=postgresql://postgres:<redacted-legacy-password-encoded>@localhost:5432/dbrief
 
 # 5. Recriar
 docker-compose up -d backend

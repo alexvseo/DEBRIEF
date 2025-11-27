@@ -44,7 +44,7 @@ echo ""
 
 # 2. Testar conexão local
 print_info "2️⃣  Testando conexão local..."
-export PGPASSWORD="Mslestra@2025"
+export PGPASSWORD="<redacted-db-password>"
 if psql -h localhost -p 5432 -U root -d dbrief -c "SELECT 1;" > /dev/null 2>&1; then
     print_success "Conexão local funcionou!"
     LOCAL_WORKS=true

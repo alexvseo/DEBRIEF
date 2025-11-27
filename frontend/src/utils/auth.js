@@ -35,6 +35,7 @@ export const getStoredAuth = () => {
  * 
  * @param {Object} authData - Dados de autenticação
  * @param {string} authData.token - Token JWT
+ * @param {string} [authData.refreshToken] - Refresh token seguro
  * @param {Object} authData.user - Dados do usuário
  * 
  * @example
@@ -79,6 +80,14 @@ export const clearStoredAuth = () => {
 export const getToken = () => {
   const auth = getStoredAuth()
   return auth?.token || null
+}
+
+/**
+ * Obter refresh token salvo (se existir)
+ */
+export const getRefreshToken = () => {
+  const auth = getStoredAuth()
+  return auth?.refreshToken || null
 }
 
 /**

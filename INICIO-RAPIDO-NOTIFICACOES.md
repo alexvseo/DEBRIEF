@@ -30,7 +30,7 @@ curl http://localhost:21465/instance/connectionState/debrief \
 # Port: 5433
 # Database: dbrief
 # User: postgres
-# Password: Mslestra@2025db
+# Password: <redacted-db-password>
 
 # 3. Executar query (substituir valores):
 ```

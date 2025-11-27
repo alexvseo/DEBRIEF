@@ -354,3 +354,5 @@ docker-compose restart
 **Status:** ⏳ Aguardando conexão WhatsApp
 
 
+
+

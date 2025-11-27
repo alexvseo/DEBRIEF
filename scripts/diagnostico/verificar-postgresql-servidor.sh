@@ -115,15 +115,15 @@ fi
 echo ""
 
 # 7. Verificar usuário postgres e senha
-print_info "7️⃣  Testando conexão com usuário 'postgres' e senha 'Mslestra@2025'..."
-export PGPASSWORD='Mslestra@2025'
+print_info "7️⃣  Testando conexão com usuário 'postgres' e senha '<redacted-db-password>'..."
+export PGPASSWORD='<redacted-db-password>'
 if psql -h localhost -U postgres -d dbrief -c "SELECT 1;" > /dev/null 2>&1; then
     print_success "Conexão com usuário 'postgres' funcionou!"
 else
     print_error "Conexão com usuário 'postgres' falhou!"
     print_info "Verificando se a senha está correta..."
     print_info "Você pode precisar atualizar a senha:"
-    echo "sudo -u postgres psql -c \"ALTER USER postgres WITH PASSWORD 'Mslestra@2025';\""
+    echo "sudo -u postgres psql -c \"ALTER USER postgres WITH PASSWORD '<redacted-db-password>';\""
 fi
 unset PGPASSWORD
 echo ""
@@ -147,7 +147,7 @@ try:
         host='localhost',
         port=5432,
         user='postgres',
-        password='Mslestra@2025',
+        password='<redacted-db-password>',
         database='dbrief'
     )
     print('✅ Conexão do container funcionou!')
@@ -176,7 +176,7 @@ echo "  4. Verificar listen_addresses em postgresql.conf"
 echo "  5. Verificar pg_hba.conf para autenticação"
 echo ""
 print_info "Se a senha está incorreta:"
-echo "  sudo -u postgres psql -c \"ALTER USER postgres WITH PASSWORD 'Mslestra@2025';\""
+echo "  sudo -u postgres psql -c \"ALTER USER postgres WITH PASSWORD '<redacted-db-password>';\""
 echo ""
 print_info "Se o banco não existe:"
 echo "  sudo -u postgres psql -c \"CREATE DATABASE dbrief;\""

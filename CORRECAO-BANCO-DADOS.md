@@ -30,9 +30,9 @@ FATAL: password authentication failed for user "postgres"
 
 ### Configuração Encontrada
 
-- **Senha nas variáveis de ambiente do container do banco:** `Mslestra@2025`
+- **Senha nas variáveis de ambiente do container do banco:** `<redacted-db-password>`
 - **Senha real do PostgreSQL (alterada posteriormente):** Diferente da variável
-- **Senha no backend (.env):** `Mslestra@2025db`
+- **Senha no backend (.env):** `<redacted-db-password>`
 
 ### O Problema
 
@@ -46,14 +46,14 @@ O container do PostgreSQL foi criado com uma senha, mas posteriormente a senha d
 
 ```bash
 # Resetou a senha do usuário postgres dentro do container
-docker exec debrief_db psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'Mslestra@2025db';"
+docker exec debrief_db psql -U postgres -c "ALTER USER postgres WITH PASSWORD '<redacted-db-password>';"
 ```
 
 ### 2. Atualização do Backend (.env)
 
 ```bash
 # Atualizou a DATABASE_URL no arquivo backend/.env
-DATABASE_URL=postgresql://postgres:Mslestra%402025db@debrief_db:5432/dbrief
+DATABASE_URL=postgresql://postgres:<redacted-db-password-encoded>@debrief_db:5432/dbrief
 ```
 
 ### 3. Reinicialização do Backend
@@ -103,7 +103,7 @@ docker-compose up -d backend
 **⚠️ IMPORTANTE:** A senha unificada agora é:
 
 ```
-Senha: Mslestra@2025db
+Senha: <redacted-db-password>
 ```
 
 Esta senha está configurada em:
@@ -203,7 +203,7 @@ debrief_db:
   container_name: debrief_db
   environment:
     POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: Mslestra@2025db  # ⚠️ Senha correta
+    POSTGRES_PASSWORD: <redacted-db-password>  # ⚠️ Senha correta
     POSTGRES_DB: dbrief
   volumes:
     - postgres_data:/var/lib/postgresql/data
@@ -234,6 +234,8 @@ Configure backups automáticos:
 **Correção aplicada com sucesso! 🎉**
 
 **Aplicação disponível em:** http://debrief.interce.com.br
+
+
 
 
 

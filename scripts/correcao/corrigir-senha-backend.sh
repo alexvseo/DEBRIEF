@@ -31,8 +31,8 @@ echo ""
 
 echo "3️⃣ Corrigindo senha no arquivo .env"
 echo "=================================================="
-# Corrige a senha: Mslestra@2025 -> Mslestra@2025db
-sed -i 's|postgresql://postgres:Mslestra%402025@|postgresql://postgres:Mslestra%402025db@|g' .env
+# Corrige a senha: <redacted-db-password> -> <redacted-db-password>
+sed -i 's|postgresql://postgres:Mslestra%402025@|postgresql://postgres:<redacted-db-password-encoded>@|g' .env
 
 echo "Nova configuração (mascarada):"
 grep DATABASE_URL .env | sed 's/:[^@]*@/:***@/g'
@@ -82,6 +82,8 @@ echo "Se ainda houver problemas, verifique:"
 echo "  1. Firewall do servidor"
 echo "  2. Configuração do Caddy/Nginx"
 echo "  3. DNS do domínio debrief.interce.com.br"
+
+
 
 
 

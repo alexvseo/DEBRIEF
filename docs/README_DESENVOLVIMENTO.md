@@ -95,7 +95,7 @@ SSH: ssh debrief
 Host: localhost (via container debrief_db)
 Port: 5432
 User: postgres
-Pass: Mslestrategia.2025@
+Pass: <redacted-legacy-password>
 DB: dbrief
 ```
 

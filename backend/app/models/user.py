@@ -10,10 +10,11 @@ Responsável por:
 """
 import enum
 from typing import Optional, List
-from sqlalchemy import Column, String, Boolean, Enum as SQLEnum, ForeignKey, Index, TypeDecorator
+from sqlalchemy import Column, String, Boolean, Enum as SQLEnum, ForeignKey, Index, TypeDecorator, Integer, DateTime
 from sqlalchemy.orm import relationship, validates
 from passlib.context import CryptContext
 from app.models.base import BaseModel
+from app.utils.encryption import EncryptedString
 
 # Configurar contexto de criptografia para senhas
 # bcrypt é considerado seguro e resistente a ataques de força bruta
@@ -175,9 +176,9 @@ class User(BaseModel):
     # ==================== NOTIFICAÇÕES WHATSAPP ====================
     
     whatsapp = Column(
-        String(20),
+        EncryptedString(length=512),
         nullable=True,
-        comment="Número WhatsApp do usuário para notificações (formato: 5511999999999)"
+        comment="Número WhatsApp do usuário para notificações (formato: 5511999999999, armazenado criptografado)"
     )
     
     receber_notificacoes = Column(
@@ -186,6 +187,40 @@ class User(BaseModel):
         nullable=False,
         index=True,
         comment="Se o usuário deseja receber notificações WhatsApp"
+    )
+    
+    # ==================== SEGURANÇA E MFA ====================
+    
+    mfa_enabled = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+        comment="Indica se o usuário ativou MFA (TOTP)"
+    )
+    
+    mfa_secret = Column(
+        String(64),
+        nullable=True,
+        comment="Segredo base32 usado para gerar códigos TOTP"
+    )
+    
+    failed_login_attempts = Column(
+        Integer,
+        nullable=False,
+        default=0,
+        comment="Quantidade de tentativas de login falhas consecutivas"
+    )
+    
+    last_failed_login_at = Column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="Timestamp da última tentativa de login falha"
+    )
+    
+    locked_until = Column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="Data e hora até quando o usuário está bloqueado por tentativas"
     )
     
     # ==================== RELACIONAMENTOS INVERSOS ====================
@@ -198,6 +233,20 @@ class User(BaseModel):
         back_populates="usuario",
         cascade="all, delete-orphan",
         lazy="noload"  # Nunca carregar automaticamente
+    )
+    
+    refresh_tokens = relationship(
+        "RefreshToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="noload"
+    )
+    
+    login_attempts = relationship(
+        "LoginAttempt",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="noload"
     )
     
     # ==================== ÍNDICES COMPOSTOS ====================

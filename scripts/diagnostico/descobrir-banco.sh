@@ -72,11 +72,11 @@ print(f'DATABASE_URL configurado: {settings.DATABASE_URL}')
     else
         echo -e "\033[0;34m6️⃣ Verificando banco REMOTO:\033[0m"
         echo "Tentando conexão com PostgreSQL local do servidor..."
-        PGPASSWORD='Mslestra@2025db' psql -h localhost -U postgres -d dbrief -c "\dt" 2>/dev/null && {
+        PGPASSWORD='<redacted-db-password>' psql -h localhost -U postgres -d dbrief -c "\dt" 2>/dev/null && {
             echo "✅ Conectado ao PostgreSQL LOCAL do servidor!"
             echo ""
             echo "Contando registros:"
-            PGPASSWORD='Mslestra@2025db' psql -h localhost -U postgres -d dbrief -c "
+            PGPASSWORD='<redacted-db-password>' psql -h localhost -U postgres -d dbrief -c "
                 SELECT 'usuarios' as tabela, COUNT(*) FROM usuarios
                 UNION ALL
                 SELECT 'demandas', COUNT(*) FROM demandas
@@ -116,6 +116,8 @@ echo "Para acessar via DBeaver:"
 echo "- Se container local: precisa criar um túnel SSH"
 echo "- Se PostgreSQL local: precisa configurar pg_hba.conf para aceitar conexões remotas"
 echo ""
+
+
 
 
 

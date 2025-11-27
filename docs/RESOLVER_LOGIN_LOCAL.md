@@ -85,7 +85,7 @@ kill <PID>
 ## Configuração Atual
 
 - **Backend**: `network_mode: host` (acessa localhost diretamente)
-- **DATABASE_URL**: `postgresql://postgres:Mslestrategia.2025%40@localhost:5432/dbrief`
+- **DATABASE_URL**: `postgresql://postgres:<redacted-legacy-password-encoded>@localhost:5432/dbrief`
 - **Túnel SSH**: `localhost:5432` → `82.25.92.217:5432`
 
 ## Próximos Passos

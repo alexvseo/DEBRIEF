@@ -3,11 +3,14 @@ Módulo de Segurança
 Funções de segurança: JWT, blacklist, CSRF, reCAPTCHA
 """
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Union
 from jose import JWTError, jwt
 from app.core.config import settings
 import httpx
 import logging
+import uuid
+import hashlib
+import pyotp
 
 logger = logging.getLogger(__name__)
 
@@ -42,29 +45,40 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 
-def create_refresh_token(data: dict) -> str:
+def create_refresh_token(
+    data: dict,
+    expires_delta: Optional[timedelta] = None
+) -> tuple[str, str]:
     """
-    Criar token JWT de refresh
+    Criar token JWT de refresh com identificador único (JTI)
     
     Args:
         data: Dados para incluir no token
+        expires_delta: Tempo customizado de expiração
         
     Returns:
-        str: Token JWT de refresh
+        tuple[str, str]: (token JWT, jti)
     """
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    expire_delta = expires_delta or timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    expire = datetime.utcnow() + expire_delta
+    token_id = str(uuid.uuid4())
     
     to_encode.update({
         "exp": expire,
-        "type": "refresh"
+        "type": "refresh",
+        "jti": token_id
     })
     
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    return encoded_jwt
+    return encoded_jwt, token_id
 
 
-def verify_token(token: str, token_type: str = "access") -> Optional[str]:
+def verify_token(
+    token: str,
+    token_type: str = "access",
+    return_payload: bool = False
+) -> Optional[Union[str, dict]]:
     """
     Verificar e decodificar token JWT
     
@@ -94,6 +108,9 @@ def verify_token(token: str, token_type: str = "access") -> Optional[str]:
         
         if user_id is None:
             return None
+        
+        if return_payload:
+            return payload
         
         return user_id
         
@@ -205,3 +222,30 @@ def verify_csrf_token(token: str, session_token: str) -> bool:
         bool: True se válido
     """
     return token == session_token and len(token) > 0
+
+
+def hash_token(token: str) -> str:
+    """
+    Retorna hash SHA-256 do token para armazenamento seguro.
+    """
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def generate_totp_secret() -> str:
+    """
+    Gera segredo base32 para MFA (TOTP).
+    """
+    return pyotp.random_base32()
+
+
+def verify_totp_code(secret: str, code: str) -> bool:
+    """
+    Verifica código TOTP informado pelo usuário.
+    """
+    if not secret or not code:
+        return False
+    totp = pyotp.TOTP(secret, issuer=settings.MFA_ISSUER)
+    try:
+        return totp.verify(code, valid_window=settings.MFA_TOTP_WINDOW)
+    except Exception:
+        return False

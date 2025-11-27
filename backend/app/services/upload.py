@@ -16,6 +16,9 @@ Autor: DeBrief Sistema
 import os
 import uuid
 import aiofiles
+import imghdr
+import shlex
+import subprocess
 from pathlib import Path
 from fastapi import UploadFile, HTTPException, status
 from app.core.config import settings
@@ -52,6 +55,8 @@ class UploadService:
         self.upload_dir = Path(settings.UPLOAD_DIR)
         self.max_size = settings.MAX_UPLOAD_SIZE
         self.allowed_extensions = settings.ALLOWED_EXTENSIONS
+        self.antivirus_enabled = getattr(settings, "ANTIVIRUS_ENABLED", False)
+        self.antivirus_command = getattr(settings, "ANTIVIRUS_COMMAND", "clamscan --no-summary --stdout")
         
         # Criar diretório base se não existir
         self.upload_dir.mkdir(parents=True, exist_ok=True)
@@ -117,7 +122,36 @@ class UploadService:
                 detail=f"Extensão não permitida. Permitidos: {', '.join(self.allowed_extensions)}"
             )
         
+        # Validar assinatura/mime básica
+        head = file.file.read(4096)
+        file.file.seek(0)
+        self._validate_magic(head, ext)
+        
         logger.info(f"Arquivo validado: {file.filename} ({file_size} bytes)")
+
+    def _validate_magic(self, head: bytes, ext: str) -> None:
+        """Validação simples de conteúdo baseado em cabeçalho."""
+        if not head:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Arquivo vazio"
+            )
+        
+        if ext in {"jpg", "jpeg", "png"}:
+            detected = imghdr.what(None, head)
+            if detected == "jpeg":
+                detected = "jpg"
+            if detected != ext.replace("jpeg", "jpg"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Conteúdo do arquivo não corresponde a uma imagem válida"
+                )
+        elif ext == "pdf":
+            if not head.startswith(b"%PDF"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Conteúdo do arquivo não corresponde a um PDF"
+                )
     
     async def save_file(
         self,
@@ -175,6 +209,9 @@ class UploadService:
                 # Escrever no disco
                 await f.write(content)
             
+            # Verificar antivírus se habilitado
+            self._scan_antivirus(file_path)
+            
             # Retornar caminho relativo (sem o diretório base)
             relative_path = f"{cliente_id}/{demanda_id}/{unique_filename}"
             
@@ -190,6 +227,32 @@ class UploadService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Erro ao salvar arquivo: {str(e)}"
             )
+    
+    def _scan_antivirus(self, file_path: Path) -> None:
+        """Executa comando antivírus (ex.: clamscan) caso habilitado."""
+        if not self.antivirus_enabled:
+            return
+        
+        cmd = shlex.split(self.antivirus_command) + [str(file_path)]
+        logger.info(f"Verificando arquivo com antivírus: {' '.join(cmd)}")
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+        except FileNotFoundError:
+            logger.error("Comando antivirus não encontrado: %s", self.antivirus_command)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Antivírus não disponível no servidor"
+            )
+        
+        if result.returncode != 0:
+            logger.warning("Antivírus bloqueou arquivo: %s", result.stdout or result.stderr)
+            try:
+                file_path.unlink(missing_ok=True)
+            finally:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Arquivo reprovado na verificação de vírus"
+                )
     
     def delete_file(self, file_path: str) -> bool:
         """

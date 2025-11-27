@@ -9,7 +9,7 @@ Host: 82.25.92.217
 Port: 5432
 Database: dbrief
 Username: postgres
-Password: Mslestra@2025db
+Password: <redacted-db-password>
 ```
 
 **MAS** a conexão está sendo bloqueada! 🔒
@@ -75,7 +75,7 @@ Host: localhost
 Port: 5432
 Database: dbrief
 Username: postgres
-Password: Mslestra@2025  (senha do container, não db no final)
+Password: <redacted-db-password>  (senha do container, não db no final)
 ```
 
 **Mantenha o terminal do SSH aberto** enquanto usa o DBeaver!
@@ -103,7 +103,7 @@ Host: 82.25.92.217
 Port: 5432
 Database: dbrief
 Username: postgres
-Password: Mslestra@2025db
+Password: <redacted-db-password>
 ```
 
 ---
@@ -177,8 +177,8 @@ sudo systemctl restart postgresql
 
 ### Erro: "Password authentication failed"
 - ✅ Verifique a senha no arquivo `.env` do backend
-- ✅ Tente com a senha do container: `Mslestra@2025` (sem 'db')
-- ✅ Tente com a senha da URL: `Mslestra@2025db`
+- ✅ Tente com a senha do container: `<redacted-db-password>` (sem 'db')
+- ✅ Tente com a senha da URL: `<redacted-db-password>`
 
 ### Erro: "Connection timed out"
 - ✅ PostgreSQL não está configurado para aceitar conexões remotas
@@ -258,6 +258,8 @@ sudo bash configurar-acesso-remoto-banco.sh
 ---
 
 **Próximo passo:** Execute o `diagnostico-servidor.sh` no servidor para descobrir onde seus dados estão! 🚀
+
+
 
 
 

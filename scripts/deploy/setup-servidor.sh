@@ -102,12 +102,22 @@ print_success "Repositório encontrado"
 # ==================== 6. CONFIGURAR VARIÁVEIS ====================
 print_info "Configurando variáveis de ambiente..."
 
-if [ ! -f "backend/.env" ]; then
-    if [ -f "env.docker.example" ]; then
-        cp env.docker.example backend/.env
-        print_success "Arquivo .env criado"
+if [ ! -f ".env" ]; then
+    if [ -f "env.example" ]; then
+        cp env.example .env
+        print_success ".env criado a partir do template"
     else
-        print_error "Arquivo env.docker.example não encontrado"
+        print_error "env.example não encontrado"
+        exit 1
+    fi
+fi
+
+if [ ! -f "backend/.env" ]; then
+    if [ -f "backend/env.example" ]; then
+        cp backend/env.example backend/.env
+        print_success "backend/.env criado a partir do template"
+    else
+        print_error "backend/env.example não encontrado"
         exit 1
     fi
 fi

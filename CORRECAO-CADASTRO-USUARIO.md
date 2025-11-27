@@ -27,8 +27,8 @@ O problema estava no `TipoUsuarioType` (TypeDecorator) do modelo `User`. Quando 
 
 2. **Senha do banco incorreta no docker-compose.prod.yml**: 
    - DATABASE_URL tinha `Mslestra%402025` (sem "db")
-   - POSTGRES_PASSWORD tinha `Mslestra@2025` (sem "db")
-   - A senha correta é `Mslestra@2025db`
+   - POSTGRES_PASSWORD tinha `<redacted-db-password>` (sem "db")
+   - A senha correta é `<redacted-db-password>`
 
 3. **Registros antigos no banco**: Um usuário (tarcisio) tinha o campo tipo com valor `'TipoUsuario.MASTER'` ao invés de `'master'`
 
@@ -95,11 +95,11 @@ UPDATE users SET tipo = 'master' WHERE tipo LIKE 'TipoUsuario%';
 ```yaml
 # Antes
 - DATABASE_URL=postgresql://postgres:Mslestra%402025@debrief_db:5432/dbrief
-- POSTGRES_PASSWORD=Mslestra@2025
+- POSTGRES_PASSWORD=<redacted-db-password>
 
 # Depois
-- DATABASE_URL=postgresql://postgres:Mslestra%402025db@debrief_db:5432/dbrief
-- POSTGRES_PASSWORD=Mslestra@2025db
+- DATABASE_URL=postgresql://postgres:<redacted-db-password-encoded>@debrief_db:5432/dbrief
+- POSTGRES_PASSWORD=<redacted-db-password>
 ```
 
 ## 🧪 Testes Realizados
@@ -234,6 +234,8 @@ As melhorias no `TipoUsuarioType` agora garantem que:
 **Status**: ✅ Resolvido  
 **Tempo de Resolução**: ~30 minutos  
 **Impacto**: Cadastro de usuários totalmente funcional
+
+
 
 
 

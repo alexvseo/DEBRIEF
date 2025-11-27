@@ -85,7 +85,7 @@ echo ""
 
 # 4. Testar conexão local
 print_info "4️⃣  Testando conexão local (localhost)..."
-export PGPASSWORD="Mslestra@2025"
+export PGPASSWORD="<redacted-db-password>"
 if psql -h localhost -p 5432 -U root -d dbrief -c "SELECT version();" 2>&1 | grep -q "PostgreSQL"; then
     print_success "Conexão local funcionou!"
     psql -h localhost -p 5432 -U root -d dbrief -c "SELECT current_database(), current_user;" 2>&1 | head -3
@@ -98,7 +98,7 @@ echo ""
 
 # 5. Testar conexão com IP do servidor
 print_info "5️⃣  Testando conexão com IP do servidor (82.25.92.217)..."
-export PGPASSWORD="Mslestra@2025"
+export PGPASSWORD="<redacted-db-password>"
 if psql -h 82.25.92.217 -p 5432 -U root -d dbrief -c "SELECT version();" 2>&1 | grep -q "PostgreSQL"; then
     print_success "Conexão com IP externo funcionou!"
 else

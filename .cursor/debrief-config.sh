@@ -167,7 +167,7 @@ backup_db() {
     
     BACKUP_FILE="debrief_backup_$(date +%Y%m%d_%H%M%S).sql"
     
-    ssh $VPS_HOST "PGPASSWORD='Mslestrategia.2025@' pg_dump -h localhost -U postgres -d dbrief > /tmp/$BACKUP_FILE"
+    ssh $VPS_HOST "PGPASSWORD='<redacted-legacy-password>' pg_dump -h localhost -U postgres -d dbrief > /tmp/$BACKUP_FILE"
     
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Backup criado: /tmp/$BACKUP_FILE${NC}"

@@ -3,7 +3,18 @@
 # ==================== Script de Deploy Docker - DeBrief ====================
 # Este script facilita o deploy da aplicação usando Docker
 
-set -e  # Parar em caso de erro
+set -euo pipefail  # Parar em caso de erro
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+SECRETS_LIB="${SCRIPT_DIR}/lib/secrets.sh"
+if [ -f "${SECRETS_LIB}" ]; then
+    # shellcheck source=../../scripts/deploy/lib/secrets.sh
+    source "${SECRETS_LIB}"
+    debrief_load_secrets "${PROJECT_ROOT}"
+fi
+
+cd "${PROJECT_ROOT}"
 
 echo "🐳 DeBrief - Deploy com Docker"
 echo "================================"
@@ -50,25 +61,38 @@ fi
 
 print_success "Docker Compose está instalado"
 
-# Verificar se o arquivo .env existe no backend
-if [ ! -f "backend/.env" ]; then
-    print_warning "Arquivo backend/.env não encontrado!"
-    print_info "Copiando env.docker.example para backend/.env..."
-    
-    if [ -f "env.docker.example" ]; then
-        cp env.docker.example backend/.env
-        print_success "Arquivo backend/.env criado"
-        print_warning "IMPORTANTE: Edite backend/.env e configure as variáveis necessárias!"
-        print_info "Especialmente: SECRET_KEY, ENCRYPTION_KEY"
-        echo ""
-        read -p "Pressione ENTER para continuar ou Ctrl+C para cancelar..."
+# Garantir arquivo .env (docker-compose)
+if [ ! -f "${PROJECT_ROOT}/.env" ]; then
+    print_warning "Arquivo .env não encontrado!"
+    if [ -f "${PROJECT_ROOT}/env.example" ]; then
+        print_info "Copiando env.example -> .env..."
+        cp "${PROJECT_ROOT}/env.example" "${PROJECT_ROOT}/.env"
+        print_success ".env criado a partir do template"
+        print_warning "Edite .env e configure POSTGRES_PASSWORD, SECRET_KEY, etc."
+        read -rp "Pressione ENTER para continuar ou Ctrl+C para cancelar..." _
     else
-        print_error "Arquivo env.docker.example não encontrado!"
+        print_error "env.example não encontrado. Aborte o deploy."
         exit 1
     fi
 fi
 
-print_success "Arquivo backend/.env encontrado"
+# Verificar se o arquivo .env existe no backend
+if [ ! -f "${PROJECT_ROOT}/backend/.env" ]; then
+    print_warning "Arquivo backend/.env não encontrado!"
+    if [ -f "${PROJECT_ROOT}/backend/env.example" ]; then
+        print_info "Copiando backend/env.example -> backend/.env..."
+        cp "${PROJECT_ROOT}/backend/env.example" "${PROJECT_ROOT}/backend/.env"
+        print_success "Arquivo backend/.env criado"
+        print_warning "IMPORTANTE: Edite backend/.env e configure as variáveis sensíveis!"
+        echo ""
+        read -rp "Pressione ENTER para continuar ou Ctrl+C para cancelar..." _
+    else
+        print_error "Template backend/env.example não encontrado!"
+        exit 1
+    fi
+fi
+
+print_success "Arquivos de ambiente encontrados"
 
 echo ""
 print_info "Escolha uma opção:"

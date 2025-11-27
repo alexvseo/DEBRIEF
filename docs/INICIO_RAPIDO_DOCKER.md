@@ -86,7 +86,7 @@ docker-compose logs frontend
 ### Erro de conexão com banco?
 Verifique as credenciais em `backend/.env`:
 ```
-DATABASE_URL=postgresql://root:Mslestrategia.2025%40@82.25.92.217:5432/dbrief
+DATABASE_URL=postgresql://root:<redacted-legacy-password-encoded>@82.25.92.217:5432/dbrief
 ```
 
 ### Frontend não carrega?

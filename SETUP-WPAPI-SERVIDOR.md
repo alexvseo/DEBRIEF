@@ -439,3 +439,5 @@ curl -X POST http://82.25.92.217:3001/send-message \
 **Tecnologia:** whatsapp-web.js + Express + PM2
 
 
+
+

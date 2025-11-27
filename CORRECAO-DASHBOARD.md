@@ -237,7 +237,7 @@ curl http://localhost:2023/health
 
 ### Correção 1 (Anterior): Senha do Banco
 - **Problema:** Backend não conectava ao banco (senha errada)
-- **Solução:** Reset da senha para `Mslestra@2025db`
+- **Solução:** Reset da senha para `<redacted-db-password>`
 - **Status:** ✅ Resolvido
 
 ### Correção 2 (Esta): Enum de Usuário
@@ -307,6 +307,8 @@ https://debrief.interce.com.br/login
 **Tempo de Resolução:** ~10 minutos  
 **Commit:** `5805d0b` - "fix: Corrige serialização do campo tipo de usuário (TipoUsuario enum)"  
 **Servidor:** 82.25.92.217
+
+
 
 
 

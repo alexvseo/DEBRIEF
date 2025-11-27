@@ -1,10 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import vitePluginSRI from 'vite-plugin-sri'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    vitePluginSRI({
+      algorithms: ['sha384'],
+    }),
+  ],
   
   // Alias para imports mais limpos
   resolve: {

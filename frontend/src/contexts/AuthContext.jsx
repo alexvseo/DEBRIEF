@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }) => {
   // Estados
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(null)
+  const [refreshTokenValue, setRefreshTokenValue] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
@@ -38,6 +39,7 @@ export const AuthProvider = ({ children }) => {
         
         if (storedAuth?.token && storedAuth?.user) {
           setToken(storedAuth.token)
+          setRefreshTokenValue(storedAuth.refreshToken || null)
           setUser(storedAuth.user)
           setIsAuthenticated(true)
         }
@@ -62,28 +64,30 @@ export const AuthProvider = ({ children }) => {
    * @example
    * const { user } = await login('usuario', 'senha123')
    */
-  const login = useCallback(async (username, password) => {
+  const login = useCallback(async (username, password, options = {}) => {
     try {
       setLoading(true)
 
       // Chamar API de login
-      const response = await authService.login(username, password)
+      const response = await authService.login(username, password, options)
       
       // Extrair dados da resposta
-      const { access_token, user: userData } = response
+      const { access_token, refresh_token, user: userData } = response
 
       // Salvar no estado
       setToken(access_token)
+      setRefreshTokenValue(refresh_token)
       setUser(userData)
       setIsAuthenticated(true)
 
       // Salvar no localStorage
       setStoredAuth({
         token: access_token,
+        refreshToken: refresh_token,
         user: userData
       })
 
-      return { user: userData, token: access_token }
+      return { user: userData, token: access_token, refreshToken: refresh_token }
     } catch (error) {
       // Limpar autenticação em caso de erro
       clearStoredAuth()
@@ -105,17 +109,21 @@ export const AuthProvider = ({ children }) => {
    */
   const logout = useCallback(() => {
     try {
+      authService.logout(refreshTokenValue).catch((error) => {
+        console.error('Erro ao notificar logout:', error)
+      })
       // Limpar localStorage
       clearStoredAuth()
       
       // Limpar estado
       setToken(null)
+      setRefreshTokenValue(null)
       setUser(null)
       setIsAuthenticated(false)
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
     }
-  }, [])
+  }, [refreshTokenValue])
 
   /**
    * Atualizar dados do usuário
@@ -220,21 +228,23 @@ export const AuthProvider = ({ children }) => {
    * 
    * @returns {Promise<string>} - Novo token
    */
-  const refreshToken = useCallback(async () => {
+  const refreshSession = useCallback(async () => {
+    if (!refreshTokenValue) {
+      throw new Error('Nenhum refresh token disponível')
+    }
     try {
-      const response = await authService.refreshToken(token)
-      const { access_token } = response
+      const response = await authService.refreshToken(refreshTokenValue)
+      const { access_token, refresh_token, user: userData } = response
       
       setToken(access_token)
+      setRefreshTokenValue(refresh_token)
+      setUser(userData)
       
-      // Atualizar localStorage
-      const storedAuth = getStoredAuth()
-      if (storedAuth) {
-        setStoredAuth({
-          ...storedAuth,
-          token: access_token
-        })
-      }
+      setStoredAuth({
+        token: access_token,
+        refreshToken: refresh_token,
+        user: userData,
+      })
       
       return access_token
     } catch (error) {
@@ -242,7 +252,7 @@ export const AuthProvider = ({ children }) => {
       logout()
       throw error
     }
-  }, [token, logout])
+  }, [refreshTokenValue, logout])
 
   // Valor do contexto
   const value = {
@@ -260,7 +270,7 @@ export const AuthProvider = ({ children }) => {
     isMaster,
     isCliente,
     isTokenExpired,
-    refreshToken,
+    refreshToken: refreshSession,
   }
 
   return (
